@@ -1,11 +1,11 @@
 #include "PointsGenerator.hpp"
 
 void PointsGenerator::addPoint(float x, float y, float z) {
-    points.push_back({x, y, z});
+    points.push_back((Point) {x, y ,z});
 }
 
 void PointsGenerator::addAssociation(int p1, int p2, int p3) {
-    associations.push_back({p1, p2, p3});
+    associations.push_back((Association) {p1, p2, p3});
 }
 
 void PointsGenerator::showData() const {
