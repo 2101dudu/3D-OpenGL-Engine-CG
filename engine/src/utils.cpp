@@ -2,6 +2,8 @@
 #include <fstream>
 #include <iostream>
 
+const float SCALE_FACTOR = 1.0f;
+
 std::vector<Point> parseFile(const std::string& filename) {
     std::vector<Point> points;
     std::ifstream file(filename);

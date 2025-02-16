@@ -18,7 +18,6 @@ void drawFile(const char* filename) {
         return;
     }
 
-    // Imprima os pontos no terminal
     printPoints(points);
 
     drawTriangles(points);
