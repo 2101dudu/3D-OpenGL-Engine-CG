@@ -23,15 +23,14 @@ void Box::createBox(int dimension, int divPerEdge) {
             const float z = maxWidth - 2.0f*j/divPerEdge;
             pointGen.addPoint(x, y, z);
 
-            // triangle1
+            int currPointIndex = pointsPerEdge * i + (j + 1);
+
+            // north-facing triangles
             if (j<3 && i<3) {
-                int currPointIndex = pointsPerEdge * i + (j+1);
                 pointGen.addAssociation(currPointIndex, currPointIndex + 1, currPointIndex + 4);
             }
-
-            // triangle2
+            // south-facing triangles
             if (j>0 && i>0) {
-                int currPointIndex = pointsPerEdge * i + (j+1);
                 pointGen.addAssociation(currPointIndex, currPointIndex - 1, currPointIndex - 4);
             }
         }
