@@ -22,6 +22,18 @@ void Box::createBox(int dimension, int divPerEdge) {
             const float y = 0.0f;
             const float z = maxWidth - 2.0f*j/divPerEdge;
             pointGen.addPoint(x, y, z);
+
+            // triangle1
+            if (j<3 && i<3) {
+                int currPointIndex = pointsPerEdge * i + (j+1);
+                pointGen.addAssociation(currPointIndex, currPointIndex + 1, currPointIndex + 4);
+            }
+
+            // triangle2
+            if (j>0 && i>0) {
+                int currPointIndex = pointsPerEdge * i + (j+1);
+                pointGen.addAssociation(currPointIndex, currPointIndex - 1, currPointIndex - 4);
+            }
         }
     }
 
