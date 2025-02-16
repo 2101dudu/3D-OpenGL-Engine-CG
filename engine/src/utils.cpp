@@ -33,3 +33,9 @@ std::vector<Point> parseFile(const std::string& filename) {
     file.close();
     return points;
 }
+
+void printPoints(const std::vector<Point>& points) {
+    for (const auto& point : points) {
+        std::cout << "Point: (" << point.x << ", " << point.y << ", " << point.z << ")\n";
+    }
+}

@@ -17,5 +17,9 @@ void drawFile(const char* filename) {
         // File not found or empty, handle this case
         return;
     }
+
+    // Imprima os pontos no terminal
+    printPoints(points);
+
     drawTriangles(points);
 }
