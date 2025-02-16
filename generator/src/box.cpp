@@ -26,7 +26,7 @@ void Box::createBox(int dimension, int divPerEdge) {
             int currPointIndex = pointsPerEdge * i + (j + 1);
 
             // north-facing triangles
-            if (j<3 && i<3) {
+            if (j<divPerEdge && i<divPerEdge) {
                 pointGen.addAssociation(currPointIndex, currPointIndex + 1, currPointIndex + 4);
             }
             // south-facing triangles
