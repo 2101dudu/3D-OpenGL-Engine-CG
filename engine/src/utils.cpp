@@ -13,16 +13,21 @@ std::vector<Point> parseFile(const std::string& filename) {
 
     size_t numPoints, numAssociations;
     file >> numPoints;
-    points.resize(numPoints);
-    for (auto& point : points) {
+    std::vector<Point> allPoints(numPoints);
+    for (auto& point : allPoints) {
         file >> point.x >> point.y >> point.z;
     }
 
     file >> numAssociations;
-    // Skip associations for now
-    for (size_t i = 0; i < numAssociations; ++i) {
-        int p1, p2, p3;
-        file >> p1 >> p2 >> p3;
+    std::vector<Association> associations(numAssociations);
+    for (auto& assoc : associations) {
+        file >> assoc.p1 >> assoc.p2 >> assoc.p3;
+    }
+
+    for (const auto& assoc : associations) {
+        points.push_back(allPoints[assoc.p1 - 1]);
+        points.push_back(allPoints[assoc.p2 - 1]);
+        points.push_back(allPoints[assoc.p3 - 1]);
     }
 
     file.close();

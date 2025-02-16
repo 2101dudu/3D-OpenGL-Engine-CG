@@ -1,18 +1,7 @@
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#else
-#include <GL/glut.h>
-#endif
-
-#define _USE_MATH_DEFINES
-#include <math.h>
-
-#include <vector>
-
 #include "draw.hpp"
 #include "utils.hpp"
-
-#define MODELS "../models/"
+#include <GL/glut.h>
+#include <vector>
 
 void drawTriangles(const std::vector<Point>& points) {
     glBegin(GL_TRIANGLES);

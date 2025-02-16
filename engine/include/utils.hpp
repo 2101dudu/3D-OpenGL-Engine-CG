@@ -1,24 +1,20 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
 #include <vector>
+#include <string>
 
-#include "utils.hpp"
+struct Point {
+    float x, y, z;
 
-// Define Point struct
-typedef struct Point {
-  float x, y, z;
+    Point(float x_val = 0.0f, float y_val = 0.0f, float z_val = 0.0f)
+        : x(x_val), y(y_val), z(z_val) {}
+};
 
-  // Constructor
-  Point(float x_val = 0.0f, float y_val = 0.0f, float z_val = 0.0f)
-      : x(x_val), y(y_val), z(z_val) {}
-} Point;
+struct Association {
+    int p1, p2, p3;
+};
 
-// Function to convert Point to string
 std::vector<Point> parseFile(const std::string& filename);
 
-#endif  // UTILS_HPP
+#endif
