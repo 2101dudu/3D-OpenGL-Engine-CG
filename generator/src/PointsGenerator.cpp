@@ -1,11 +1,17 @@
 #include "PointsGenerator.hpp"
 
+#ifdef _WIN32
+#define CAST_POINT
+#else
+#define CAST_POINT (Point)
+#endif
+
 void PointsGenerator::addPoint(float x, float y, float z) {
-    points.push_back((Point) {x, y ,z});
+    points.push_back(CAST_POINT {x, y ,z});
 }
 
 void PointsGenerator::addAssociation(int p1, int p2, int p3) {
-    associations.push_back((Association) {p1, p2, p3});
+    associations.push_back(CAST_POINT {p1, p2, p3});
 }
 
 void PointsGenerator::showData() const {
