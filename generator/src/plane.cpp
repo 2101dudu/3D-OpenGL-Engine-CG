@@ -27,11 +27,11 @@ void Plane::createPlane(int dimension, int divPerEdge) {
 
             // north-facing triangles
             if (j<divPerEdge && i<divPerEdge) {
-                pointGen.addAssociation(currPointIndex, currPointIndex + 1, currPointIndex + 4);
+                pointGen.addAssociation(currPointIndex, currPointIndex + 1, currPointIndex + pointsPerEdge);
             }
             // south-facing triangles
             if (j>0 && i>0) {
-                pointGen.addAssociation(currPointIndex, currPointIndex - 1, currPointIndex - 4);
+                pointGen.addAssociation(currPointIndex, currPointIndex - 1, currPointIndex - pointsPerEdge);
             }
         }
     }
