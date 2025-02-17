@@ -9,7 +9,9 @@ add_executable(${PROJECT_NAME}
 	src/main.cpp
 	src/PointsGenerator.cpp
 	src/FileWriter.cpp
-	)
+		src/box.cpp
+		include/box.hpp
+)
 
 include_directories(include)
 
