@@ -1,16 +1,18 @@
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include "draw.hpp"
+#include "utils.hpp"
+
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
 #include <GL/glut.h>
 #endif
 
-#define _USE_MATH_DEFINES
-#include <math.h>
-#include "draw.hpp"
-
 float cameraAngle = 90.0f;
 float cameraAngleY = 0.0f;
 char* file = "../build/pontos.txt";
+std::vector<Point> points;
 
 void changeSize(int w, int h) {
     if (h == 0) h = 1;
@@ -28,20 +30,10 @@ void renderScene(void) {
     gluLookAt(5.0 * sin(cameraAngle), 5.0 * cos(cameraAngleY),
               5.0 * cos(cameraAngle), 0.0, 0.0, 0.0, 0.0f, 1.0f, 0.0f);
 
-    glBegin(GL_LINES);
-    glColor3f(50.0f, 0.0f, 0.0f);
-    glVertex3f(-50.0f, 0.0f, 0.0f);
-    glVertex3f(50.0f, 0.0f, 0.0f);
-    glColor3f(0.0f, 50.0f, 0.0f);
-    glVertex3f(0.0f, -50.0f, 0.0f);
-    glVertex3f(0.0f, 50.0f, 0.0f);
-    glColor3f(0.0f, 0.0f, 50.0f);
-    glVertex3f(0.0f, 0.0f, -50.0f);
-    glVertex3f(0.0f, 0.0f, 50.0f);
-    glEnd();
+	drawAxis();
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    drawFile(file);
+	drawTriangles(points);
 
     glutSwapBuffers();
 }
@@ -76,6 +68,9 @@ void processSpecialKeys(int key, int xx, int yy) {
 }
 
 int main(int argc, char** argv) {
+
+	points = parseFile(file);
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);

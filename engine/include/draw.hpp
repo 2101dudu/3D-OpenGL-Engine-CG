@@ -1,8 +1,6 @@
 #ifndef DRAW_HPP
 #define DRAW_HPP
 
-#include <math.h>
-
 #include <vector>
 
 #include "draw.hpp"
@@ -10,6 +8,8 @@
 
 void drawTriangles(const std::vector<Point>& points);
 
-void drawFile(const char* filename);
+void drawFile(const char* filename, const std::vector<Point>& points);
 
-#endif  // DRAW_HPP
+void drawAxis();
+
+#endif
