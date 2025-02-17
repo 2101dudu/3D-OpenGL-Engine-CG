@@ -3,9 +3,9 @@
 //
 
 
-#include "box.hpp"
+#include "plane.hpp"
 
-void Box::createBox(int dimension, int divPerEdge) {
+void Plane::createPlane(int dimension, int divPerEdge) {
     PointsGenerator pointGen;
 
     // the interval specified by the dimension, i.e.,

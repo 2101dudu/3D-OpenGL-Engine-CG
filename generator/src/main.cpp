@@ -1,6 +1,6 @@
 #include "PointsGenerator.hpp"
 #include "FileWriter.hpp"
-#include "box.hpp"
+#include "plane.hpp"
 
 int main() {
     PointsGenerator generator;
@@ -14,7 +14,7 @@ int main() {
     //generator.addAssociation(1, 2, 3);
     //generator.addAssociation(2, 4, 5);
 
-    Box::createBox(2, 3);
+    Plane::createPlane(2, 3);
 
 
     //FileWriter::writeToFile("pontos.txt", generator);
