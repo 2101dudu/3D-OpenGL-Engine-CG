@@ -64,7 +64,7 @@ void Box::createBox(int dimension, int divPerEdge)
                 int currPointIndex = k * pointsPerEdge * pointsPerEdge + i * pointsPerEdge + j + 1;
 
                 // Determine if we need to swap winding order
-                bool swapWinding = (w == 1 || v == -1 || u == -1);
+                bool swapWinding = (w == 1 || v == -1 || u == 1);
 
                 // North-facing triangles (lower-left triangle)
                 if (j < divPerEdge && i < divPerEdge) {
