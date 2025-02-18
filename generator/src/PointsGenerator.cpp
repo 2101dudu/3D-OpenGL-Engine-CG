@@ -1,9 +1,9 @@
 #include "PointsGenerator.hpp"
 
-#ifdef _WIN32
-#define CAST_POINT
-#else
+#ifdef __APPLE__
 #define CAST_POINT (Point)
+#else
+#define CAST_POINT
 #endif
 
 void PointsGenerator::addPoint(float x, float y, float z) {
