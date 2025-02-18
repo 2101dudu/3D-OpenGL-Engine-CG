@@ -64,7 +64,7 @@ void Box::createBox(int dimension, int divPerEdge) {
 
                 pointGen.addPoint(x, y, z);
 
-                int currPointIndex = pointsPerEdge * i + (j + 1) + k*pointsPerEdge;
+                int currPointIndex = k * pointsPerEdge * pointsPerEdge + i * pointsPerEdge + j + 1;
 
                 // north-facing triangles
                 if (j<divPerEdge && i<divPerEdge)
