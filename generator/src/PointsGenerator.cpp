@@ -1,7 +1,7 @@
 #include "PointsGenerator.hpp"
 
 void PointsGenerator::addPoint(float x, float y, float z) {
-    points.push_back((Point) {x, y, z});
+    points.push_back((Point) {x, y ,z});
 }
 
 void PointsGenerator::addAssociation(int p1, int p2, int p3) {
