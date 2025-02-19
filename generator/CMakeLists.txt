@@ -11,6 +11,8 @@ add_executable(${PROJECT_NAME}
 	src/FileWriter.cpp
         include/plane.hpp
 		src/plane.cpp
+		include/sphere.hpp
+		src/sphere.cpp
 )
 
 include_directories(include)
