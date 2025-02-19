@@ -13,10 +13,10 @@ void Sphere::createSphere(int radius, int slices, int stacks) {
   // angle per stack
   float beta =  M_PI / stacks;
 
-  for (int i = 0; i < slices; i++) {
+  for (int i = 0; i <= slices; i++) {
     float currAlpha = alpha * i;
 
-    for (int j = 0; j < stacks; j++) {
+    for (int j = 0; j <= stacks; j++) {
       float currBeta = static_cast<float>(-M_PI/2) + beta * j;
 
       float x = cosf(currAlpha) * radius * cos(currBeta);
@@ -25,19 +25,22 @@ void Sphere::createSphere(int radius, int slices, int stacks) {
 
       pointGen.addPoint(x, y, z);
 
+      int currPointIndex = (stacks+1) * i + j+1;
 
-      //int currPointIndex = pointsPerEdge * i + (j + 1);
-//
-      //// north-facing triangles
-      //if (j < divPerEdge && i < divPerEdge) {
-      //  pointGen.addAssociation(currPointIndex, currPointIndex + 1,
-      //                          currPointIndex + pointsPerEdge);
-      //}
-      //// south-facing triangles
-      //if (j > 0 && i > 0) {
-      //  pointGen.addAssociation(currPointIndex, currPointIndex - 1,
-      //                          currPointIndex - pointsPerEdge);
-      //}
+      int neighbourIndex = (currPointIndex+stacks+1) % ((slices+1)*(stacks+1));
+
+      // association with polar points
+      if (j == 1) {
+        pointGen.addAssociation(currPointIndex-1, currPointIndex, neighbourIndex);
+      }
+      if (j == stacks-1) {
+        pointGen.addAssociation(currPointIndex, currPointIndex+1, neighbourIndex);
+      }
+
+      if (j > 0 && j < stacks-1) {
+        pointGen.addAssociation(currPointIndex, currPointIndex + 1, neighbourIndex);
+        pointGen.addAssociation(neighbourIndex, currPointIndex + 1, neighbourIndex + 1);
+      }
     }
   }
 
