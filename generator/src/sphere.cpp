@@ -3,6 +3,8 @@
 //
 
 #include "sphere.hpp"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 void Sphere::createSphere(int radius, int slices, int stacks) {
   PointsGenerator pointGen;
