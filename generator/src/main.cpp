@@ -1,4 +1,5 @@
 #include "FileWriter.hpp"
+#include "box.hpp"
 #include "PointsGenerator.hpp"
 #include "plane.hpp"
 #include "sphere.hpp"
@@ -6,14 +7,10 @@
 int main() {
   PointsGenerator generator;
 
-  // generator.addPoint(0.0, 1.0, 0.0);
-  // generator.addPoint(-1.0, -1.0, 1.0);
-  // generator.addPoint(1.0, -1.0, 1.0);
-  // generator.addPoint(-1.0, -1.0, -1.0);
-  // generator.addPoint(1.0, -1.0, -1.0);
+    //generator.showData();
 
-  // generator.addAssociation(1, 2, 3);
-  // generator.addAssociation(2, 4, 5);
+    Box::createBox(2, 1);
+    //Plane::createPlane(2, 3);
 
   //Plane::createPlane(2, 3);
   Sphere::createSphere(1, 10, 10);
