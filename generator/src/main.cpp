@@ -1,6 +1,7 @@
 #include "FileWriter.hpp"
 #include "PointsGenerator.hpp"
 #include "plane.hpp"
+#include "sphere.hpp"
 
 int main() {
   PointsGenerator generator;
@@ -14,7 +15,9 @@ int main() {
   // generator.addAssociation(1, 2, 3);
   // generator.addAssociation(2, 4, 5);
 
-  Plane::createPlane(2, 3);
+  //Plane::createPlane(2, 3);
+  Sphere::createSphere(1, 10, 10);
+
 
   return 0;
 }
