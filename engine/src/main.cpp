@@ -1,5 +1,7 @@
 #define _USE_MATH_DEFINES
+#include <chrono>
 #include <math.h>
+#include <sstream>
 #include "draw.hpp"
 #include "utils.hpp"
 
@@ -9,10 +11,52 @@
 #include <GL/glut.h>
 #endif
 
+int frameCount = 0;
+float fps = 0.0f;
+auto lastTime = std::chrono::steady_clock::now();
+
 float cameraAngle = 90.0f;
 float cameraAngleY = 0.0f;
 char* file = "../build/pontos.txt";
 std::vector<Point> points;
+
+void displayFps() {
+    // FPS Calculation
+    frameCount++;
+    auto currentTime = std::chrono::steady_clock::now();
+    float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
+
+    if (deltaTime >= 1.0f) { // Every second
+        fps = frameCount / deltaTime;
+        frameCount = 0;
+        lastTime = currentTime;
+    }
+
+    // Render FPS text
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, 800, 0, 800); // Match window size
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    std::ostringstream fpsText;
+    fpsText << "FPS: " << (int)fps;
+    std::string fpsStr = fpsText.str();
+
+    glColor3f(1.0f, 1.0f, 1.0f); // White color
+    glRasterPos2f(10, 780); // Position on the screen
+
+    for (char c : fpsStr) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+    }
+
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+}
 
 void changeSize(int w, int h) {
     if (h == 0) h = 1;
@@ -34,6 +78,8 @@ void renderScene(void) {
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawTriangles(points);
+
+    displayFps();
 
     glutSwapBuffers();
 }
