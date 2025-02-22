@@ -4,6 +4,7 @@
 #include "cone.hpp"
 #include "plane.hpp"
 #include "sphere.hpp"
+#include "torus.hpp"
 
 int main()
 {
@@ -11,14 +12,12 @@ int main()
 
     // generator.showData();
 
-    Box::createBox(2, 1);
+    // Box::createBox(2, 1);
     // Plane::createPlane(2, 3);
-
     // Plane::createPlane(2, 3);
-    Sphere::createSphere(1, 10, 10);
-
-    // Example call to create a cone
-    Cone::createCone(1.0f, 2.0f, 4, 3);
+    // Sphere::createSphere(1, 10, 10);
+    // Cone::createCone(1.0f, 2.0f, 4, 3);
+    Torus::createTorus(1.5, 0.6, 40, 15);
 
     return 0;
 }
