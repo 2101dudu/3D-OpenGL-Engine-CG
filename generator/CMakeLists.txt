@@ -15,6 +15,10 @@ add_executable(${PROJECT_NAME}
 		src/plane.cpp
 		include/sphere.hpp
 		src/sphere.cpp
+		include/cone.hpp
+		src/cone.cpp
+		include/torus.hpp
+		src/torus.cpp
 )
 
 include_directories(include)

@@ -1,8 +1,10 @@
 #include "FileWriter.hpp"
 #include "PointsGenerator.hpp"
 #include "box.hpp"
+#include "cone.hpp"
 #include "plane.hpp"
 #include "sphere.hpp"
+#include "torus.hpp"
 
 void executeCommand(const std::string& command, const std::vector<int>& args) {
     if (command == "sphere" && args.size() == 3) {
@@ -39,5 +41,6 @@ int main(int argc, char* argv[]) {
     }
 
     executeCommand(command, args);
+
     return 0;
 }
