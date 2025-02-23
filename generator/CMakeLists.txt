@@ -9,12 +9,13 @@ add_executable(${PROJECT_NAME}
 	src/main.cpp
 	src/PointsGenerator.cpp
 	src/FileWriter.cpp
-		src/box.cpp
-		include/box.hpp
+	src/box.cpp
+	include/box.hpp
     include/plane.hpp
-		src/plane.cpp
-		include/sphere.hpp
-		src/sphere.cpp
+	src/plane.cpp
+	include/sphere.hpp
+	src/sphere.cpp
+	src/cylinder.cpp
 )
 
 include_directories(include)
