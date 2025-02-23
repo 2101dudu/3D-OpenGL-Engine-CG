@@ -6,6 +6,8 @@
 #include "sphere.hpp"
 #include "torus.hpp"
 
+#include <string>
+
 void executeCommand(const std::string& command, const std::vector<int>& args) {
     if (command == "sphere" && args.size() == 3) {
         Sphere::createSphere(args[0], args[1], args[2]);
