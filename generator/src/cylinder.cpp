@@ -2,7 +2,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-void Cylinder::createCylinder(int radius, int height, int slices, int stacks)
+void Cylinder::createCylinder(int radius, int height, int slices, int stacks, const std::string& filename)
 {
     PointsGenerator pointGen;
 
@@ -54,5 +54,5 @@ void Cylinder::createCylinder(int radius, int height, int slices, int stacks)
     }
 
     pointGen.showData();
-    FileWriter::writeToFile("pontos.txt", pointGen);
+    FileWriter::writeToFile(filename, pointGen);
 }

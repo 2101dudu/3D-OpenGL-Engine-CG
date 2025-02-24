@@ -3,7 +3,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-void Cone::createCone(float radius, float height, int slices, int stacks)
+void Cone::createCone(float radius, float height, int slices, int stacks, const std::string& filename)
 {
     PointsGenerator generator;
     float stackHeight = height / stacks;
@@ -49,5 +49,5 @@ void Cone::createCone(float radius, float height, int slices, int stacks)
         generator.addAssociation(p1, p2, baseCenterIndex);
     }
 
-    FileWriter::writeToFile("pontos.txt", generator);
+    FileWriter::writeToFile(filename, generator);
 }

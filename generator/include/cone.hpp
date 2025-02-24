@@ -7,7 +7,7 @@
 class Cone {
 public:
     // requires radius, height, slices, and stacks
-    static void createCone(float radius, float height, int slices, int stacks);
+    static void createCone(float radius, float height, int slices, int stacks, const std::string& filename);
 };
 
 #endif // CONE_H

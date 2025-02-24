@@ -10,7 +10,7 @@
 
 class Torus {
 public:
-    static void createTorus(float radius, float minorRadius, int slices, int stacks);
+    static void createTorus(float radius, float minorRadius, int slices, int stacks, const std::string& filename);
 };
 
 #endif // TORUS_H

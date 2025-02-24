@@ -4,7 +4,7 @@
 
 #include "plane.hpp"
 
-void Plane::createPlane(int dimension, int divPerEdge)
+void Plane::createPlane(int dimension, int divPerEdge, const std::string& filename)
 {
     PointsGenerator pointGen;
 
@@ -40,5 +40,5 @@ void Plane::createPlane(int dimension, int divPerEdge)
 
     pointGen.showData();
 
-    FileWriter::writeToFile("pontos.txt", pointGen);
+    FileWriter::writeToFile(filename, pointGen);
 }
