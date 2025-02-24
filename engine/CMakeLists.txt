@@ -6,7 +6,7 @@ project(engine)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Add source files
-add_executable(${PROJECT_NAME} src/main.cpp src/draw.cpp src/utils.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/xml_parser.cpp src/draw.cpp src/utils.cpp)
 
 include_directories(include)
 
@@ -19,7 +19,17 @@ if(NOT OPENGL_FOUND)
   message(FATAL_ERROR "OPENGL not found!")
 endif()
 
-if(WIN32) # Windows-specific configuration
+# Integrate tinyXML2
+include(FetchContent)
+FetchContent_Declare(
+  tinyxml2
+  GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
+  GIT_TAG master
+)
+FetchContent_MakeAvailable(tinyxml2)
+
+# Windows-specific configuration
+if(WIN32)
   message(STATUS "Toolkits_DIR set to: " ${TOOLKITS_FOLDER})
   set(TOOLKITS_FOLDER
       ""
@@ -41,7 +51,6 @@ if(WIN32) # Windows-specific configuration
 
   set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT
                                                               ${PROJECT_NAME})
-
 else() # Linux and macOS
 
   find_package(GLUT REQUIRED)
@@ -67,3 +76,6 @@ else() # Linux and macOS
   endif()
 
 endif()
+
+target_include_directories(engine PRIVATE include)
+target_link_libraries(engine tinyxml2)
