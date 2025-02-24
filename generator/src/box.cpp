@@ -4,7 +4,7 @@
 
 #include "box.hpp"
 
-void Box::createBox(int dimension, int divPerEdge)
+void Box::createBox(int dimension, int divPerEdge, const std::string& filename)
 {
     PointsGenerator pointGen;
 
@@ -86,4 +86,6 @@ void Box::createBox(int dimension, int divPerEdge)
     }
 
     pointGen.showData();
+
+    FileWriter::writeToFile(filename, pointGen);
 }

@@ -6,11 +6,12 @@
 #define BOX_H
 
 #include "PointsGenerator.hpp"
+#include "FileWriter.hpp"
 
 class Box {
 public:
     // requires dimension, and the number of divisions per edge, centred in the origin
-    static void createBox(int dimension, int divPerEdge);
+    static void createBox(int dimension, int divPerEdge, const std::string& filename);
 };
 
 #endif //BOX_H

@@ -6,7 +6,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-void Sphere::createSphere(int radius, int slices, int stacks) {
+void Sphere::createSphere(int radius, int slices, int stacks, const std::string& filename) {
   PointsGenerator pointGen;
 
   // angle per slice
@@ -47,6 +47,6 @@ void Sphere::createSphere(int radius, int slices, int stacks) {
   }
 
   pointGen.showData();
-
-  FileWriter::writeToFile("pontos.txt", pointGen);
+  
+  FileWriter::writeToFile(filename, pointGen);
 }

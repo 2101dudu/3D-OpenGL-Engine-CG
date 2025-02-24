@@ -12,7 +12,7 @@ class Plane {
 public:
   // a square in the XZ plane, centred in the origin, subdivided in both X and Z
   // directions
-  static void createPlane(int dimension, int divPerEdge);
+  static void createPlane(int dimension, int divPerEdge, const std::string& filename);
 };
 
 #endif // PLANE_H

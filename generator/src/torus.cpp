@@ -6,7 +6,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-void Torus::createTorus(float radius, float minorRadius, int slices, int stacks)
+void Torus::createTorus(float radius, float minorRadius, int slices, int stacks, const std::string& filename)
 {
     PointsGenerator pointGen;
 
@@ -41,5 +41,5 @@ void Torus::createTorus(float radius, float minorRadius, int slices, int stacks)
 
     pointGen.showData();
 
-    FileWriter::writeToFile("pontos.txt", pointGen);
+    FileWriter::writeToFile(filename, pointGen);
 }

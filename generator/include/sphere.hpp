@@ -12,7 +12,7 @@ class Sphere {
 public:
     //requires dimension, and the number of divisions per edge, centred in the origin
 
-    static void createSphere(int radius, int slices, int stacks);
+    static void createSphere(int radius, int slices, int stacks, const std::string& filename);
 };
 
 #endif //SPHERE_H
