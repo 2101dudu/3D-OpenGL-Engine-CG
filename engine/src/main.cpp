@@ -8,6 +8,7 @@
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
+#include <GL/glew.h>
 #include <GL/glut.h>
 #endif
 
@@ -120,6 +121,11 @@ void initializeGLUT(int argc, char** argv)
     glutDisplayFunc(renderScene);
     glutReshapeFunc(reshape);
     glutSpecialFunc(processSpecialKeys);
+
+    // init GLEW
+#ifndef __APPLE__
+    glewInit();
+#endif
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
