@@ -2,10 +2,9 @@
 #include <fstream>
 #include <iostream>
 
-const float SCALE_FACTOR = 1.0f;
-
-std::vector<Point> parseFile(const std::string& filename) {
-    std::vector<Point> points;
+std::vector<float> parseFile(const std::string& filename)
+{
+    std::vector<float> points;
     std::ifstream file(filename);
 
     if (!file.is_open()) {
@@ -15,29 +14,26 @@ std::vector<Point> parseFile(const std::string& filename) {
 
     size_t numPoints, numAssociations;
     file >> numPoints;
-    std::vector<Point> allPoints(numPoints);
-    for (auto& point : allPoints) {
-        file >> point.x >> point.y >> point.z;
+    std::vector<float> allPoints(3 * numPoints);
+    for (size_t i = 0; i < numPoints; ++i) {
+        file >> allPoints[3 * i] >> allPoints[3 * i + 1] >> allPoints[3 * i + 2];
     }
 
     file >> numAssociations;
-    std::vector<Association> associations(numAssociations);
-    for (auto& assoc : associations) {
-        file >> assoc.p1 >> assoc.p2 >> assoc.p3;
+    std::vector<int> associations(3 * numAssociations);
+    for (size_t i = 0; i < numAssociations; ++i) {
+        file >> associations[3 * i] >> associations[3 * i + 1] >> associations[3 * i + 2];
     }
 
-    for (const auto& assoc : associations) {
-        points.push_back(allPoints[assoc.p1 - 1]);
-        points.push_back(allPoints[assoc.p2 - 1]);
-        points.push_back(allPoints[assoc.p3 - 1]);
+    for (size_t i = 0; i < numAssociations; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+            size_t index = (associations[3 * i + j] - 1) * 3;
+            points.push_back(allPoints[index]);
+            points.push_back(allPoints[index + 1]);
+            points.push_back(allPoints[index + 2]);
+        }
     }
 
     file.close();
     return points;
-}
-
-void printPoints(const std::vector<Point>& points) {
-    for (const auto& point : points) {
-        std::cout << "Point: (" << point.x << ", " << point.y << ", " << point.z << ")\n";
-    }
 }
