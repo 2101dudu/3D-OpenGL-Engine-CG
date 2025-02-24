@@ -11,11 +11,15 @@ add_executable(${PROJECT_NAME}
 	src/FileWriter.cpp
 	src/box.cpp
 	include/box.hpp
-    include/plane.hpp
+  include/plane.hpp
+	src/cylinder.cpp
 	src/plane.cpp
 	include/sphere.hpp
 	src/sphere.cpp
-	src/cylinder.cpp
+	include/cone.hpp
+	src/cone.cpp
+	include/torus.hpp
+	src/torus.cpp
 )
 
 include_directories(include)
