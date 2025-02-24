@@ -6,18 +6,41 @@
 #include "sphere.hpp"
 #include "torus.hpp"
 
-int main()
+void executeCommand(const std::string& command, const std::vector<int>& args)
 {
-    PointsGenerator generator;
+    if (command == "sphere" && args.size() == 3) {
+        Sphere::createSphere(args[0], args[1], args[2]);
+    } else if (command == "box" && args.size() == 2) {
+        Box::createBox(args[0], args[1]);
+    } else if (command == "plane" && args.size() == 2) {
+        Plane::createPlane(args[0], args[1]);
+    } else if (command == "cone" && args.size() == 4) {
+        Plane::createCone(args[0], args[1], args[2], args[3]);
+    } else if (command == "torus" && args.size() == 4) {
+        Torus::createTorus(args[0], args[1], args[2], args[3]);
+    } else {
+        std::cerr << "Unknown command or incorrect parameters: " << command << std::endl;
+    }
+}
 
-    // generator.showData();
+int main(int argc, char* argv[])
+{
+    // minimum: "generator command param1 param2 ..."
+    if (argc < 5) {
+        std::cerr << "Usage: generator <command> <param1> <param2> ...\n";
+        return 1;
+    }
 
-    // Box::createBox(2, 1);
-    // Plane::createPlane(2, 3);
-    // Plane::createPlane(2, 3);
-    // Sphere::createSphere(1, 10, 10);
-    // Cone::createCone(1.0f, 2.0f, 4, 3);
-    Torus::createTorus(1.5, 0.6, 40, 15);
+    // first argument is the command
+    std::string command = argv[1];
+    std::vector<int> args;
+
+    // convert parameters to integers
+    for (int i = 2; i < argc - 1; ++i) {
+        args.push_back(std::stoi(argv[i]));
+    }
+
+    executeCommand(command, args);
 
     return 0;
 }
