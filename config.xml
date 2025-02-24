@@ -9,6 +9,7 @@
     <group>
         <models>
             <model file="../../objects/sphere.3d" />
+            <model file="../../objects/plane.3d" />
         </models>
     </group>
 </world>

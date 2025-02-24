@@ -18,8 +18,13 @@ float cameraAngle = 90.0f;
 float cameraAngleY = 0.0f;
 WorldConfig config;
 
+// FPS
+int timebase;
+int frames = 0;
+
 // VBOs
-GLuint vertices, verticeCount;
+std::vector<GLuint> buffers;
+std::vector<GLuint> verticesCount;
 
 void changeSize(int w, int h)
 {
@@ -44,9 +49,26 @@ void renderScene(void)
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vertices);
-    glVertexPointer(3, GL_FLOAT, 0, 0);
-    glDrawArrays(GL_TRIANGLES, 0, verticeCount);
+    frames++;
+
+    int time = glutGet(GLUT_ELAPSED_TIME);
+    static float fps = 0.0f; // Ensure fps has a valid initial value
+
+    if (time - timebase > 1000) {
+        fps = frames * 1000.0f / (time - timebase);
+        timebase = time;
+        frames = 0;
+    }
+
+    char buf[10]; // Allocate memory for the string
+    snprintf(buf, sizeof(buf), "%.1f", fps);
+    glutSetWindowTitle(buf);
+
+    for (int i = 0; i < buffers.size(); i++) {
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
+        glVertexPointer(3, GL_FLOAT, 0, 0);
+        glDrawArrays(GL_TRIANGLES, 0, verticesCount[i]);
+    }
 
     glutSwapBuffers();
 }
@@ -94,7 +116,10 @@ void initializeGLUT(int argc, char** argv)
     glutCreateWindow("CG@DI");
 
     glutReshapeFunc(changeSize);
+
+    // for testing purposes
     glutIdleFunc(renderScene);
+
     glutDisplayFunc(renderScene);
     glutReshapeFunc(reshape);
     glutSpecialFunc(processSpecialKeys);
@@ -123,12 +148,21 @@ int main(int argc, char** argv)
     // now we can set the window size
     glutInitWindowSize(config.window.width, config.window.height);
 
-    std::vector<float> modelPoints = parseFile(config.group.models[0].file.c_str());
-    verticeCount = modelPoints.size();
+    int n = config.group.models.size();
+    buffers.resize(n); // resize the vector to hold 'n' buffers
+    verticesCount.resize(n); // resize the vector to hold 'n' buffers
+    glGenBuffers(n, buffers.data()); // generate 'n' VBOs
 
-    glGenBuffers(1, &vertices);
-    glBindBuffer(GL_ARRAY_BUFFER, vertices);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(), modelPoints.data(), GL_STATIC_DRAW);
+    // for each buffer i
+    int counter = 0;
+    for (const auto& model : config.group.models) {
+        std::vector<float> modelPoints = parseFile(model.file.c_str());
+        verticesCount[counter] = modelPoints.size();
+
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[counter]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(), modelPoints.data(), GL_STATIC_DRAW);
+        counter++;
+    }
 
     glutMainLoop();
 
