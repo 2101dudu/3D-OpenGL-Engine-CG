@@ -7,6 +7,7 @@
 #include "sphere.hpp"
 #include "torus.hpp"
 
+#include <string>
 
 void executeCommand(const std::string& command, const std::vector<int>& args)
 {
