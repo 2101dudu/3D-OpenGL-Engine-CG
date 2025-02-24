@@ -1,10 +1,13 @@
 #include "FileWriter.hpp"
 #include "PointsGenerator.hpp"
 #include "box.hpp"
+#include "cylinder.hpp"
 #include "cone.hpp"
 #include "plane.hpp"
 #include "sphere.hpp"
 #include "torus.hpp"
+
+#include <string>
 
 void executeCommand(const std::string& command, const std::vector<int>& args)
 {
@@ -15,9 +18,11 @@ void executeCommand(const std::string& command, const std::vector<int>& args)
     } else if (command == "plane" && args.size() == 2) {
         Plane::createPlane(args[0], args[1]);
     } else if (command == "cone" && args.size() == 4) {
-        Plane::createCone(args[0], args[1], args[2], args[3]);
+        Cone::createCone(args[0], args[1], args[2], args[3]);
     } else if (command == "torus" && args.size() == 4) {
         Torus::createTorus(args[0], args[1], args[2], args[3]);
+    } else if (command == "cylinder" && args.size() == 4) {
+        Cylinder::createCylinder(args[0], args[1], args[2], args[3]);
     } else {
         std::cerr << "Unknown command or incorrect parameters: " << command << std::endl;
     }
