@@ -4,15 +4,12 @@
 #include "xml_parser.hpp"
 #include <iostream>
 #include <math.h>
-#include <vector>
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
 #include <GL/glut.h>
 #endif
-
-#define MAX_MODELS 2
 
 float cameraAngle = 90.0f;
 float cameraAngleY = 0.0f;
