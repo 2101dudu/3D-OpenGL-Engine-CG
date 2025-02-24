@@ -1,23 +1,33 @@
 #define _USE_MATH_DEFINES
-#include <math.h>
 #include "draw.hpp"
 #include "utils.hpp"
 #include "xml_parser.hpp"
 #include <iostream>
+#include <math.h>
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
+#include <GL/glew.h>
 #include <GL/glut.h>
 #endif
 
 float cameraAngle = 90.0f;
 float cameraAngleY = 0.0f;
-std::vector<Point> points;
 WorldConfig config;
 
-void changeSize(int w, int h) {
-    if (h == 0) h = 1;
+// FPS
+int timebase;
+int frames = 0;
+
+// VBOs
+std::vector<GLuint> buffers;
+std::vector<GLuint> verticesCount;
+
+void changeSize(int w, int h)
+{
+    if (h == 0)
+        h = 1;
     float ratio = w * 1.0f / h;
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -25,22 +35,44 @@ void changeSize(int w, int h) {
     glMatrixMode(GL_MODELVIEW);
 }
 
-void renderScene(void) {
+void renderScene(void)
+{
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     gluLookAt(5.0 * sin(cameraAngle), 5.0 * cos(cameraAngleY),
-              5.0 * cos(cameraAngle), config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
-              config.camera.up.x, config.camera.up.y, config.camera.up.z);
+        5.0 * cos(cameraAngle), config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
+        config.camera.up.x, config.camera.up.y, config.camera.up.z);
 
     drawAxis();
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    drawTriangles(points);
+
+    frames++;
+
+    int time = glutGet(GLUT_ELAPSED_TIME);
+    static float fps = 0.0f; // Ensure fps has a valid initial value
+
+    if (time - timebase > 1000) {
+        fps = frames * 1000.0f / (time - timebase);
+        timebase = time;
+        frames = 0;
+    }
+
+    char buf[10]; // Allocate memory for the string
+    snprintf(buf, sizeof(buf), "%.1f", fps);
+    glutSetWindowTitle(buf);
+
+    for (int i = 0; i < buffers.size(); i++) {
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
+        glVertexPointer(3, GL_FLOAT, 0, 0);
+        glDrawArrays(GL_TRIANGLES, 0, verticesCount[i]);
+    }
 
     glutSwapBuffers();
 }
 
-void reshape(int w, int h) {
+void reshape(int w, int h)
+{
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -49,59 +81,92 @@ void reshape(int w, int h) {
     glLoadIdentity();
 }
 
-void processSpecialKeys(int key, int xx, int yy) {
+void processSpecialKeys(int key, int xx, int yy)
+{
     switch (key) {
-        case GLUT_KEY_LEFT:
-            cameraAngle -= 0.1f;
-            break;
-        case GLUT_KEY_RIGHT:
-            cameraAngle += 0.1f;
-            break;
-        case GLUT_KEY_UP:
-            cameraAngleY += 0.1f;
-            break;
-        case GLUT_KEY_DOWN:
-            cameraAngleY -= 0.1f;
-            break;
-        default:
-            break;
+    case GLUT_KEY_LEFT:
+        cameraAngle -= 0.1f;
+        break;
+    case GLUT_KEY_RIGHT:
+        cameraAngle += 0.1f;
+        break;
+    case GLUT_KEY_UP:
+        cameraAngleY += 0.1f;
+        break;
+    case GLUT_KEY_DOWN:
+        cameraAngleY -= 0.1f;
+        break;
+    default:
+        break;
     }
     glutPostRedisplay();
 }
 
-void initializeGLUT(int argc, char** argv) {
+void initializeGLUT(int argc, char** argv)
+{
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);
-    glutInitWindowSize(config.window.width, config.window.height);
+
+    // the winwow size is set in the main function
+    // glutInitWindowSize(config.window.width, config.window.height);
+
     glutCreateWindow("CG@DI");
 
     glutReshapeFunc(changeSize);
+
+    // for testing purposes
     glutIdleFunc(renderScene);
+
     glutDisplayFunc(renderScene);
     glutReshapeFunc(reshape);
     glutSpecialFunc(processSpecialKeys);
+
+    // init GLEW
+#ifndef __APPLE__
+    glewInit();
+#endif
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <config.xml>" << std::endl;
         return 1;
     }
 
+    // GLUT needs to be initialized before initializing the VBOs
+    initializeGLUT(argc, argv);
+
+    // initialize VBOs
+    glEnableClientState(GL_VERTEX_ARRAY);
+
     config = XMLParser::parseXML(argv[1]);
     XMLParser::configureFromXML(config);
 
+    // now we can set the window size
+    glutInitWindowSize(config.window.width, config.window.height);
+
+    int n = config.group.models.size();
+    buffers.resize(n); // resize the vector to hold 'n' buffers
+    verticesCount.resize(n); // resize the vector to hold 'n' buffers
+    glGenBuffers(n, buffers.data()); // generate 'n' VBOs
+
+    // for each buffer i
+    int counter = 0;
     for (const auto& model : config.group.models) {
-        std::vector<Point> modelPoints = parseFile(model.file.c_str());
-        points.insert(points.end(), modelPoints.begin(), modelPoints.end());
+        std::vector<float> modelPoints = parseFile(model.file.c_str());
+        verticesCount[counter] = modelPoints.size();
+
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[counter]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(), modelPoints.data(), GL_STATIC_DRAW);
+        counter++;
     }
 
-    initializeGLUT(argc, argv);
     glutMainLoop();
 
     return 1;
