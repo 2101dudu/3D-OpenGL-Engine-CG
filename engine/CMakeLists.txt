@@ -77,7 +77,16 @@ else() # Linux and macOS
     target_link_libraries(${PROJECT_NAME} "-framework OpenGL" "-framework GLUT")
   else()
     # Linux linking
-    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+
+    find_package(GLEW REQUIRED)
+    include_directories(${GLEW_INCLUDE_DIRS})
+    link_directories(${GLEW_LIBRARY_DIRS})
+    add_definitions(${GLEW_DEFINITIONS})
+
+    if(NOT GLEW_FOUND)
+      message(FATAL_ERROR "GLEW não encontrado!")
+    endif()
+    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} GLEW)
   endif()
 
 endif()
