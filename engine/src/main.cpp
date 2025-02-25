@@ -4,16 +4,23 @@
 #include "xml_parser.hpp"
 #include <iostream>
 #include <math.h>
+#include <GL/freeglut.h>
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
 #include <GL/glew.h>
-#include <GL/glut.h>
 #endif
 
+// Camera
 float cameraAngle = 90.0f;
 float cameraAngleY = 0.0f;
+bool isDragging = false;
+int lastX, lastY;
+float cameraDistance = 5.0f; // initial value
+float sensitivity = 0.005f;
+float scrollSensitivity = 0.05f;
+
 WorldConfig config;
 
 // FPS
@@ -39,8 +46,8 @@ void renderScene(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(5.0 * sin(cameraAngle), 5.0 * cos(cameraAngleY),
-        5.0 * cos(cameraAngle), config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
+    gluLookAt(cameraDistance * sin(cameraAngle), cameraDistance * cos(cameraAngleY), cameraDistance * cos(cameraAngle),
+        config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
         config.camera.up.x, config.camera.up.y, config.camera.up.z);
 
     drawAxis();
@@ -50,7 +57,7 @@ void renderScene(void)
     frames++;
 
     int time = glutGet(GLUT_ELAPSED_TIME);
-    static float fps = 0.0f; // Ensure fps has a valid initial value
+    static float fps = 0.0f;
 
     if (time - timebase > 1000) {
         fps = frames * 1000.0f / (time - timebase);
@@ -58,7 +65,7 @@ void renderScene(void)
         frames = 0;
     }
 
-    char buf[10]; // Allocate memory for the string
+    char buf[10];
     snprintf(buf, sizeof(buf), "%.1f", fps);
     glutSetWindowTitle(buf);
 
@@ -79,6 +86,52 @@ void reshape(int w, int h)
     gluPerspective(config.camera.projection.fov, (GLfloat)w / (GLfloat)h, config.camera.projection.near, config.camera.projection.far);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+}
+
+// track mouse button presses
+void mouseButton(int button, int state, int x, int y)
+{
+    if (button == GLUT_LEFT_BUTTON) {
+        if (state == GLUT_DOWN) {
+            isDragging = true;
+            lastX = x;
+            lastY = y;
+        } else {
+            isDragging = false;
+        }
+    }
+}
+
+// track mouse movement
+void mouseMotion(int x, int y)
+{
+    if (isDragging) {
+        float dx = (lastX - x) * sensitivity; // horizontal movement reversed for better feel
+        float dy = (y - lastY) * sensitivity;
+
+        cameraAngle += dx;
+        cameraAngleY += dy;
+
+        lastX = x;
+        lastY = y;
+
+        glutPostRedisplay();
+    }
+}
+
+// handle scroll wheel zooming (FreeGLUT ONLY)
+void mouseWheel(int wheel, int direction, int x, int y) {
+    if (direction > 0) { 
+        // scroll in
+        cameraDistance -= scrollSensitivity;
+    } else {  
+        // scroll down
+        cameraDistance += scrollSensitivity;
+    }
+
+    if (cameraDistance < 1.0f) cameraDistance = 3.0f;  // Prevent extreme zoom-in
+
+    glutPostRedisplay();
 }
 
 void processSpecialKeys(int key, int xx, int yy)
@@ -108,21 +161,21 @@ void initializeGLUT(int argc, char** argv)
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);
 
-    // the winwow size is set in the main function
-    // glutInitWindowSize(config.window.width, config.window.height);
-
     glutCreateWindow("CG@DI");
 
     glutReshapeFunc(changeSize);
-
-    // for testing purposes
     glutIdleFunc(renderScene);
-
     glutDisplayFunc(renderScene);
     glutReshapeFunc(reshape);
     glutSpecialFunc(processSpecialKeys);
+    glutMouseFunc(mouseButton);
+    glutMotionFunc(mouseMotion);
 
-    // init GLEW
+    glutMouseWheelFunc(mouseWheel); // wheel function
+#ifdef FREEGLUT
+#endif
+
+    // Init GLEW
 #ifndef __APPLE__
     glewInit();
 #endif
@@ -139,24 +192,22 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    // GLUT needs to be initialized before initializing the VBOs
+    // Initialize GLUT
     initializeGLUT(argc, argv);
 
-    // initialize VBOs
+    // Initialize VBOs
     glEnableClientState(GL_VERTEX_ARRAY);
 
     config = XMLParser::parseXML(argv[1]);
     XMLParser::configureFromXML(config);
 
-    // now we can set the window size
     glutInitWindowSize(config.window.width, config.window.height);
 
     int n = config.group.models.size();
-    buffers.resize(n); // resize the vector to hold 'n' buffers
-    verticesCount.resize(n); // resize the vector to hold 'n' buffers
-    glGenBuffers(n, buffers.data()); // generate 'n' VBOs
+    buffers.resize(n);
+    verticesCount.resize(n);
+    glGenBuffers(n, buffers.data());
 
-    // for each buffer i
     int counter = 0;
     for (const auto& model : config.group.models) {
         std::vector<float> modelPoints = parseFile(model.file.c_str());
@@ -168,6 +219,5 @@ int main(int argc, char** argv)
     }
 
     glutMainLoop();
-
     return 1;
 }
