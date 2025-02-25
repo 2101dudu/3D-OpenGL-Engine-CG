@@ -1,5 +1,5 @@
 <world>
-    <window width="512" height="512" />
+    <window width="800" height="800" />
     <camera>
         <position x="3" y="2" z="1" />
         <lookAt x="0" y="0" z="0" />
@@ -8,8 +8,7 @@
     </camera>
     <group>
         <models>
-            <model file="../../objects/plane.3d" />
-            <model file="../../objects/sphere.3d" />
+            <model file="../../objects/bunny.obj" />
         </models>
     </group>
 </world>
