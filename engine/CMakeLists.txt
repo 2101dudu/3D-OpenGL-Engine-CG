@@ -108,8 +108,8 @@ else() # Linux and macOS
     if(NOT GLEW_FOUND)
       message(FATAL_ERROR "GLEW não encontrado!")
     endif()
-    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES}
-                          GLEW)
+    
+    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} GLEW)
   endif()
 
 endif()
