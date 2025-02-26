@@ -151,7 +151,7 @@ void initializeVBOs()
     int counter = 0;
     for (const auto& model : config.group.models) {
         std::vector<float> modelPoints = parseFile(model.file.c_str());
-        verticesCount[counter] = modelPoints.size();
+        verticesCount[counter] = modelPoints.size() / 3;
         glBindBuffer(GL_ARRAY_BUFFER, buffers[counter]);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(),
             modelPoints.data(), GL_STATIC_DRAW);
