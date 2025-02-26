@@ -25,16 +25,7 @@ int frames = 0;
 std::vector<GLuint> buffers;
 std::vector<GLuint> verticesCount;
 
-void changeSize(int w, int h)
-{
-    if (h == 0)
-        h = 1;
-    float ratio = w * 1.0f / h;
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(config.camera.projection.fov, ratio, config.camera.projection.near, config.camera.projection.far);
-    glMatrixMode(GL_MODELVIEW);
-}
+
 
 void renderScene(void)
 {
@@ -51,32 +42,37 @@ void renderScene(void)
     frames++;
 
     int time = glutGet(GLUT_ELAPSED_TIME);
-    static float fps = 0.0f; // Ensure fps has a valid initial value
+
+    static float fps = 0.0f;
 
     if (time - timebase > 1000) {
         fps = frames * 1000.0f / (time - timebase);
         timebase = time;
         frames = 0;
     }
-
-    char buf[10]; // Allocate memory for the string
+    char buf[10];
     snprintf(buf, sizeof(buf), "%.1f", fps);
     glutSetWindowTitle(buf);
-
-    //for (int i = 0; i < buffers.size(); i++) {
-    //    glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
-    //    glVertexPointer(3, GL_FLOAT, 0, 0);
-    //    glDrawArrays(GL_TRIANGLES, 0, verticesCount[i]);
-    //}
+    
+    glEnableClientState(GL_VERTEX_ARRAY);
+    for (int i = 0; i < buffers.size(); i++) {
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
+        glVertexPointer(3, GL_FLOAT, 0, 0);
+        glDrawArrays(GL_TRIANGLES, 0, verticesCount[i]);
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     drawMenu();
-    //renderDrawData();
-    
     glutSwapBuffers();
 }
 
 void reshape(int w, int h)
 {
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplaySize = ImVec2((float)w, (float)h);
+    if (h == 0)
+        h = 1;
+    // Update viewport and projection
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -109,7 +105,7 @@ void processSpecialKeys(int key, int xx, int yy)
 void initializeGLUTPreWindow(int argc, char** argv)
 {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_MULTISAMPLE);
+    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);
 }
 
@@ -128,7 +124,6 @@ void createWindowWithConfig(const WorldConfig& cfg)
 
 void setupCallbacks()
 {
-    glutReshapeFunc(changeSize);
     glutIdleFunc(renderScene);
     glutDisplayFunc(renderScene);
     glutReshapeFunc(reshape);
@@ -142,6 +137,7 @@ void initializeOpenGLContext()
 #endif
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 void initializeVBOs()
@@ -160,6 +156,7 @@ void initializeVBOs()
             modelPoints.data(), GL_STATIC_DRAW);
         counter++;
     }
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 int main(int argc, char** argv)
@@ -172,19 +169,22 @@ int main(int argc, char** argv)
     // pre-window initialization: Setup GLUT and load configuration
     initializeGLUTPreWindow(argc, argv);
     config = loadConfiguration(argv[1]);
-
+    
     // create the window using configuration parameters
     createWindowWithConfig(config);
-
-    // setup callbacks and initialize the OpenGL context
-    setupCallbacks();
+    
+    // initialize the OpenGL context
     initializeOpenGLContext();
-
+    
     // initialize VBOs
-    //initializeVBOs();
-
+    initializeVBOs();
+    
+    // initialize menu
     initializeImGUI();
 
+    // setup callbacks
+    setupCallbacks();
+    
     // enter the GLUT main loop
     glutMainLoop();
 
