@@ -35,9 +35,19 @@ if(WIN32)
       ""
       CACHE PATH "Path to Toolkits folder")
 
-  if(NOT EXISTS "${TOOLKITS_FOLDER}/glut/GL/glut.h"
-     OR NOT EXISTS "${TOOLKITS_FOLDER}/glut/glut32.lib")
-    message(FATAL_ERROR "GLUT not found!")
+
+  # FreeGLUT (supports 64-bit and 32-bit)
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit
+    set(FREEGLUT_LIB "${TOOLKITS_FOLDER}/freeglut/x64/freeglut.lib")
+    set(FREEGLUT_DLL "${TOOLKITS_FOLDER}/freeglut/x64/freeglut.dll")
+  else() # 32-bit
+    set(FREEGLUT_LIB "${TOOLKITS_FOLDER}/freeglut/freeglut.lib")
+    set(FREEGLUT_DLL "${TOOLKITS_FOLDER}/freeglut/freeglut.dll")
+  endif()
+
+  if(NOT EXISTS "${TOOLKITS_FOLDER}/freeglut/GL/freeglut.h"
+     OR NOT EXISTS "${FREEGLUT_LIB}")
+    message(FATAL_ERROR "FreeGLUT not found!")
   endif()
 
   if(NOT EXISTS "${TOOLKITS_FOLDER}/glew/GL/glew.h"
@@ -46,19 +56,20 @@ if(WIN32)
   endif(NOT EXISTS "${TOOLKITS_FOLDER}/glew/GL/glew.h"
         OR NOT EXISTS "${TOOLKITS_FOLDER}/glew/glew32.lib")
 
-  include_directories(${TOOLKITS_FOLDER}/glut ${TOOLKITS_FOLDER}/glew)
+  include_directories(${TOOLKITS_FOLDER}/glew ${TOOLKITS_FOLDER}/freeglut)
   target_link_libraries(
-    ${PROJECT_NAME} ${OPENGL_LIBRARIES} ${TOOLKITS_FOLDER}/glut/glut32.lib
-    ${TOOLKITS_FOLDER}/glew/glew32.lib)
+    ${PROJECT_NAME} ${OPENGL_LIBRARIES}
+    ${TOOLKITS_FOLDER}/glew/glew32.lib
+    ${FREEGLUT_LIB})
 
-  if(EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll"
-     AND EXISTS "${TOOLKITS_FOLDER}/glew/glew32.dll")
-    file(COPY ${TOOLKITS_FOLDER}/glut/glut32.dll
-         DESTINATION ${CMAKE_BINARY_DIR})
+  if(EXISTS "${FREEGLUT_DLL}")
+    file(COPY ${FREEGLUT_DLL} DESTINATION ${CMAKE_BINARY_DIR})
+  endif()
+
+  if(EXISTS "${TOOLKITS_FOLDER}/glew/glew32.dll")
     file(COPY ${TOOLKITS_FOLDER}/glew/glew32.dll
          DESTINATION ${CMAKE_BINARY_DIR})
-  endif(EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll"
-        AND EXISTS "${TOOLKITS_FOLDER}/glew/glew32.dll")
+  endif(EXISTS "${TOOLKITS_FOLDER}/glew/glew32.dll")
 
   set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT
                                                               ${PROJECT_NAME})
