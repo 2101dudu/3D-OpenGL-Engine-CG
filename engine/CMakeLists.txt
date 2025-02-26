@@ -105,11 +105,16 @@ else() # Linux and macOS
     link_directories(${GLEW_LIBRARY_DIRS})
     add_definitions(${GLEW_DEFINITIONS})
 
+    set(FREEGLUT_INCLUDE_DIR /usr/include)
+    set(FREEGLUT_LIBRARY /usr/lib/libglut.so)
+
+    include_directories(${FREEGLUT_INCLUDE_DIR})
+
     if(NOT GLEW_FOUND)
       message(FATAL_ERROR "GLEW não encontrado!")
     endif()
     
-    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} GLEW)
+    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${FREEGLUT_LIBRARY} GLEW)
   endif()
 
 endif()
