@@ -1,5 +1,6 @@
 #define _USE_MATH_DEFINES
 #include "draw.hpp"
+#include "menu.hpp"
 #include "utils.hpp"
 #include "xml_parser.hpp"
 #include <iostream>
@@ -62,12 +63,15 @@ void renderScene(void)
     snprintf(buf, sizeof(buf), "%.1f", fps);
     glutSetWindowTitle(buf);
 
-    for (int i = 0; i < buffers.size(); i++) {
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
-        glVertexPointer(3, GL_FLOAT, 0, 0);
-        glDrawArrays(GL_TRIANGLES, 0, verticesCount[i]);
-    }
+    //for (int i = 0; i < buffers.size(); i++) {
+    //    glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
+    //    glVertexPointer(3, GL_FLOAT, 0, 0);
+    //    glDrawArrays(GL_TRIANGLES, 0, verticesCount[i]);
+    //}
 
+    drawMenu();
+    //renderDrawData();
+    
     glutSwapBuffers();
 }
 
@@ -105,7 +109,7 @@ void processSpecialKeys(int key, int xx, int yy)
 void initializeGLUTPreWindow(int argc, char** argv)
 {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_MULTISAMPLE);
     glutInitWindowPosition(100, 100);
 }
 
@@ -138,7 +142,6 @@ void initializeOpenGLContext()
 #endif
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 void initializeVBOs()
@@ -178,10 +181,14 @@ int main(int argc, char** argv)
     initializeOpenGLContext();
 
     // initialize VBOs
-    initializeVBOs();
+    //initializeVBOs();
+
+    initializeImGUI();
 
     // enter the GLUT main loop
     glutMainLoop();
+
+    shutdownMenu();
 
     return 1;
 }
