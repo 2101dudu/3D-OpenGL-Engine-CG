@@ -6,15 +6,16 @@
 #include <math.h>
 
 #ifdef __APPLE__
+#include <GL/freeglut.h>
 #include <GLUT/glut.h>
 #elif _WIN32
+#include <GL/freeglut.h>
 #include <GL/glew.h>
 #else
+#include <GL/freeglut.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
 #endif
-
-#include <GL/freeglut.h>
 
 // Camera
 float cameraAngle = 90.0f;
@@ -124,16 +125,18 @@ void mouseMotion(int x, int y)
 }
 
 // handle scroll wheel zooming (FreeGLUT ONLY)
-void mouseWheel(int wheel, int direction, int x, int y) {
-    if (direction > 0) { 
+void mouseWheel(int wheel, int direction, int x, int y)
+{
+    if (direction > 0) {
         // scroll in
         cameraDistance -= scrollSensitivity;
-    } else {  
+    } else {
         // scroll down
         cameraDistance += scrollSensitivity;
     }
 
-    if (cameraDistance < 1.0f) cameraDistance = 3.0f;  // Prevent extreme zoom-in
+    if (cameraDistance < 1.0f)
+        cameraDistance = 3.0f; // Prevent extreme zoom-in
 
     glutPostRedisplay();
 }
