@@ -127,18 +127,15 @@ void mouseMotion(int x, int y)
 // handle scroll wheel zooming (FreeGLUT ONLY)
 void mouseWheel(int wheel, int direction, int x, int y)
 {
-    if (direction > 0) {
+    if (direction > 0 && cameraDistance > 1.0f) {
         // scroll in
         cameraDistance -= scrollSensitivity;
-    } else {
+        glutPostRedisplay();
+    } else if (direction < 0) {
         // scroll down
         cameraDistance += scrollSensitivity;
+        glutPostRedisplay();
     }
-
-    if (cameraDistance < 1.0f)
-        cameraDistance = 3.0f; // Prevent extreme zoom-in
-
-    glutPostRedisplay();
 }
 
 void processSpecialKeys(int key, int xx, int yy)
