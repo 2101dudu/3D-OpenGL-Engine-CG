@@ -9,8 +9,8 @@
 #include <GL/freeglut.h>
 #include <GLUT/glut.h>
 #elif _WIN32
-#include <GL/freeglut.h>
 #include <GL/glew.h>
+#include <GL/freeglut.h>
 #else
 #include <GL/freeglut.h>
 #include <GL/glew.h>
@@ -43,7 +43,7 @@ void changeSize(int w, int h)
     float ratio = w * 1.0f / h;
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(config.camera.projection.fov, ratio, config.camera.projection.near, config.camera.projection.far);
+    gluPerspective(config.camera.projection.fov, ratio, config.camera.projection.near1, config.camera.projection.far1);
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -88,7 +88,7 @@ void reshape(int w, int h)
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(config.camera.projection.fov, (GLfloat)w / (GLfloat)h, config.camera.projection.near, config.camera.projection.far);
+    gluPerspective(config.camera.projection.fov, (GLfloat)w / (GLfloat)h, config.camera.projection.near1, config.camera.projection.far1);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }

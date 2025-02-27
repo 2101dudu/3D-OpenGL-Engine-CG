@@ -44,8 +44,8 @@ WorldConfig XMLParser::parseXML(const std::string& filename) {
         XMLElement* projection = camera->FirstChildElement("projection");
         if (projection) {
             projection->QueryFloatAttribute("fov", &config.camera.projection.fov);
-            projection->QueryFloatAttribute("near", &config.camera.projection.near);
-            projection->QueryFloatAttribute("far", &config.camera.projection.far);
+            projection->QueryFloatAttribute("near", &config.camera.projection.near1);
+            projection->QueryFloatAttribute("far", &config.camera.projection.far1);
         }
     }
 
@@ -72,7 +72,7 @@ void XMLParser::configureFromXML(const WorldConfig& config) {
     std::cout << "Camera position: (" << config.camera.position.x << ", " << config.camera.position.y << ", " << config.camera.position.z << ")" << std::endl;
     std::cout << "Camera lookAt: (" << config.camera.lookAt.x << ", " << config.camera.lookAt.y << ", " << config.camera.lookAt.z << ")" << std::endl;
     std::cout << "Camera up: (" << config.camera.up.x << ", " << config.camera.up.y << ", " << config.camera.up.z << ")" << std::endl;
-    std::cout << "Camera projection: fov=" << config.camera.projection.fov << ", near=" << config.camera.projection.near << ", far=" << config.camera.projection.far << std::endl;
+    std::cout << "Camera projection: fov=" << config.camera.projection.fov << ", near=" << config.camera.projection.near1 << ", far=" << config.camera.projection.far1 << std::endl;
 
     for (const auto& model : config.group.models) {
         std::cout << "Model file: " << model.file << std::endl;
