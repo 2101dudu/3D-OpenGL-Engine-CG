@@ -159,14 +159,28 @@ void processSpecialKeys(int key, int xx, int yy)
     glutPostRedisplay();
 }
 
-void initializeGLUT(int argc, char** argv)
+void initializeGLUTPreWindow(int argc, char** argv)
 {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);
+}
 
+WorldConfig loadConfiguration(const char* configFile)
+{
+    WorldConfig cfg = XMLParser::parseXML(configFile);
+    XMLParser::configureFromXML(cfg);
+    return cfg;
+}
+
+void createWindowWithConfig(const WorldConfig& cfg)
+{
+    glutInitWindowSize(cfg.window.width, cfg.window.height);
     glutCreateWindow("CG@DI");
+}
 
+void setupCallbacks()
+{
     glutReshapeFunc(changeSize);
     glutIdleFunc(renderScene);
     glutDisplayFunc(renderScene);
@@ -174,19 +188,35 @@ void initializeGLUT(int argc, char** argv)
     glutSpecialFunc(processSpecialKeys);
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMotion);
-
     glutMouseWheelFunc(mouseWheel); // wheel function
-#ifdef FREEGLUT
-#endif
+}
 
-    // Init GLEW
+void initializeOpenGLContext()
+{
 #ifndef __APPLE__
     glewInit();
 #endif
-
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+void initializeVBOs()
+{
+    glEnableClientState(GL_VERTEX_ARRAY);
+    int n = config.group.models.size();
+    buffers.resize(n);
+    verticesCount.resize(n);
+    glGenBuffers(n, buffers.data());
+    int counter = 0;
+    for (const auto& model : config.group.models) {
+        std::vector<float> modelPoints = parseFile(model.file.c_str());
+        verticesCount[counter] = modelPoints.size() / 3;
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[counter]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(),
+            modelPoints.data(), GL_STATIC_DRAW);
+        counter++;
+    }
 }
 
 int main(int argc, char** argv)
@@ -196,32 +226,21 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    // Initialize GLUT
-    initializeGLUT(argc, argv);
+    // pre-window initialization: Setup GLUT and load configuration
+    initializeGLUTPreWindow(argc, argv);
+    config = loadConfiguration(argv[1]);
 
-    // Initialize VBOs
-    glEnableClientState(GL_VERTEX_ARRAY);
+    // create the window using configuration parameters
+    createWindowWithConfig(config);
 
-    config = XMLParser::parseXML(argv[1]);
-    XMLParser::configureFromXML(config);
+    // setup callbacks and initialize the OpenGL context
+    setupCallbacks();
+    initializeOpenGLContext();
 
-    glutInitWindowSize(config.window.width, config.window.height);
+    // initialize VBOs
+    initializeVBOs();
 
-    int n = config.group.models.size();
-    buffers.resize(n);
-    verticesCount.resize(n);
-    glGenBuffers(n, buffers.data());
-
-    int counter = 0;
-    for (const auto& model : config.group.models) {
-        std::vector<float> modelPoints = parseFile(model.file.c_str());
-        verticesCount[counter] = modelPoints.size();
-
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[counter]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(), modelPoints.data(), GL_STATIC_DRAW);
-        counter++;
-    }
-
+    // enter the GLUT main loop
     glutMainLoop();
     return 1;
 }
