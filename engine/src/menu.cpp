@@ -49,7 +49,7 @@ void drawMenu(WorldConfig* config)
 
         ImGui::TreePop();
     }
-    ImGui::Text("Current triangles: %d", config->stats.numTriangles);
+    ImGui::Text("Current triangles: %lld", config->stats.numTriangles);
 
     ImGui::End();
     ImGui::Render();

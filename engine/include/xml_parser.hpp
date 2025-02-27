@@ -43,8 +43,7 @@ struct WorldConfig {
 
     struct Stats {
         int fps;
-        int64_t numPoints;
-        int numTriangles;
+        int64_t numTriangles = 0;
     } stats;
 };
 

@@ -22,7 +22,7 @@
 #include <GL/glut.h>
 #endif
 
-#define FPS_UPDATE_TIME_MS 1000
+#define FPS_UPDATE_TIME_MS 200
 
 // Camera
 float cameraAngle = 90.0f;
