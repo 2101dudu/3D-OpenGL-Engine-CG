@@ -8,6 +8,11 @@ struct Association {
     int p1, p2, p3;
 };
 
-std::vector<float> parseFile(const std::string& filename);
+struct ModelInfo {
+    std::vector<float> points;
+    int64_t numTriangles;
+};
+
+ModelInfo parseFile(const std::string& filename);
 
 #endif

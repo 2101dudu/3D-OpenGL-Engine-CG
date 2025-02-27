@@ -1,12 +1,10 @@
-#include <vector>
-
-#include "draw.hpp"
-
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
 #include <GL/glut.h>
 #endif
+
+#include "draw.hpp"
 
 void drawAxis()
 {

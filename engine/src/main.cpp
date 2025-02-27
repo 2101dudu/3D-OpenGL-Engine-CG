@@ -1,5 +1,9 @@
+#include <OpenGL/gl.h>
 #define _USE_MATH_DEFINES
 #include "draw.hpp"
+#include "imgui.h"
+#include "imgui_impl_glut.h"
+#include "imgui_impl_opengl2.h"
 #include "menu.hpp"
 #include "utils.hpp"
 #include "xml_parser.hpp"
@@ -10,22 +14,21 @@
 #include <GL/freeglut.h>
 #include <GLUT/glut.h>
 #elif _WIN32
-#include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <GL/glew.h>
 #else
 #include <GL/freeglut.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
 #endif
 
+#define FPS_UPDATE_TIME_MS 1000
+
 // Camera
 float cameraAngle = 90.0f;
 float cameraAngleY = 0.0f;
 bool isDragging = false;
 int lastX, lastY;
-float cameraDistance = 5.0f; // initial value
-float sensitivity = 0.005f;
-float scrollSensitivity = 0.05f;
 
 WorldConfig config;
 
@@ -48,34 +51,28 @@ void changeSize(int w, int h)
     glMatrixMode(GL_MODELVIEW);
 }
 
+void updateSceneOptions(void)
+{
+    uint mode = config.scene.wireframe ? GL_LINE : GL_FILL;
+    glPolygonMode(GL_FRONT_AND_BACK, mode);
+
+    if (config.scene.faceCulling) {
+        glEnable(GL_CULL_FACE);
+    } else {
+        glDisable(GL_CULL_FACE);
+    }
+}
+
 void renderScene(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(cameraDistance * sin(cameraAngle), cameraDistance * cos(cameraAngleY), cameraDistance * cos(cameraAngle),
+    gluLookAt(config.camera.cameraDistance * sin(cameraAngle), config.camera.cameraDistance * cos(cameraAngleY), config.camera.cameraDistance * cos(cameraAngle),
         config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
         config.camera.up.x, config.camera.up.y, config.camera.up.z);
 
     drawAxis();
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    frames++;
-
-    int time = glutGet(GLUT_ELAPSED_TIME);
-
-    static float fps = 0.0f;
-
-    if (time - timebase > 1000) {
-        fps = frames * 1000.0f / (time - timebase);
-        timebase = time;
-        frames = 0;
-    }
-
-    char buf[10];
-    snprintf(buf, sizeof(buf), "%.1f", fps);
-    glutSetWindowTitle(buf);
-    
     glEnableClientState(GL_VERTEX_ARRAY);
     for (int i = 0; i < buffers.size(); i++) {
         glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
@@ -84,7 +81,22 @@ void renderScene(void)
     }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    drawMenu();
+    drawMenu(&config);
+
+    // update scene options based on the menu
+    updateSceneOptions();
+
+    // FPS
+    frames++;
+    int time = glutGet(GLUT_ELAPSED_TIME);
+    static float fps = 0.0f;
+    if (time - timebase > FPS_UPDATE_TIME_MS) {
+        fps = frames * 1000.0f / (time - timebase);
+        timebase = time;
+        frames = 0;
+    }
+    config.stats.fps = fps;
+
     glutSwapBuffers();
 }
 
@@ -106,13 +118,41 @@ void reshape(int w, int h)
 // track mouse button presses
 void mouseButton(int button, int state, int x, int y)
 {
-    if (button == GLUT_LEFT_BUTTON) {
-        if (state == GLUT_DOWN) {
-            isDragging = true;
-            lastX = x;
-            lastY = y;
-        } else {
-            isDragging = false;
+    ImGuiIO& io = ImGui::GetIO();
+    io.AddMousePosEvent((float)x, (float)y);
+
+    // check for scroll events
+    if (button == 3 || button == 4) {
+        // convert button 3 (scroll up) and 4 (scroll down) to wheel events
+        float wheelDelta = (button == 3) ? 1.0f : -1.0f;
+        io.AddMouseWheelEvent(0.0f, wheelDelta);
+
+        if (!io.WantCaptureMouse) {
+            if (wheelDelta > 0 && config.camera.cameraDistance > 1.0f)
+                config.camera.cameraDistance -= config.camera.scrollSensitivity;
+            else if (wheelDelta < 0)
+                config.camera.cameraDistance += config.camera.scrollSensitivity;
+            glutPostRedisplay();
+        }
+        // no need to progress
+        return;
+    }
+
+    // this line repeats the assert in ImGUI's source code
+    if (button >= 0 && button < ImGuiMouseButton_COUNT) {
+        io.AddMouseButtonEvent(button, state == GLUT_DOWN);
+    }
+
+    // click and drag
+    if (!io.WantCaptureMouse) {
+        if (button == GLUT_LEFT_BUTTON) {
+            if (state == GLUT_DOWN) {
+                isDragging = true;
+                lastX = x;
+                lastY = y;
+            } else if (state == GLUT_UP) {
+                isDragging = false;
+            }
         }
     }
 }
@@ -120,53 +160,23 @@ void mouseButton(int button, int state, int x, int y)
 // track mouse movement
 void mouseMotion(int x, int y)
 {
-    if (isDragging) {
-        float dx = (lastX - x) * sensitivity; // horizontal movement reversed for better feel
-        float dy = (y - lastY) * sensitivity;
+    ImGuiIO& io = ImGui::GetIO();
+    io.AddMousePosEvent(x, y);
 
-        cameraAngle += dx;
-        cameraAngleY += dy;
+    if (!io.WantCaptureMouse) {
+        if (isDragging) {
+            float dx = (lastX - x) * config.camera.sensitivity; // horizontal movement reversed for better feel
+            float dy = (y - lastY) * config.camera.sensitivity;
 
-        lastX = x;
-        lastY = y;
+            cameraAngle += dx;
+            cameraAngleY += dy;
 
-        glutPostRedisplay();
+            lastX = x;
+            lastY = y;
+
+            glutPostRedisplay();
+        }
     }
-}
-
-// handle scroll wheel zooming (FreeGLUT ONLY)
-void mouseWheel(int wheel, int direction, int x, int y)
-{
-    if (direction > 0 && cameraDistance > 1.0f) {
-        // scroll in
-        cameraDistance -= scrollSensitivity;
-        glutPostRedisplay();
-    } else if (direction < 0) {
-        // scroll down
-        cameraDistance += scrollSensitivity;
-        glutPostRedisplay();
-    }
-}
-
-void processSpecialKeys(int key, int xx, int yy)
-{
-    switch (key) {
-    case GLUT_KEY_LEFT:
-        cameraAngle -= 0.1f;
-        break;
-    case GLUT_KEY_RIGHT:
-        cameraAngle += 0.1f;
-        break;
-    case GLUT_KEY_UP:
-        cameraAngleY += 0.1f;
-        break;
-    case GLUT_KEY_DOWN:
-        cameraAngleY -= 0.1f;
-        break;
-    default:
-        break;
-    }
-    glutPostRedisplay();
 }
 
 void initializeGLUTPreWindow(int argc, char** argv)
@@ -194,10 +204,8 @@ void setupCallbacks()
     glutIdleFunc(renderScene);
     glutDisplayFunc(renderScene);
     glutReshapeFunc(reshape);
-    glutSpecialFunc(processSpecialKeys);
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMotion);
-    glutMouseWheelFunc(mouseWheel); // wheel function
 }
 
 void initializeOpenGLContext()
@@ -219,7 +227,11 @@ void initializeVBOs()
     glGenBuffers(n, buffers.data());
     int counter = 0;
     for (const auto& model : config.group.models) {
-        std::vector<float> modelPoints = parseFile(model.file.c_str());
+        ModelInfo modelInfo = parseFile(model.file.c_str());
+        config.stats.numTriangles += modelInfo.numTriangles;
+
+        // deal with points
+        std::vector<float> modelPoints = modelInfo.points;
         verticesCount[counter] = modelPoints.size() / 3;
         glBindBuffer(GL_ARRAY_BUFFER, buffers[counter]);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(),
@@ -239,22 +251,22 @@ int main(int argc, char** argv)
     // pre-window initialization: Setup GLUT and load configuration
     initializeGLUTPreWindow(argc, argv);
     config = loadConfiguration(argv[1]);
-    
+
     // create the window using configuration parameters
     createWindowWithConfig(config);
-    
+
     // initialize the OpenGL context
     initializeOpenGLContext();
-    
+
     // initialize VBOs
     initializeVBOs();
-    
+
     // initialize menu
     initializeImGUI();
 
     // setup callbacks
     setupCallbacks();
-    
+
     // enter the GLUT main loop
     glutMainLoop();
 
