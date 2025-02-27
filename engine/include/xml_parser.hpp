@@ -14,7 +14,7 @@ struct CameraConfig {
         float x, y, z;
     } position, lookAt, up;
     struct Projection {
-        float fov, near, far;
+        float fov, near1, far1;
     } projection;
 };
 

@@ -6,14 +6,26 @@
 #include <math.h>
 
 #ifdef __APPLE__
+#include <GL/freeglut.h>
 #include <GLUT/glut.h>
+#elif _WIN32
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 #else
+#include <GL/freeglut.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
 #endif
 
+// Camera
 float cameraAngle = 90.0f;
 float cameraAngleY = 0.0f;
+bool isDragging = false;
+int lastX, lastY;
+float cameraDistance = 5.0f; // initial value
+float sensitivity = 0.005f;
+float scrollSensitivity = 0.05f;
+
 WorldConfig config;
 
 // FPS
@@ -31,7 +43,7 @@ void changeSize(int w, int h)
     float ratio = w * 1.0f / h;
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(config.camera.projection.fov, ratio, config.camera.projection.near, config.camera.projection.far);
+    gluPerspective(config.camera.projection.fov, ratio, config.camera.projection.near1, config.camera.projection.far1);
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -39,8 +51,8 @@ void renderScene(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(5.0 * sin(cameraAngle), 5.0 * cos(cameraAngleY),
-        5.0 * cos(cameraAngle), config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
+    gluLookAt(cameraDistance * sin(cameraAngle), cameraDistance * cos(cameraAngleY), cameraDistance * cos(cameraAngle),
+        config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
         config.camera.up.x, config.camera.up.y, config.camera.up.z);
 
     drawAxis();
@@ -50,7 +62,7 @@ void renderScene(void)
     frames++;
 
     int time = glutGet(GLUT_ELAPSED_TIME);
-    static float fps = 0.0f; // Ensure fps has a valid initial value
+    static float fps = 0.0f;
 
     if (time - timebase > 1000) {
         fps = frames * 1000.0f / (time - timebase);
@@ -58,7 +70,7 @@ void renderScene(void)
         frames = 0;
     }
 
-    char buf[10]; // Allocate memory for the string
+    char buf[10];
     snprintf(buf, sizeof(buf), "%.1f", fps);
     glutSetWindowTitle(buf);
 
@@ -76,9 +88,54 @@ void reshape(int w, int h)
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(config.camera.projection.fov, (GLfloat)w / (GLfloat)h, config.camera.projection.near, config.camera.projection.far);
+    gluPerspective(config.camera.projection.fov, (GLfloat)w / (GLfloat)h, config.camera.projection.near1, config.camera.projection.far1);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+}
+
+// track mouse button presses
+void mouseButton(int button, int state, int x, int y)
+{
+    if (button == GLUT_LEFT_BUTTON) {
+        if (state == GLUT_DOWN) {
+            isDragging = true;
+            lastX = x;
+            lastY = y;
+        } else {
+            isDragging = false;
+        }
+    }
+}
+
+// track mouse movement
+void mouseMotion(int x, int y)
+{
+    if (isDragging) {
+        float dx = (lastX - x) * sensitivity; // horizontal movement reversed for better feel
+        float dy = (y - lastY) * sensitivity;
+
+        cameraAngle += dx;
+        cameraAngleY += dy;
+
+        lastX = x;
+        lastY = y;
+
+        glutPostRedisplay();
+    }
+}
+
+// handle scroll wheel zooming (FreeGLUT ONLY)
+void mouseWheel(int wheel, int direction, int x, int y)
+{
+    if (direction > 0 && cameraDistance > 1.0f) {
+        // scroll in
+        cameraDistance -= scrollSensitivity;
+        glutPostRedisplay();
+    } else if (direction < 0) {
+        // scroll down
+        cameraDistance += scrollSensitivity;
+        glutPostRedisplay();
+    }
 }
 
 void processSpecialKeys(int key, int xx, int yy)
@@ -129,6 +186,9 @@ void setupCallbacks()
     glutDisplayFunc(renderScene);
     glutReshapeFunc(reshape);
     glutSpecialFunc(processSpecialKeys);
+    glutMouseFunc(mouseButton);
+    glutMotionFunc(mouseMotion);
+    glutMouseWheelFunc(mouseWheel); // wheel function
 }
 
 void initializeOpenGLContext()
@@ -182,6 +242,5 @@ int main(int argc, char** argv)
 
     // enter the GLUT main loop
     glutMainLoop();
-
     return 1;
 }
