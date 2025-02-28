@@ -1,10 +1,12 @@
 #include "xml_parser.hpp"
 #include "tinyxml2.h"
+#include <cmath>
 #include <iostream>
 
 using namespace tinyxml2;
 
-WorldConfig XMLParser::parseXML(const std::string& filename) {
+WorldConfig XMLParser::parseXML(const std::string& filename)
+{
     WorldConfig config;
     XMLDocument doc;
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
@@ -13,7 +15,8 @@ WorldConfig XMLParser::parseXML(const std::string& filename) {
     }
 
     XMLElement* world = doc.FirstChildElement("world");
-    if (!world) return config;
+    if (!world)
+        return config;
 
     XMLElement* window = world->FirstChildElement("window");
     if (window) {
@@ -66,7 +69,8 @@ WorldConfig XMLParser::parseXML(const std::string& filename) {
     return config;
 }
 
-void XMLParser::configureFromXML(const WorldConfig& config) {
+void XMLParser::configureFromXML(const WorldConfig& config)
+{
     std::cout << "World configuration:" << std::endl;
     std::cout << "Window width: " << config.window.width << ", height: " << config.window.height << std::endl;
     std::cout << "Camera position: (" << config.camera.position.x << ", " << config.camera.position.y << ", " << config.camera.position.z << ")" << std::endl;

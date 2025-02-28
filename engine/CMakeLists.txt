@@ -11,6 +11,7 @@ add_executable(
   src/draw.cpp
   src/utils.cpp
   src/menu.cpp
+  src/structs.cpp
   src/imgui/imgui.cpp
   src/imgui/imgui_demo.cpp
   src/imgui/imgui_impl_glut.cpp
@@ -45,7 +46,6 @@ if(WIN32)
       ""
       CACHE PATH "Path to Toolkits folder")
 
-
   # FreeGLUT (supports 64-bit and 32-bit)
   if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit
     set(FREEGLUT_LIB "${TOOLKITS_FOLDER}/freeglut/x64/freeglut.lib")
@@ -67,10 +67,8 @@ if(WIN32)
         OR NOT EXISTS "${TOOLKITS_FOLDER}/glew/glew32.lib")
 
   include_directories(${TOOLKITS_FOLDER}/glew ${TOOLKITS_FOLDER}/freeglut)
-  target_link_libraries(
-    ${PROJECT_NAME} ${OPENGL_LIBRARIES}
-    ${TOOLKITS_FOLDER}/glew/glew32.lib
-    ${FREEGLUT_LIB})
+  target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES}
+                        ${TOOLKITS_FOLDER}/glew/glew32.lib ${FREEGLUT_LIB})
 
   if(EXISTS "${FREEGLUT_DLL}")
     file(COPY ${FREEGLUT_DLL} DESTINATION ${CMAKE_BINARY_DIR})
@@ -134,8 +132,9 @@ else() # Linux and macOS
     if(NOT GLEW_FOUND)
       message(FATAL_ERROR "GLEW não encontrado!")
     endif()
-    
-    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${FREEGLUT_LIBRARY} GLEW)
+
+    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES}
+                          ${FREEGLUT_LIBRARY} GLEW)
   endif()
 
 endif()

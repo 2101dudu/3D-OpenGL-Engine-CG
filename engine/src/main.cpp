@@ -24,12 +24,6 @@
 
 #define FPS_UPDATE_TIME_MS 200
 
-// Camera
-float cameraAngle = 90.0f;
-float cameraAngleY = 0.0f;
-bool isDragging = false;
-int lastX, lastY;
-
 WorldConfig config;
 
 // FPS
@@ -39,6 +33,9 @@ int frames = 0;
 // VBOs
 std::vector<GLuint> buffers;
 std::vector<GLuint> verticesCount;
+
+// without VBOs
+std::vector<std::vector<float>> modelsPoints;
 
 void updateSceneOptions(void)
 {
@@ -56,20 +53,19 @@ void renderScene(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(config.camera.cameraDistance * sin(cameraAngle), config.camera.cameraDistance * cos(cameraAngleY), config.camera.cameraDistance * cos(cameraAngle),
+    gluLookAt(config.camera.position.x, config.camera.position.y, config.camera.position.z,
         config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
         config.camera.up.x, config.camera.up.y, config.camera.up.z);
 
     if (config.scene.drawAxis)
         drawAxis();
 
-    glEnableClientState(GL_VERTEX_ARRAY);
-    for (int i = 0; i < buffers.size(); i++) {
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
-        glVertexPointer(3, GL_FLOAT, 0, 0);
-        glDrawArrays(GL_TRIANGLES, 0, verticesCount[i]);
-    }
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glColor3f(config.group.color.x, config.group.color.y, config.group.color.z);
+    glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
+    if (config.scene.useVBOs)
+        drawWithVBOs(buffers, verticesCount);
+    else
+        drawWithoutVBOs(modelsPoints);
 
     drawMenu(&config);
 
@@ -122,6 +118,10 @@ void mouseButton(int button, int state, int x, int y)
                 config.camera.cameraDistance -= config.camera.scrollSensitivity;
             else if (wheelDelta < 0)
                 config.camera.cameraDistance += config.camera.scrollSensitivity;
+
+            config.camera.position.x = config.camera.cameraDistance * sin(config.camera.cameraAngle);
+            config.camera.position.y = config.camera.cameraDistance * cos(config.camera.cameraAngleY);
+            config.camera.position.z = config.camera.cameraDistance * cos(config.camera.cameraAngle);
             glutPostRedisplay();
         }
         // no need to progress
@@ -137,11 +137,11 @@ void mouseButton(int button, int state, int x, int y)
     if (!io.WantCaptureMouse) {
         if (button == GLUT_LEFT_BUTTON) {
             if (state == GLUT_DOWN) {
-                isDragging = true;
-                lastX = x;
-                lastY = y;
+                config.camera.isDragging = true;
+                config.camera.lastX = x;
+                config.camera.lastY = y;
             } else if (state == GLUT_UP) {
-                isDragging = false;
+                config.camera.isDragging = false;
             }
         }
     }
@@ -154,15 +154,19 @@ void mouseMotion(int x, int y)
     io.AddMousePosEvent(x, y);
 
     if (!io.WantCaptureMouse) {
-        if (isDragging) {
-            float dx = (lastX - x) * config.camera.sensitivity; // horizontal movement reversed for better feel
-            float dy = (y - lastY) * config.camera.sensitivity;
+        if (config.camera.isDragging) {
+            float dx = (config.camera.lastX - x) * config.camera.sensitivity; // horizontal movement reversed for better feel
+            float dy = (y - config.camera.lastY) * config.camera.sensitivity;
 
-            cameraAngle += dx;
-            cameraAngleY += dy;
+            config.camera.cameraAngle += dx;
+            config.camera.cameraAngleY += dy;
 
-            lastX = x;
-            lastY = y;
+            config.camera.lastX = x;
+            config.camera.lastY = y;
+
+            config.camera.position.x = config.camera.cameraDistance * sin(config.camera.cameraAngle);
+            config.camera.position.y = config.camera.cameraDistance * cos(config.camera.cameraAngleY);
+            config.camera.position.z = config.camera.cameraDistance * cos(config.camera.cameraAngle);
 
             glutPostRedisplay();
         }
@@ -205,7 +209,7 @@ void initializeOpenGLContext()
 #endif
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
 }
 
 void initializeVBOs()
@@ -226,6 +230,9 @@ void initializeVBOs()
         glBindBuffer(GL_ARRAY_BUFFER, buffers[counter]);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(),
             modelPoints.data(), GL_STATIC_DRAW);
+
+        // also store the points for the non-VBO case
+        modelsPoints.push_back(modelPoints);
         counter++;
     }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
