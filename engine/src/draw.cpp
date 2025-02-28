@@ -5,7 +5,6 @@
 #endif
 
 #include "draw.hpp"
-#include "vector"
 
 void drawAxis()
 {
