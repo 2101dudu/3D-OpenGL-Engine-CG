@@ -7,7 +7,7 @@
 class XMLParser {
 public:
     static WorldConfig parseXML(const std::string& filename);
-    static void configureFromXML(const WorldConfig& config);
+    static void configureFromXML(WorldConfig& config);
 };
 
 void resetCamera(WorldConfig* config);

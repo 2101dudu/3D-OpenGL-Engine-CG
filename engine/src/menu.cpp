@@ -34,7 +34,12 @@ void drawMenu(WorldConfig* config)
 
     ImGui::Begin("Settings");
     if (ImGui::TreeNodeEx("Camera", ImGuiTreeNodeFlags_Framed)) {
-        ImGui::SliderFloat("Camera Distance", &config->camera.cameraDistance, 0.5, 120);
+        if (ImGui::SliderFloat("Camera Distance", &config->camera.cameraDistance, 0.5, 120)) {
+            config->camera.position.x = config->camera.cameraDistance * cos(config->camera.cameraAngleY) * cos(config->camera.cameraAngle);
+            config->camera.position.y = config->camera.cameraDistance * sin(config->camera.cameraAngleY);
+            config->camera.position.z = config->camera.cameraDistance * cos(config->camera.cameraAngleY) * sin(config->camera.cameraAngle);
+            glutPostRedisplay();
+        }
         ImGui::DragFloat3("Position", &config->camera.position.x, 0.05);
         ImGui::DragFloat3("Looking At", &config->camera.lookAt.x, 0.05);
         ImGui::DragFloat3("Up", &config->camera.up.x, 0.05);

@@ -17,12 +17,12 @@ struct CameraConfig {
         float fov, near1, far1;
     } projection;
 
-    float cameraAngle = 90.0f;
-    float cameraAngleY = 0.0f;
+    float cameraAngle;
+    float cameraAngleY;
     bool isDragging = false;
     int lastX, lastY;
 
-    float cameraDistance = 5.0f;
+    float cameraDistance;
     float sensitivity = 0.005;
     float scrollSensitivity = 0.05f;
 };

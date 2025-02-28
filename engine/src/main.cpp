@@ -117,12 +117,12 @@ void mouseButton(int button, int state, int x, int y)
         if (!io.WantCaptureMouse) {
             if (wheelDelta > 0 && config.camera.cameraDistance > 1.0f)
                 config.camera.cameraDistance -= config.camera.scrollSensitivity;
-            else if (wheelDelta < 0)
+            else if (wheelDelta < 0 && config.camera.cameraDistance < 120.0f)
                 config.camera.cameraDistance += config.camera.scrollSensitivity;
 
-            config.camera.position.x = config.camera.cameraDistance * sin(config.camera.cameraAngle);
-            config.camera.position.y = config.camera.cameraDistance * cos(config.camera.cameraAngleY);
-            config.camera.position.z = config.camera.cameraDistance * cos(config.camera.cameraAngle);
+            config.camera.position.x = config.camera.cameraDistance * cos(config.camera.cameraAngleY) * cos(config.camera.cameraAngle);
+            config.camera.position.y = config.camera.cameraDistance * sin(config.camera.cameraAngleY);
+            config.camera.position.z = config.camera.cameraDistance * cos(config.camera.cameraAngleY) * sin(config.camera.cameraAngle);
             glutPostRedisplay();
         }
         // no need to progress
@@ -156,7 +156,7 @@ void mouseMotion(int x, int y)
 
     if (!io.WantCaptureMouse) {
         if (config.camera.isDragging) {
-            float dx = (config.camera.lastX - x) * config.camera.sensitivity; // horizontal movement reversed for better feel
+            float dx = (x - config.camera.lastX) * config.camera.sensitivity; // horizontal movement reversed for better feel
             float dy = (y - config.camera.lastY) * config.camera.sensitivity;
 
             config.camera.cameraAngle += dx;
@@ -165,9 +165,9 @@ void mouseMotion(int x, int y)
             config.camera.lastX = x;
             config.camera.lastY = y;
 
-            config.camera.position.x = config.camera.cameraDistance * sin(config.camera.cameraAngle);
-            config.camera.position.y = config.camera.cameraDistance * cos(config.camera.cameraAngleY);
-            config.camera.position.z = config.camera.cameraDistance * cos(config.camera.cameraAngle);
+            config.camera.position.x = config.camera.cameraDistance * cos(config.camera.cameraAngleY) * cos(config.camera.cameraAngle);
+            config.camera.position.y = config.camera.cameraDistance * sin(config.camera.cameraAngleY);
+            config.camera.position.z = config.camera.cameraDistance * cos(config.camera.cameraAngleY) * sin(config.camera.cameraAngle);
 
             glutPostRedisplay();
         }
