@@ -1,8 +1,8 @@
 #ifndef PointsGenerator_HPP
 #define PointsGenerator_HPP
 
-#include <vector>
 #include <iostream>
+#include <vector>
 
 // Structure to represent a 3D point
 struct Point {
@@ -22,7 +22,6 @@ public:
 
     void addPoint(float x, float y, float z);
     void addAssociation(int p1, int p2, int p3);
-    void showData() const;
 };
 
 #endif

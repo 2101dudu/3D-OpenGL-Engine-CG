@@ -38,7 +38,5 @@ void Plane::createPlane(int dimension, int divPerEdge, const std::string& filena
         }
     }
 
-    pointGen.showData();
-
     FileWriter::writeToFile(filename, pointGen);
 }

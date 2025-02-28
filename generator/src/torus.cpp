@@ -39,7 +39,5 @@ void Torus::createTorus(float radius, float minorRadius, int slices, int stacks,
         }
     }
 
-    pointGen.showData();
-
     FileWriter::writeToFile(filename, pointGen);
 }
