@@ -36,9 +36,20 @@ void drawMenu(WorldConfig* config)
     ImGui::Text("%.3f ms/frame (%d FPS)", 1000.0f / config->stats.fps, config->stats.fps);
     if (ImGui::TreeNodeEx("Camera", ImGuiTreeNodeFlags_Framed)) {
         ImGui::SliderFloat("Camera Distance", &config->camera.cameraDistance, 0.5, 120);
-        ImGui::DragFloat3("Position", &config->camera.position.x, 0.05f);
-        ImGui::DragFloat3("Looking At", &config->camera.lookAt.x, 0.05f);
-        ImGui::DragFloat3("Up", &config->camera.up.x, 0.05f);
+        ImGui::DragFloat3("Position", &config->camera.position.x, 0.05);
+        ImGui::DragFloat3("Looking At", &config->camera.lookAt.x, 0.05);
+        ImGui::DragFloat3("Up", &config->camera.up.x, 0.05);
+        // if (ImGui::SliderFloat("FOV", &config->camera.projection.fov, 10, 180))
+
+        float displayValueMouse = 10.0f + (config->camera.sensitivity - 0.0005f) / (0.01f - 0.0005f) * (100.0f - 10.0f);
+        if (ImGui::SliderFloat("Camera Sensitivity", &displayValueMouse, 10.0f, 100.0f)) {
+            config->camera.sensitivity = 0.0005f + (displayValueMouse - 10.0f) / (100.0f - 10.0f) * (0.01f - 0.0005f);
+        }
+
+        float displayValueZoom = 10.0f + (config->camera.scrollSensitivity - 0.01f) / (0.1f - 0.01f) * (80.0f - 10.0f);
+        if (ImGui::SliderFloat("Zoom Sensitivity", &displayValueZoom, 10.0f, 80.0f)) {
+            config->camera.scrollSensitivity = 0.01f + (displayValueZoom - 10.0f) / (80.0f - 10.0f) * (0.1f - 0.01f);
+        }
 
         ImGui::TreePop();
     }
@@ -46,6 +57,7 @@ void drawMenu(WorldConfig* config)
     if (ImGui::TreeNodeEx("Scene options", ImGuiTreeNodeFlags_Framed)) {
         ImGui::Checkbox("Cull faces", &config->scene.faceCulling);
         ImGui::Checkbox("Wireframe", &config->scene.wireframe);
+        ImGui::Checkbox("Draw Axis", &config->scene.drawAxis);
 
         ImGui::TreePop();
     }

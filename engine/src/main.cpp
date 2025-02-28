@@ -40,17 +40,6 @@ int frames = 0;
 std::vector<GLuint> buffers;
 std::vector<GLuint> verticesCount;
 
-void changeSize(int w, int h)
-{
-    if (h == 0)
-        h = 1;
-    float ratio = w * 1.0f / h;
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(config.camera.projection.fov, ratio, config.camera.projection.near1, config.camera.projection.far1);
-    glMatrixMode(GL_MODELVIEW);
-}
-
 void updateSceneOptions(void)
 {
     uint mode = config.scene.wireframe ? GL_LINE : GL_FILL;
@@ -71,7 +60,8 @@ void renderScene(void)
         config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
         config.camera.up.x, config.camera.up.y, config.camera.up.z);
 
-    drawAxis();
+    if (config.scene.drawAxis)
+        drawAxis();
 
     glEnableClientState(GL_VERTEX_ARRAY);
     for (int i = 0; i < buffers.size(); i++) {
@@ -100,13 +90,13 @@ void renderScene(void)
     glutSwapBuffers();
 }
 
-void reshape(int w, int h)
+void updateViewPort(int w, int h)
 {
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize = ImVec2((float)w, (float)h);
     if (h == 0)
         h = 1;
-    // Update viewport and projection
+
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -203,7 +193,7 @@ void setupCallbacks()
 {
     glutIdleFunc(renderScene);
     glutDisplayFunc(renderScene);
-    glutReshapeFunc(reshape);
+    glutReshapeFunc(updateViewPort);
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMotion);
 }

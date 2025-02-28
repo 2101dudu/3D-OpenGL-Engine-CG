@@ -17,9 +17,8 @@ struct CameraConfig {
         float fov, near1, far1;
     } projection;
 
-    float cameraDistance
-        = 5.0f;
-    float sensitivity = 0.005f;
+    float cameraDistance = 5.0f;
+    float sensitivity = 0.005;
     float scrollSensitivity = 0.05f;
 };
 
@@ -39,6 +38,7 @@ struct WorldConfig {
     struct SceneConfig {
         bool faceCulling = false;
         bool wireframe = true;
+        bool drawAxis = true;
     } scene;
 
     struct Stats {
