@@ -43,7 +43,7 @@ struct WorldConfig {
     GroupConfig group;
 
     struct SceneConfig {
-        bool faceCulling = false;
+        bool faceCulling = true;
         bool wireframe = true;
         bool drawAxis = true;
         bool useVBOs = true;
