@@ -160,7 +160,11 @@ void mouseMotion(int x, int y)
             float dy = (y - config.camera.lastY) * config.camera.sensitivity;
 
             config.camera.cameraAngle += dx;
-            config.camera.cameraAngleY += dy;
+
+            // restrict the camera's Y angle to between -PI/2 and PI/2, plus a bit of a tighter squeeze to avoid looking inline with the Y axis
+            if ((dy >= 0 && config.camera.cameraAngleY <= M_PI / 2 * 0.95) || (dy < 0 && config.camera.cameraAngleY >= -M_PI / 2 * 0.95)) {
+                config.camera.cameraAngleY += dy;
+            }
 
             config.camera.lastX = x;
             config.camera.lastY = y;
@@ -171,6 +175,13 @@ void mouseMotion(int x, int y)
 
             glutPostRedisplay();
         }
+    }
+}
+
+void keyboardFunc(unsigned char key, int x, int y)
+{
+    if (key == 82 || key == 114) { // r or R
+        resetCamera(&config);
     }
 }
 
@@ -201,6 +212,7 @@ void setupCallbacks()
     glutReshapeFunc(updateViewPort);
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMotion);
+    glutKeyboardFunc(keyboardFunc);
 }
 
 void initializeOpenGLContext()

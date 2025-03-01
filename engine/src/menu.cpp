@@ -54,7 +54,7 @@ void drawMenu(WorldConfig* config)
             config->camera.scrollSensitivity = 0.01f + (displayValueZoom - 10.0f) / (80.0f - 10.0f) * (0.1f - 0.01f);
         }
 
-        if (ImGui::Button("Reset camera")) {
+        if (ImGui::Button("(R)eset camera")) {
             resetCamera(config);
             glutPostRedisplay();
         }
@@ -72,7 +72,7 @@ void drawMenu(WorldConfig* config)
         ImGui::TreePop();
     }
 
-    if (ImGui::TreeNodeEx("Model", ImGuiTreeNodeFlags_Framed)) {
+    if (ImGui::TreeNodeEx("Models", ImGuiTreeNodeFlags_Framed)) {
         ImGui::ColorEdit3("Model color", (float*)&config->group.color);
 
         ImGui::TreePop();
