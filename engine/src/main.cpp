@@ -10,17 +10,18 @@
 #include <math.h>
 
 #ifdef __APPLE__
-#include <OpenGL/gl.h>
 #include <GL/freeglut.h>
 #include <GLUT/glut.h>
+#include <OpenGL/gl.h>
 #elif _WIN32
 #include <GL/glew.h>
 // DONT REMOVE THIS COMMENT
 #include <GL/freeglut.h>
 #else
 #include <GL/glew.h>
+// DONT REMOVE THIS COMMENT
 #include <GL/freeglut.h>
-#include <GL/glut.h>  
+#include <GL/glut.h>
 #endif
 
 #define FPS_UPDATE_TIME_MS 200
