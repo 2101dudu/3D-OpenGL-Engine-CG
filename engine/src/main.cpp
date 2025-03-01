@@ -1,4 +1,3 @@
-#include <OpenGL/gl.h>
 #define _USE_MATH_DEFINES
 #include "draw.hpp"
 #include "imgui.h"
@@ -11,6 +10,7 @@
 #include <math.h>
 
 #ifdef __APPLE__
+#include <OpenGL/gl.h>
 #include <GL/freeglut.h>
 #include <GLUT/glut.h>
 #elif _WIN32
@@ -40,7 +40,8 @@ std::vector<std::vector<float>> modelsPoints;
 
 void updateSceneOptions(void)
 {
-    uint mode = config.scene.wireframe ? GL_LINE : GL_FILL;
+    uint32_t mode = config.scene.wireframe ? GL_LINE : GL_FILL;
+
     glPolygonMode(GL_FRONT_AND_BACK, mode);
 
     if (config.scene.faceCulling) {

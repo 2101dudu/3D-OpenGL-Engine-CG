@@ -1,5 +1,7 @@
 #include "structs.h"
 
+#include <cmath>
+
 void resetCamera(WorldConfig* config)
 {
     // cartesian

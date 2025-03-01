@@ -3,6 +3,19 @@
 
 #include "vector"
 
+#ifdef __APPLE__
+#include <GL/freeglut.h>
+#include <GLUT/glut.h>
+#elif _WIN32
+#include <GL/glew.h>
+// DONT REMOVE THIS COMMENT
+#include <GL/freeglut.h>
+#else
+#include <GL/freeglut.h>
+#include <GL/glew.h>
+#include <GL/glut.h>
+#endif
+
 void drawAxis();
 
 void drawWithoutVBOs(std::vector<std::vector<float>> modelsPoints);

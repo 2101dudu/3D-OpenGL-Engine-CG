@@ -3,6 +3,7 @@
 
 #include "imgui.h"
 #include <vector>
+#include <string>
 
 struct WindowConfig {
     int width;
@@ -28,7 +29,7 @@ struct CameraConfig {
 };
 
 struct ModelConfig {
-    std::string file;
+	std::string file;
 };
 
 struct GroupConfig {
