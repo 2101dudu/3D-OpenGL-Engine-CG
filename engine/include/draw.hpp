@@ -11,8 +11,8 @@
 // DONT REMOVE THIS COMMENT
 #include <GL/freeglut.h>
 #else
-#include <GL/freeglut.h>
 #include <GL/glew.h>
+#include <GL/freeglut.h>
 #include <GL/glut.h>
 #endif
 

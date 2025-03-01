@@ -18,9 +18,9 @@
 // DONT REMOVE THIS COMMENT
 #include <GL/freeglut.h>
 #else
-#include <GL/freeglut.h>
 #include <GL/glew.h>
-#include <GL/glut.h>
+#include <GL/freeglut.h>
+#include <GL/glut.h>  
 #endif
 
 #define FPS_UPDATE_TIME_MS 200
