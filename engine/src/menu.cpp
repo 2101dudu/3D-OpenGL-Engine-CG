@@ -36,7 +36,7 @@ void drawMenu(WorldConfig* config)
 
     ImGui::Begin("Settings");
     if (ImGui::TreeNodeEx("Camera", ImGuiTreeNodeFlags_Framed)) {
-        if (ImGui::SliderFloat("Camera Distance", &config->camera.cameraDistance, 0.5, 120)) {
+        if (ImGui::SliderFloat("Camera Distance", &config->camera.cameraDistance, 1, 120)) {
             updateCamera(config);
             glutPostRedisplay();
         }
