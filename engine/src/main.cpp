@@ -108,44 +108,37 @@ void updateViewPort(int w, int h)
 void mouseButton(int button, int state, int x, int y)
 {
     ImGuiIO& io = ImGui::GetIO();
-    io.AddMousePosEvent((float)x, (float)y);
+    io.AddMouseButtonEvent(button, state == GLUT_DOWN);
 
-    // check for scroll events
+    // Handle scroll events
     if (button == 3 || button == 4) {
-        // convert button 3 (scroll up) and 4 (scroll down) to wheel events
-        float wheelDelta = (button == 3) ? 1.0f : -1.0f;
-        io.AddMouseWheelEvent(0.0f, wheelDelta);
+        float wheelDelta = (button == 3) ? -1.0f : 1.0f;
 
         if (!io.WantCaptureMouse) {
-            if (wheelDelta > 0 && config.camera.cameraDistance > 1.0f)
-                config.camera.cameraDistance -= config.camera.scrollSensitivity;
-            else if (wheelDelta < 0 && config.camera.cameraDistance < 120.0f)
-                config.camera.cameraDistance += config.camera.scrollSensitivity;
+            config.camera.cameraDistance += wheelDelta * config.camera.scrollSensitivity;
+            if (config.camera.cameraDistance < 1.0f)
+                config.camera.cameraDistance = 1.0f;
+            if (config.camera.cameraDistance > 120.0f)
+                config.camera.cameraDistance = 120.0f;
 
-            config.camera.position.x = config.camera.cameraDistance * cos(config.camera.cameraAngleY) * cos(config.camera.cameraAngle);
-            config.camera.position.y = config.camera.cameraDistance * sin(config.camera.cameraAngleY);
-            config.camera.position.z = config.camera.cameraDistance * cos(config.camera.cameraAngleY) * sin(config.camera.cameraAngle);
+            float cosY = cos(config.camera.cameraAngleY);
+            config.camera.position = {
+                config.camera.cameraDistance * cosY * cos(config.camera.cameraAngle),
+                config.camera.cameraDistance * sin(config.camera.cameraAngleY),
+                config.camera.cameraDistance * cosY * sin(config.camera.cameraAngle)
+            };
+
             glutPostRedisplay();
         }
-        // no need to progress
         return;
     }
 
-    // this line repeats the assert in ImGUI's source code
-    if (button >= 0 && button < ImGuiMouseButton_COUNT) {
-        io.AddMouseButtonEvent(button, state == GLUT_DOWN);
-    }
-
-    // click and drag
-    if (!io.WantCaptureMouse) {
-        if (button == GLUT_LEFT_BUTTON) {
-            if (state == GLUT_DOWN) {
-                config.camera.isDragging = true;
-                config.camera.lastX = x;
-                config.camera.lastY = y;
-            } else if (state == GLUT_UP) {
-                config.camera.isDragging = false;
-            }
+    // Handle click and drag
+    if (!io.WantCaptureMouse && button == GLUT_LEFT_BUTTON) {
+        config.camera.isDragging = (state == GLUT_DOWN);
+        if (config.camera.isDragging) {
+            config.camera.lastX = x;
+            config.camera.lastY = y;
         }
     }
 }
@@ -182,8 +175,13 @@ void mouseMotion(int x, int y)
 
 void keyboardFunc(unsigned char key, int x, int y)
 {
-    if (key == 82 || key == 114) { // r or R
-        resetCamera(&config);
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplGLUT_KeyboardFunc(key, x, y);
+
+    if (!io.WantCaptureKeyboard) {
+        if (key == 82 || key == 114) { // r or R
+            resetCamera(&config);
+        }
     }
 }
 
