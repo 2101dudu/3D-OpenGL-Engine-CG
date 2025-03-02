@@ -1,3 +1,4 @@
+#include "structs.h"
 #define _USE_MATH_DEFINES
 #include "draw.hpp"
 #include "imgui.h"
@@ -104,26 +105,21 @@ void updateViewPort(int w, int h)
     glLoadIdentity();
 }
 
+// track mouse scroll events
 void mouseWheel(int wheel, int direction, int x, int y)
 {
     ImGuiIO& io = ImGui::GetIO();
     float wheelDelta = (direction > 0) ? 1.0f : -1.0f;
     io.AddMouseWheelEvent(0.0f, wheelDelta);
 
-    std::cout << "Scroll event detected: " << wheelDelta << std::endl;
-
     if (!io.WantCaptureMouse) {
-        if (wheelDelta > 0 && config.camera.cameraDistance > 1.0f) {
-            config.camera.cameraDistance -= config.camera.scrollSensitivity * 10;
-            std::cout << "Camera distance decreased: " << config.camera.cameraDistance << std::endl;
-        } else if (wheelDelta < 0 && config.camera.cameraDistance < 120.0f) {
-            config.camera.cameraDistance += config.camera.scrollSensitivity * 10;
-            std::cout << "Camera distance increased: " << config.camera.cameraDistance << std::endl;
-        }
+        config.camera.cameraDistance += wheelDelta * config.camera.scrollSensitivity;
+        if (config.camera.cameraDistance < 1.0f)
+            config.camera.cameraDistance = 1.0f;
+        else if (config.camera.cameraDistance > 120.0f)
+            config.camera.cameraDistance = 120.0f;
 
-        config.camera.position.x = config.camera.cameraDistance * cos(config.camera.cameraAngleY) * cos(config.camera.cameraAngle);
-        config.camera.position.y = config.camera.cameraDistance * sin(config.camera.cameraAngleY);
-        config.camera.position.z = config.camera.cameraDistance * cos(config.camera.cameraAngleY) * sin(config.camera.cameraAngle);
+        updateCamera(&config);
         glutPostRedisplay();
     }
 }
@@ -133,7 +129,7 @@ void mouseButton(int button, int state, int x, int y)
 {
     ImGuiIO& io = ImGui::GetIO();
 
-    // stop ImGui's assert from crashing the program
+    // this assert stops imgui from trying to add a mouse button event of a scroll that would result in a segmentation fault
     if (button >= 0 && button < ImGuiMouseButton_COUNT) {
         io.AddMouseButtonEvent(button, state == GLUT_DOWN);
     }
@@ -169,10 +165,7 @@ void mouseMotion(int x, int y)
             config.camera.lastX = x;
             config.camera.lastY = y;
 
-            config.camera.position.x = config.camera.cameraDistance * cos(config.camera.cameraAngleY) * cos(config.camera.cameraAngle);
-            config.camera.position.y = config.camera.cameraDistance * sin(config.camera.cameraAngleY);
-            config.camera.position.z = config.camera.cameraDistance * cos(config.camera.cameraAngleY) * sin(config.camera.cameraAngle);
-
+            updateCamera(&config);
             glutPostRedisplay();
         }
     }

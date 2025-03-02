@@ -10,6 +10,4 @@ public:
     static void configureFromXML(WorldConfig& config);
 };
 
-void resetCamera(WorldConfig* config);
-
 #endif

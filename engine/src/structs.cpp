@@ -19,3 +19,12 @@ void resetCamera(WorldConfig* config)
     config->camera.sensitivity = 0.005;
     config->camera.scrollSensitivity = 0.05f;
 }
+
+void updateCamera(WorldConfig* config)
+{
+    config->camera.position = {
+        config->camera.cameraDistance * cos(config->camera.cameraAngleY) * cos(config->camera.cameraAngle),
+        config->camera.cameraDistance * sin(config->camera.cameraAngleY),
+        config->camera.cameraDistance * cos(config->camera.cameraAngleY) * sin(config->camera.cameraAngle)
+    };
+}

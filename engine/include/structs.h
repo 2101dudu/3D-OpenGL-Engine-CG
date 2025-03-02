@@ -2,8 +2,8 @@
 #define STRUCTS_HPP
 
 #include "imgui.h"
-#include <vector>
 #include <string>
+#include <vector>
 
 struct WindowConfig {
     int width;
@@ -29,7 +29,7 @@ struct CameraConfig {
 };
 
 struct ModelConfig {
-	std::string file;
+    std::string file;
 };
 
 struct GroupConfig {
@@ -57,5 +57,9 @@ struct WorldConfig {
         int64_t numTriangles = 0;
     } stats;
 };
+
+void resetCamera(WorldConfig* config);
+
+void updateCamera(WorldConfig* config);
 
 #endif

@@ -1,3 +1,4 @@
+#include "structs.h"
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
@@ -36,9 +37,7 @@ void drawMenu(WorldConfig* config)
     ImGui::Begin("Settings");
     if (ImGui::TreeNodeEx("Camera", ImGuiTreeNodeFlags_Framed)) {
         if (ImGui::SliderFloat("Camera Distance", &config->camera.cameraDistance, 0.5, 120)) {
-            config->camera.position.x = config->camera.cameraDistance * cos(config->camera.cameraAngleY) * cos(config->camera.cameraAngle);
-            config->camera.position.y = config->camera.cameraDistance * sin(config->camera.cameraAngleY);
-            config->camera.position.z = config->camera.cameraDistance * cos(config->camera.cameraAngleY) * sin(config->camera.cameraAngle);
+            updateCamera(config);
             glutPostRedisplay();
         }
         ImGui::DragFloat3("Position", &config->camera.position.x, 0.05);
