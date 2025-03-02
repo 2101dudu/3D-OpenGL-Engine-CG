@@ -132,23 +132,18 @@ void mouseWheel(int wheel, int direction, int x, int y)
 void mouseButton(int button, int state, int x, int y)
 {
     ImGuiIO& io = ImGui::GetIO();
-    io.AddMouseButtonEvent(button, state == GLUT_DOWN);
 
-    // this line repeats the assert in ImGUI's source code
+    // stop ImGui's assert from crashing the program
     if (button >= 0 && button < ImGuiMouseButton_COUNT) {
         io.AddMouseButtonEvent(button, state == GLUT_DOWN);
     }
 
     // click and drag
-    if (!io.WantCaptureMouse) {
-        if (button == GLUT_LEFT_BUTTON) {
-            if (state == GLUT_DOWN) {
-                config.camera.isDragging = true;
-                config.camera.lastX = x;
-                config.camera.lastY = y;
-            } else if (state == GLUT_UP) {
-                config.camera.isDragging = false;
-            }
+    if (!io.WantCaptureMouse && button == GLUT_LEFT_BUTTON) {
+        config.camera.isDragging = (state == GLUT_DOWN);
+        if (config.camera.isDragging) {
+            config.camera.lastX = x;
+            config.camera.lastY = y;
         }
     }
 }
