@@ -109,7 +109,7 @@ void updateViewPort(int w, int h)
 void mouseWheel(int wheel, int direction, int x, int y)
 {
     ImGuiIO& io = ImGui::GetIO();
-    float wheelDelta = (direction > 0) ? 1.0f : -1.0f;
+    float wheelDelta = (direction > 0) ? -1.0f : 1.0f;
     io.AddMouseWheelEvent(0.0f, wheelDelta);
 
     if (!io.WantCaptureMouse) {
