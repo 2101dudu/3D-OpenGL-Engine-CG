@@ -1,10 +1,12 @@
 #include "xml_parser.hpp"
 #include "tinyxml2.h"
+#include <cmath>
 #include <iostream>
 
 using namespace tinyxml2;
 
-WorldConfig XMLParser::parseXML(const std::string& filename) {
+WorldConfig XMLParser::parseXML(const std::string& filename)
+{
     WorldConfig config;
     XMLDocument doc;
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
@@ -13,7 +15,8 @@ WorldConfig XMLParser::parseXML(const std::string& filename) {
     }
 
     XMLElement* world = doc.FirstChildElement("world");
-    if (!world) return config;
+    if (!world)
+        return config;
 
     XMLElement* window = world->FirstChildElement("window");
     if (window) {
@@ -66,13 +69,29 @@ WorldConfig XMLParser::parseXML(const std::string& filename) {
     return config;
 }
 
-void XMLParser::configureFromXML(const WorldConfig& config) {
+void calculateSphericalCoordinates(float x, float y, float z, float& alpha, float& beta, float& radius)
+{
+    radius = std::sqrt(x * x + y * y + z * z);
+    alpha = std::atan2(z, x);
+    beta = std::asin(y / radius);
+}
+
+void XMLParser::configureFromXML(WorldConfig& config)
+{
     std::cout << "World configuration:" << std::endl;
     std::cout << "Window width: " << config.window.width << ", height: " << config.window.height << std::endl;
     std::cout << "Camera position: (" << config.camera.position.x << ", " << config.camera.position.y << ", " << config.camera.position.z << ")" << std::endl;
     std::cout << "Camera lookAt: (" << config.camera.lookAt.x << ", " << config.camera.lookAt.y << ", " << config.camera.lookAt.z << ")" << std::endl;
     std::cout << "Camera up: (" << config.camera.up.x << ", " << config.camera.up.y << ", " << config.camera.up.z << ")" << std::endl;
     std::cout << "Camera projection: fov=" << config.camera.projection.fov << ", near=" << config.camera.projection.near1 << ", far=" << config.camera.projection.far1 << std::endl;
+
+    float alpha, beta, radius;
+    calculateSphericalCoordinates(config.camera.position.x, config.camera.position.y, config.camera.position.z,
+        alpha, beta, radius);
+
+    config.camera.cameraAngle = alpha;
+    config.camera.cameraAngleY = beta;
+    config.camera.cameraDistance = radius;
 
     for (const auto& model : config.group.models) {
         std::cout << "Model file: " << model.file << std::endl;

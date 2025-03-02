@@ -28,10 +28,10 @@ void Cone::createCone(float radius, float height, int slices, int stacks, const 
             int p3 = neighbourPointIndex + slices;
             int p4 = currPointIndex + slices;
 
-            if (i < stacks) {
+            if (i < stacks - 1) {
                 generator.addAssociation(p1, p3, p2);
                 generator.addAssociation(p1, p4, p3);
-            } else {
+            } else if (i < stacks) {
                 generator.addAssociation(p1, p4, p2);
             }
         }

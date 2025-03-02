@@ -1,15 +1,26 @@
 cmake_minimum_required(VERSION 3.5)
-
-# Project Name
 project(engine)
 
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Add source files
-add_executable(${PROJECT_NAME} src/main.cpp src/xml_parser.cpp src/draw.cpp
-                               src/utils.cpp)
+add_executable(
+  ${PROJECT_NAME}
+  src/main.cpp
+  src/xml_parser.cpp
+  src/draw.cpp
+  src/utils.cpp
+  src/menu.cpp
+  src/structs.cpp
+  src/imgui/imgui.cpp
+  src/imgui/imgui_demo.cpp
+  src/imgui/imgui_impl_glut.cpp
+  src/imgui/imgui_impl_opengl2.cpp
+  src/imgui/imgui_tables.cpp
+  src/imgui/imgui_widgets.cpp
+  src/imgui/imgui_draw.cpp)
 
-include_directories(include)
+target_include_directories(${PROJECT_NAME} PRIVATE include include/imgui)
 
 find_package(OpenGL REQUIRED)
 include_directories(${OpenGL_INCLUDE_DIRS})
@@ -35,7 +46,6 @@ if(WIN32)
       ""
       CACHE PATH "Path to Toolkits folder")
 
-
   # FreeGLUT (supports 64-bit and 32-bit)
   if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit
     set(FREEGLUT_LIB "${TOOLKITS_FOLDER}/freeglut/x64/freeglut.lib")
@@ -57,10 +67,8 @@ if(WIN32)
         OR NOT EXISTS "${TOOLKITS_FOLDER}/glew/glew32.lib")
 
   include_directories(${TOOLKITS_FOLDER}/glew ${TOOLKITS_FOLDER}/freeglut)
-  target_link_libraries(
-    ${PROJECT_NAME} ${OPENGL_LIBRARIES}
-    ${TOOLKITS_FOLDER}/glew/glew32.lib
-    ${FREEGLUT_LIB})
+  target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES}
+                        ${TOOLKITS_FOLDER}/glew/glew32.lib ${FREEGLUT_LIB})
 
   if(EXISTS "${FREEGLUT_DLL}")
     file(COPY ${FREEGLUT_DLL} DESTINATION ${CMAKE_BINARY_DIR})
@@ -124,8 +132,9 @@ else() # Linux and macOS
     if(NOT GLEW_FOUND)
       message(FATAL_ERROR "GLEW não encontrado!")
     endif()
-    
-    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${FREEGLUT_LIBRARY} GLEW)
+
+    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES}
+                          ${FREEGLUT_LIBRARY} GLEW)
   endif()
 
 endif()

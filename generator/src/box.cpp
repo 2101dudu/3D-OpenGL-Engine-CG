@@ -84,8 +84,5 @@ void Box::createBox(int dimension, int divPerEdge, const std::string& filename)
             }
         }
     }
-
-    pointGen.showData();
-
     FileWriter::writeToFile(filename, pointGen);
 }

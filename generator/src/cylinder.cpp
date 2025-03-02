@@ -53,6 +53,5 @@ void Cylinder::createCylinder(int radius, int height, int slices, int stacks, co
         pointGen.addAssociation(p1, p2, bottomCenterIndex);
     }
 
-    pointGen.showData();
     FileWriter::writeToFile(filename, pointGen);
 }
