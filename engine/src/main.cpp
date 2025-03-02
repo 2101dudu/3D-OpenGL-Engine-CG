@@ -104,12 +104,37 @@ void updateViewPort(int w, int h)
     glLoadIdentity();
 }
 
+void mouseWheel(int wheel, int direction, int x, int y)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    float wheelDelta = (direction > 0) ? 1.0f : -1.0f;
+    io.AddMouseWheelEvent(0.0f, wheelDelta);
+
+    std::cout << "Scroll event detected: " << wheelDelta << std::endl;
+
+    if (!io.WantCaptureMouse) {
+        if (wheelDelta > 0 && config.camera.cameraDistance > 1.0f) {
+            config.camera.cameraDistance -= config.camera.scrollSensitivity * 10;
+            std::cout << "Camera distance decreased: " << config.camera.cameraDistance << std::endl;
+        } else if (wheelDelta < 0 && config.camera.cameraDistance < 120.0f) {
+            config.camera.cameraDistance += config.camera.scrollSensitivity * 10;
+            std::cout << "Camera distance increased: " << config.camera.cameraDistance << std::endl;
+        }
+
+        config.camera.position.x = config.camera.cameraDistance * cos(config.camera.cameraAngleY) * cos(config.camera.cameraAngle);
+        config.camera.position.y = config.camera.cameraDistance * sin(config.camera.cameraAngleY);
+        config.camera.position.z = config.camera.cameraDistance * cos(config.camera.cameraAngleY) * sin(config.camera.cameraAngle);
+        glutPostRedisplay();
+    }
+}
+
 // track mouse button presses
 void mouseButton(int button, int state, int x, int y)
 {
     ImGuiIO& io = ImGui::GetIO();
     io.AddMouseButtonEvent(button, state == GLUT_DOWN);
 
+<<<<<<< HEAD
     // Handle scroll events
     if (button == 3 || button == 4) {
         float wheelDelta = (button == 3) ? -1.0f : 1.0f;
@@ -139,6 +164,23 @@ void mouseButton(int button, int state, int x, int y)
         if (config.camera.isDragging) {
             config.camera.lastX = x;
             config.camera.lastY = y;
+=======
+    // this line repeats the assert in ImGUI's source code
+    if (button >= 0 && button < ImGuiMouseButton_COUNT) {
+        io.AddMouseButtonEvent(button, state == GLUT_DOWN);
+    }
+
+    // click and drag
+    if (!io.WantCaptureMouse) {
+        if (button == GLUT_LEFT_BUTTON) {
+            if (state == GLUT_DOWN) {
+                config.camera.isDragging = true;
+                config.camera.lastX = x;
+                config.camera.lastY = y;
+            } else if (state == GLUT_UP) {
+                config.camera.isDragging = false;
+            }
+>>>>>>> fae2c5d (fix: scroll)
         }
     }
 }
@@ -213,6 +255,7 @@ void setupCallbacks()
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMotion);
     glutKeyboardFunc(keyboardFunc);
+    glutMouseWheelFunc(mouseWheel); // Register the mouse wheel callback
 }
 
 void initializeOpenGLContext()
