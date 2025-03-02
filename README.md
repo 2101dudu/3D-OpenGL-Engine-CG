@@ -92,7 +92,6 @@ This project implements a mini scene graph–based 3D engine along with a model 
 │   ├── ferrari.obj
 │   ├── plane.3d
 │   └── torus.3d
-└── temp.txt
 
 ```
 
