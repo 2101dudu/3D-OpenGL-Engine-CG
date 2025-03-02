@@ -134,37 +134,6 @@ void mouseButton(int button, int state, int x, int y)
     ImGuiIO& io = ImGui::GetIO();
     io.AddMouseButtonEvent(button, state == GLUT_DOWN);
 
-<<<<<<< HEAD
-    // Handle scroll events
-    if (button == 3 || button == 4) {
-        float wheelDelta = (button == 3) ? -1.0f : 1.0f;
-
-        if (!io.WantCaptureMouse) {
-            config.camera.cameraDistance += wheelDelta * config.camera.scrollSensitivity;
-            if (config.camera.cameraDistance < 1.0f)
-                config.camera.cameraDistance = 1.0f;
-            if (config.camera.cameraDistance > 120.0f)
-                config.camera.cameraDistance = 120.0f;
-
-            float cosY = cos(config.camera.cameraAngleY);
-            config.camera.position = {
-                config.camera.cameraDistance * cosY * cos(config.camera.cameraAngle),
-                config.camera.cameraDistance * sin(config.camera.cameraAngleY),
-                config.camera.cameraDistance * cosY * sin(config.camera.cameraAngle)
-            };
-
-            glutPostRedisplay();
-        }
-        return;
-    }
-
-    // Handle click and drag
-    if (!io.WantCaptureMouse && button == GLUT_LEFT_BUTTON) {
-        config.camera.isDragging = (state == GLUT_DOWN);
-        if (config.camera.isDragging) {
-            config.camera.lastX = x;
-            config.camera.lastY = y;
-=======
     // this line repeats the assert in ImGUI's source code
     if (button >= 0 && button < ImGuiMouseButton_COUNT) {
         io.AddMouseButtonEvent(button, state == GLUT_DOWN);
@@ -180,7 +149,6 @@ void mouseButton(int button, int state, int x, int y)
             } else if (state == GLUT_UP) {
                 config.camera.isDragging = false;
             }
->>>>>>> fae2c5d (fix: scroll)
         }
     }
 }
