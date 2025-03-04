@@ -5,6 +5,62 @@
 
 using namespace tinyxml2;
 
+void parseGroup(XMLElement* groupElement, GroupConfig &group) {
+    // parse transformations if avilable
+    XMLElement* transformElement = groupElement->FirstChildElement("transform");
+    if (transformElement) {
+        // parse translations if available
+        XMLElement* translateElement = transformElement->FirstChildElement("translate");
+        if (translateElement) {
+            Transform t;
+            translateElement->QueryFloatAttribute("x", &t.translateX);
+            translateElement->QueryFloatAttribute("y", &t.translateY);
+            translateElement->QueryFloatAttribute("z", &t.translateZ);
+            group.transforms.push_back(t);
+        }
+        // parse rotations if available
+        XMLElement* rotateElement = transformElement->FirstChildElement("rotate");
+        if (rotateElement) {
+            Transform t;
+            rotateElement->QueryFloatAttribute("x", &t.rotateX);
+            rotateElement->QueryFloatAttribute("y", &t.rotateY);
+            rotateElement->QueryFloatAttribute("z", &t.rotateZ);
+            group.transforms.push_back(t);
+        }
+        // parse scales if available
+        XMLElement* scaleElement = transformElement->FirstChildElement("scale");
+        if (scaleElement) {
+            Transform t;
+            scaleElement->QueryFloatAttribute("x", &t.scaleX);
+            scaleElement->QueryFloatAttribute("y", &t.scaleY);
+            scaleElement->QueryFloatAttribute("z", &t.scaleZ);
+            group.transforms.push_back(t);
+        }
+    }
+    
+    // Parse <models> element.
+    XMLElement* modelsElement = groupElement->FirstChildElement("models");
+    if (modelsElement) {
+        XMLElement* modelElement = modelsElement->FirstChildElement("model");
+        while (modelElement) {
+            Model modelConfig;
+            if(modelElement->Attribute("file"))
+                modelConfig.file = modelElement->Attribute("file");
+            group.models.push_back(modelConfig);
+            modelElement = modelElement->NextSiblingElement("model");
+        }
+    }
+    
+    // recursively parse nested child groups if available
+    XMLElement* childGroupElement = groupElement->FirstChildElement("group");
+    while (childGroupElement) {
+        GroupConfig childGroup;
+        parseGroup(childGroupElement, childGroup);
+        group.children.push_back(childGroup);
+        childGroupElement = childGroupElement->NextSiblingElement("group");
+    }
+}
+
 WorldConfig XMLParser::parseXML(const std::string& filename)
 {
     WorldConfig config;
@@ -54,16 +110,7 @@ WorldConfig XMLParser::parseXML(const std::string& filename)
 
     XMLElement* group = world->FirstChildElement("group");
     if (group) {
-        XMLElement* models = group->FirstChildElement("models");
-        if (models) {
-            XMLElement* model = models->FirstChildElement("model");
-            while (model) {
-                Model modelConfig;
-                modelConfig.file = model->Attribute("file");
-                config.group.models.push_back(modelConfig);
-                model = model->NextSiblingElement("model");
-            }
-        }
+        parseGroup(group, config.group);
     }
 
     return config;
@@ -74,6 +121,16 @@ void calculateSphericalCoordinates(float x, float y, float z, float& alpha, floa
     radius = std::sqrt(x * x + y * y + z * z);
     alpha = std::atan2(z, x);
     beta = std::asin(y / radius);
+}
+
+void printLoadedFiles(GroupConfig group) {
+    for (const auto& model : group.models) {
+        std::cout << "Model file: " << model.file << std::endl;
+    }
+
+    for (const auto& subGroup : group.children) {
+        printLoadedFiles(subGroup);
+    }
 }
 
 void XMLParser::configureFromXML(WorldConfig& config)
@@ -93,7 +150,6 @@ void XMLParser::configureFromXML(WorldConfig& config)
     config.camera.cameraAngleY = beta;
     config.camera.cameraDistance = radius;
 
-    for (const auto& model : config.group.models) {
-        std::cout << "Model file: " << model.file << std::endl;
-    }
+    GroupConfig rootGroup = config.group;
+    printLoadedFiles(rootGroup);
 }
