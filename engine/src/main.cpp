@@ -220,8 +220,8 @@ void initializeOpenGLContext()
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
 }
 
-
-void bindPointsToBuffers(GroupConfig *group, int* currVBOIndex) {
+void bindPointsToBuffers(GroupConfig* group, int* currVBOIndex)
+{
     for (auto& model : group->models) {
         // get info from file
         ModelInfo modelInfo = parseFile(model.file.c_str());
@@ -243,7 +243,8 @@ void bindPointsToBuffers(GroupConfig *group, int* currVBOIndex) {
     }
 }
 
-int countModels(GroupConfig& group) {
+int countModels(GroupConfig& group)
+{
     int models = 0;
     models += group.models.size();
     for (auto& subGroup : group.children) {
@@ -255,7 +256,7 @@ int countModels(GroupConfig& group) {
 void initializeVBOs()
 {
     glEnableClientState(GL_VERTEX_ARRAY);
-    
+
     // recursively count the number of models
     int totalNumModels = countModels(config.group);
 
@@ -266,7 +267,7 @@ void initializeVBOs()
     // recursively bind all of the models to the VBOs' buffer
     int VBOindex = 0;
     bindPointsToBuffers(&config.group, &VBOindex);
-    
+
     // TODO: check if a reset on the buffer's index is needed
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

@@ -1,8 +1,8 @@
 #ifndef DRAW_HPP
 #define DRAW_HPP
 
-#include "vector"
 #include "structs.hpp"
+#include "vector"
 
 #ifdef __APPLE__
 #include <GL/freeglut.h>

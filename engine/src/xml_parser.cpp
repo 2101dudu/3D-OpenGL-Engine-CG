@@ -5,7 +5,8 @@
 
 using namespace tinyxml2;
 
-void parseGroup(XMLElement* groupElement, GroupConfig &group) {
+void parseGroup(XMLElement* groupElement, GroupConfig& group)
+{
     // parse transformations if avilable
     XMLElement* transformElement = groupElement->FirstChildElement("transform");
     if (transformElement) {
@@ -37,20 +38,20 @@ void parseGroup(XMLElement* groupElement, GroupConfig &group) {
             group.transforms.push_back(t);
         }
     }
-    
+
     // Parse <models> element.
     XMLElement* modelsElement = groupElement->FirstChildElement("models");
     if (modelsElement) {
         XMLElement* modelElement = modelsElement->FirstChildElement("model");
         while (modelElement) {
             Model modelConfig;
-            if(modelElement->Attribute("file"))
+            if (modelElement->Attribute("file"))
                 modelConfig.file = modelElement->Attribute("file");
             group.models.push_back(modelConfig);
             modelElement = modelElement->NextSiblingElement("model");
         }
     }
-    
+
     // recursively parse nested child groups if available
     XMLElement* childGroupElement = groupElement->FirstChildElement("group");
     while (childGroupElement) {
@@ -123,7 +124,8 @@ void calculateSphericalCoordinates(float x, float y, float z, float& alpha, floa
     beta = std::asin(y / radius);
 }
 
-void printLoadedFiles(GroupConfig group) {
+void printLoadedFiles(GroupConfig group)
+{
     for (const auto& model : group.models) {
         std::cout << "Model file: " << model.file << std::endl;
     }
