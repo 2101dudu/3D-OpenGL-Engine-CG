@@ -58,7 +58,7 @@ WorldConfig XMLParser::parseXML(const std::string& filename)
         if (models) {
             XMLElement* model = models->FirstChildElement("model");
             while (model) {
-                ModelConfig modelConfig;
+                Model modelConfig;
                 modelConfig.file = model->Attribute("file");
                 config.group.models.push_back(modelConfig);
                 model = model->NextSiblingElement("model");

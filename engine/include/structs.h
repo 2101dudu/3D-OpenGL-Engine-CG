@@ -28,34 +28,45 @@ struct CameraConfig {
     float scrollSensitivity = 0.05f;
 };
 
-struct ModelConfig {
+struct Transform {
+    float translateX = 0.0f, translateY = 0.0f, translateZ = 0.0f;
+    float rotateX = 0.0f, rotateY = 0.0f, rotateZ = 0.0f;
+    float scaleX = 1.0f, scaleY = 1.0f, scaleZ = 1.0f;
+};
+
+struct Model {
     std::string file;
+    int vbo = 0; // VBO id
+    size_t vertexCount = 0; // VBO vertice count
+    std::vector<float> points; // non-VBO rendering
 };
 
 struct GroupConfig {
-    std::vector<ModelConfig> models;
-
     ImVec4 color = ImVec4(0.78125f, 0.78125f, 0.78125f, 1.0f); // off-white color
+    std::vector<Transform> transforms;
+    std::vector<Model> models;
+    std::vector<GroupConfig> children;
+};
+
+struct SceneConfig {
+    bool faceCulling = true;
+    bool wireframe = true;
+    bool drawAxis = true;
+    bool useVBOs = true;
+    ImVec4 bgColor = ImVec4(0.15625f, 0.15625f, 0.15625f, 1.0f); // off-black color
+};
+
+struct Stats {
+    int fps;
+    int64_t numTriangles = 0;
 };
 
 struct WorldConfig {
     WindowConfig window;
     CameraConfig camera;
     GroupConfig group;
-
-    struct SceneConfig {
-        bool faceCulling = true;
-        bool wireframe = true;
-        bool drawAxis = true;
-        bool useVBOs = true;
-
-        ImVec4 bgColor = ImVec4(0.15625f, 0.15625f, 0.15625f, 1.0f); // off-black color
-    } scene;
-
-    struct Stats {
-        int fps;
-        int64_t numTriangles = 0;
-    } stats;
+    SceneConfig scene;
+    Stats stats;
 };
 
 void resetCamera(WorldConfig* config);
