@@ -47,15 +47,17 @@
                         </models>
                     </group>
                 </group>
-                <group>
-                    <transform>
-                        <translate x="0" y="0" z="90"/>
-                    </transform>
-                    <models>
-                        <model file="../../objects/cone.3d" />
-                    </models>
-                </group>
 			</group>
+            <group>
+                <transform>
+                    <scale x="0.3" y="0.3" z="0.3"/>
+                    <rotate x="0" y="0" z="-90"/>
+                    <translate x="2" y="0" z="0"/>
+                </transform>
+                <models>
+                    <model file="../../objects/cone.3d" />
+                </models>
+            </group>
 		</group>
 	</group>
 </world>

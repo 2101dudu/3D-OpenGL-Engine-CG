@@ -221,7 +221,7 @@ void initializeOpenGLContext()
 }
 
 
-void bindPointsToBuffers(GroupConfig *group, int currVBOIndex) {
+void bindPointsToBuffers(GroupConfig *group, int* currVBOIndex) {
     for (auto& model : group->models) {
         // get info from file
         ModelInfo modelInfo = parseFile(model.file.c_str());
@@ -229,13 +229,13 @@ void bindPointsToBuffers(GroupConfig *group, int currVBOIndex) {
         config.stats.numTriangles += modelInfo.numTriangles;
 
         model.vertexCount = modelPoints.size() / 3;
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[currVBOIndex]);
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[*currVBOIndex]);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(), modelPoints.data(), GL_STATIC_DRAW);
 
         // also store the points for the non-VBO case
         model.points = modelPoints;
-        model.vboIndex = currVBOIndex;
-        currVBOIndex++;
+        model.vboIndex = *currVBOIndex;
+        (*currVBOIndex)++;
     }
 
     for (auto& subGroup : group->children) {
@@ -265,7 +265,7 @@ void initializeVBOs()
 
     // recursively bind all of the models to the VBOs' buffer
     int VBOindex = 0;
-    bindPointsToBuffers(&config.group, VBOindex);
+    bindPointsToBuffers(&config.group, &VBOindex);
     
     // TODO: check if a reset on the buffer's index is needed
     glBindBuffer(GL_ARRAY_BUFFER, 0);
