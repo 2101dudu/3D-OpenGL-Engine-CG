@@ -48,7 +48,7 @@ This project implements a mini scene graph–based 3D engine along with a model 
 │   │   │   ├── imstb_textedit.h
 │   │   │   └── imstb_truetype.h
 │   │   ├── menu.hpp
-│   │   ├── structs.h
+│   │   ├── structs.hpp
 │   │   ├── utils.hpp
 │   │   └── xml_parser.hpp
 │   └── src

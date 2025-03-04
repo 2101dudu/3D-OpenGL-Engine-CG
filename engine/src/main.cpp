@@ -1,4 +1,4 @@
-#include "structs.h"
+#include "structs.hpp"
 #define _USE_MATH_DEFINES
 #include "draw.hpp"
 #include "imgui.h"
@@ -35,10 +35,6 @@ int frames = 0;
 
 // VBOs
 std::vector<GLuint> buffers;
-std::vector<GLuint> verticesCount;
-
-// without VBOs
-std::vector<std::vector<float>> modelsPoints;
 
 void updateSceneOptions(void)
 {
@@ -66,10 +62,10 @@ void renderScene(void)
 
     glColor3f(config.group.color.x, config.group.color.y, config.group.color.z);
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
-    if (config.scene.useVBOs)
-        drawWithVBOs(buffers, verticesCount);
-    else
-        drawWithoutVBOs(modelsPoints);
+    //if (config.scene.useVBOs)
+        //drawWithVBOs(buffers);
+    //else
+    drawWithoutVBOs(config.group);
 
     drawMenu(&config);
 
@@ -197,9 +193,9 @@ WorldConfig loadConfiguration(const char* configFile)
     return cfg;
 }
 
-void createWindowWithConfig(const WorldConfig& cfg)
+void createWindowWithConfig()
 {
-    glutInitWindowSize(cfg.window.width, cfg.window.height);
+    glutInitWindowSize(config.window.width, config.window.height);
     glutCreateWindow("CG@DI");
 }
 
@@ -224,29 +220,55 @@ void initializeOpenGLContext()
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
 }
 
+
+void bindPointsToBuffers(GroupConfig *group, int currVBOIndex) {
+    for (auto& model : group->models) {
+        // get info from file
+        ModelInfo modelInfo = parseFile(model.file.c_str());
+        std::vector<float> modelPoints = modelInfo.points;
+        config.stats.numTriangles += modelInfo.numTriangles;
+
+        model.vertexCount = modelPoints.size() / 3;
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[currVBOIndex]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(), modelPoints.data(), GL_STATIC_DRAW);
+
+        // also store the points for the non-VBO case
+        model.points = modelPoints;
+        model.vboIndex = currVBOIndex;
+        currVBOIndex++;
+    }
+
+    for (auto& subGroup : group->children) {
+        bindPointsToBuffers(&subGroup, currVBOIndex);
+    }
+}
+
 void initializeVBOs()
 {
     glEnableClientState(GL_VERTEX_ARRAY);
-    int n = config.group.models.size();
-    buffers.resize(n);
-    verticesCount.resize(n);
-    glGenBuffers(n, buffers.data());
-    int counter = 0;
-    for (const auto& model : config.group.models) {
-        ModelInfo modelInfo = parseFile(model.file.c_str());
-        config.stats.numTriangles += modelInfo.numTriangles;
+    
+    // determine number of models
+    int totalNumModels = 0;
 
-        // deal with points
-        std::vector<float> modelPoints = modelInfo.points;
-        verticesCount[counter] = modelPoints.size() / 3;
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[counter]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(),
-            modelPoints.data(), GL_STATIC_DRAW);
+    // start with the root group
+    GroupConfig rootGroup = config.group;
+    totalNumModels += rootGroup.models.size();
 
-        // also store the points for the non-VBO case
-        modelsPoints.push_back(modelPoints);
-        counter++;
+    // iterate over each subgroup
+    for (const auto& subGroup : config.group.children) {
+        totalNumModels += subGroup.models.size();
     }
+
+    // resize VBOs' buffers
+    buffers.resize(totalNumModels);
+    glGenBuffers(totalNumModels, buffers.data());
+
+    // recursively bind all of the models to the VBOs' buffer
+    int VBOindex = 0;
+    bindPointsToBuffers(&rootGroup, VBOindex);
+    config.group = rootGroup;
+    
+    // TODO: check if a reset on the buffer's index is needed
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -262,7 +284,7 @@ int main(int argc, char** argv)
     config = loadConfiguration(argv[1]);
 
     // create the window using configuration parameters
-    createWindowWithConfig(config);
+    createWindowWithConfig();
 
     // initialize the OpenGL context
     initializeOpenGLContext();

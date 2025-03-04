@@ -2,6 +2,7 @@
 #define DRAW_HPP
 
 #include "vector"
+#include "structs.hpp"
 
 #ifdef __APPLE__
 #include <GL/freeglut.h>
@@ -19,7 +20,7 @@
 
 void drawAxis();
 
-void drawWithoutVBOs(std::vector<std::vector<float>> modelsPoints);
+void drawWithoutVBOs(GroupConfig group);
 
 void drawWithVBOs(std::vector<GLuint> buffers, std::vector<GLuint> verticesCount);
 

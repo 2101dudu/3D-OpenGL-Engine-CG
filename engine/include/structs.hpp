@@ -36,7 +36,7 @@ struct Transform {
 
 struct Model {
     std::string file;
-    int vbo = 0; // VBO id
+    int vboIndex = 0; // VBO id
     size_t vertexCount = 0; // VBO vertice count
     std::vector<float> points; // non-VBO rendering
 };
@@ -52,7 +52,7 @@ struct SceneConfig {
     bool faceCulling = true;
     bool wireframe = true;
     bool drawAxis = true;
-    bool useVBOs = true;
+    bool useVBOs = false;
     ImVec4 bgColor = ImVec4(0.15625f, 0.15625f, 0.15625f, 1.0f); // off-black color
 };
 

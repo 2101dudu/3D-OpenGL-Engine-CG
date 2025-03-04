@@ -1,7 +1,7 @@
 #ifndef XML_PARSER_HPP
 #define XML_PARSER_HPP
 
-#include "structs.h"
+#include "structs.hpp"
 #include <string>
 
 class XMLParser {
