@@ -32,7 +32,7 @@ void drawAxis()
     glEnd();
 }
 
-void drawWithoutVBOs(GroupConfig group)
+void drawWithoutVBOs(const GroupConfig& group)
 {
     glPushMatrix();
 
@@ -76,13 +76,34 @@ void drawWithoutVBOs(GroupConfig group)
     glPopMatrix();
 }
 
-void drawWithVBOs(std::vector<GLuint> buffers, std::vector<GLuint> verticesCount)
+void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group)
 {
-    glEnableClientState(GL_VERTEX_ARRAY);
-    for (int i = 0; i < buffers.size(); i++) {
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
-        glVertexPointer(3, GL_FLOAT, 0, 0);
-        glDrawArrays(GL_TRIANGLES, 0, verticesCount[i]);
+    glPushMatrix();
+
+    for (const auto& transformation : group.transforms) {
+        glScalef(transformation.scaleX, transformation.scaleY, transformation.scaleZ);
+        glRotatef(transformation.rotateX, 1.0f, 0.0f, 0.0f);
+        glRotatef(transformation.rotateY, 0.0f, 1.0f, 0.0f);
+        glRotatef(transformation.rotateZ, 0.0f, 0.0f, 1.0f);
+        glTranslatef(transformation.translateX, transformation.translateY, transformation.translateZ);
     }
+
+    glColor3f(group.color.x, group.color.y, group.color.z);
+
+    // TODO: check if this line is necessary
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    for (const auto& model : group.models) {
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[model.vboIndex]);
+        glVertexPointer(3, GL_FLOAT, 0, 0);
+        glDrawArrays(GL_TRIANGLES, 0, model.vertexCount);
+    }
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    for (const auto& subGroup : group.children) {
+        drawWithVBOs(buffers, subGroup);
+    }
+
+    glPopMatrix();
 }

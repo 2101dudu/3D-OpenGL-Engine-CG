@@ -62,10 +62,10 @@ void renderScene(void)
 
     glColor3f(config.group.color.x, config.group.color.y, config.group.color.z);
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
-    //if (config.scene.useVBOs)
-        //drawWithVBOs(buffers);
-    //else
-    drawWithoutVBOs(config.group);
+    if (config.scene.useVBOs)
+        drawWithVBOs(buffers, config.group);
+    else
+        drawWithoutVBOs(config.group);
 
     drawMenu(&config);
 
@@ -243,21 +243,21 @@ void bindPointsToBuffers(GroupConfig *group, int currVBOIndex) {
     }
 }
 
+int countModels(GroupConfig& group) {
+    int models = 0;
+    models += group.models.size();
+    for (auto& subGroup : group.children) {
+        models += countModels(subGroup);
+    }
+    return models;
+}
+
 void initializeVBOs()
 {
     glEnableClientState(GL_VERTEX_ARRAY);
     
-    // determine number of models
-    int totalNumModels = 0;
-
-    // start with the root group
-    GroupConfig rootGroup = config.group;
-    totalNumModels += rootGroup.models.size();
-
-    // iterate over each subgroup
-    for (const auto& subGroup : config.group.children) {
-        totalNumModels += subGroup.models.size();
-    }
+    // recursively count the number of models
+    int totalNumModels = countModels(config.group);
 
     // resize VBOs' buffers
     buffers.resize(totalNumModels);
@@ -265,8 +265,7 @@ void initializeVBOs()
 
     // recursively bind all of the models to the VBOs' buffer
     int VBOindex = 0;
-    bindPointsToBuffers(&rootGroup, VBOindex);
-    config.group = rootGroup;
+    bindPointsToBuffers(&config.group, VBOindex);
     
     // TODO: check if a reset on the buffer's index is needed
     glBindBuffer(GL_ARRAY_BUFFER, 0);

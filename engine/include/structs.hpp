@@ -52,7 +52,7 @@ struct SceneConfig {
     bool faceCulling = true;
     bool wireframe = true;
     bool drawAxis = true;
-    bool useVBOs = false;
+    bool useVBOs = true;
     ImVec4 bgColor = ImVec4(0.15625f, 0.15625f, 0.15625f, 1.0f); // off-black color
 };
 
