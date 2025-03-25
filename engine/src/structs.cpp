@@ -23,8 +23,8 @@ void resetCamera(WorldConfig* config)
 void updateCamera(WorldConfig* config)
 {
     config->camera.position = {
-        config->camera.cameraDistance * cos(config->camera.cameraAngleY) * cos(config->camera.cameraAngle),
-        config->camera.cameraDistance * sin(config->camera.cameraAngleY),
-        config->camera.cameraDistance * cos(config->camera.cameraAngleY) * sin(config->camera.cameraAngle)
+        config->camera.lookAt.x + config->camera.cameraDistance * cos(config->camera.cameraAngleY) * cos(config->camera.cameraAngle),
+        config->camera.lookAt.y + config->camera.cameraDistance * sin(config->camera.cameraAngleY),
+        config->camera.lookAt.z + config->camera.cameraDistance * cos(config->camera.cameraAngleY) * sin(config->camera.cameraAngle)
     };
 }
