@@ -31,10 +31,10 @@ void updateCamera(WorldConfig* config)
 
 void switchCameraMode(WorldConfig* config)
 {
+
     // Toggle camera mode
     config->camera.isOrbital = !config->camera.isOrbital;
 
-    // When switching to FPS mode, compute the initial angles so the current view is preserved.
     if (!config->camera.isOrbital) {
         // Compute the vector from the camera position to the lookAt point
         float dx = config->camera.lookAt.x - config->camera.position.x;

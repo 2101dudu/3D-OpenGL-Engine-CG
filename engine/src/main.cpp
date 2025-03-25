@@ -173,19 +173,30 @@ void mouseMotion(int x, int y)
             updateCamera(&config);
             glutPostRedisplay();
         } else if (!config.camera.isOrbital) { // FPS mode
-            float dx = (x - config.camera.lastX) * config.camera.sensitivity;
-            float dy = (config.camera.lastY - y) * config.camera.sensitivity; // vertical movement reversed for better feel
-
-            if (config.camera.cameraAngle <= M_PI * 0.95 || config.camera.cameraAngleY >= 0.05) {
-                config.camera.cameraAngle += dx;
+            if (ignoreWarp) {
+                ignoreWarp = false;
+                return;
             }
 
-            if (config.camera.cameraAngleY <= M_PI / 2 * 0.95 || config.camera.cameraAngleY >= -M_PI / 2 * 0.95) {
+            int centerX = glutGet(GLUT_WINDOW_WIDTH) / 2;
+            int centerY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
+
+            float dx = (x - centerX) * config.camera.sensitivity;
+            float dy = (centerY - y) * config.camera.sensitivity; // Inverted Y-axis for correct movement
+
+            float alpha = 0.2f; // smoothing factor (0.1 - 0.3 works well)
+            smoothedAngle = smoothedAngle * (1 - alpha) + dx * alpha;
+            smoothedAngleY = smoothedAngleY * (1 - alpha) + dy * alpha;
+
+            config.camera.cameraAngle += smoothedAngle;
+            config.camera.cameraAngleY += smoothedAngleY;
+
+            // restrict the camera's Y angle to between -PI/2 and PI/2, plus a bit of a tighter squeeze to avoid looking inline with the Y axis
+            if ((dy >= 0 && config.camera.cameraAngleY <= M_PI / 2 * 0.95) || (dy < 0 && config.camera.cameraAngleY >= -M_PI / 2 * 0.95)) {
                 config.camera.cameraAngleY += dy;
             }
-            config.camera.lastX = x;
-            config.camera.lastY = y;
 
+            // Update camera look direction
             float cosY = cosf(config.camera.cameraAngleY);
             float dirX = cosf(config.camera.cameraAngle) * cosY;
             float dirY = sinf(config.camera.cameraAngleY);
@@ -194,6 +205,10 @@ void mouseMotion(int x, int y)
             config.camera.lookAt.x = config.camera.position.x + dirX;
             config.camera.lookAt.y = config.camera.position.y + dirY;
             config.camera.lookAt.z = config.camera.position.z + dirZ;
+
+            // Reset mouse position to center
+            ignoreWarp = true;
+            glutWarpPointer(centerX, centerY);
 
             glutPostRedisplay();
         }
@@ -212,7 +227,10 @@ void keyboardFunc(unsigned char key, int x, int y)
         if (key == 27) { // ESC
             switchCameraMode(&config);
 
-            // glutSetCursor(config.camera.isOrbital ? GLUT_CURSOR_INHERIT : GLUT_CURSOR_NONE);
+            glutWarpPointer(config.window.width / 2, config.window.height / 2);
+
+            // hide cursor on FPS
+            glutSetCursor(config.camera.isOrbital ? GLUT_CURSOR_INHERIT : GLUT_CURSOR_NONE);
         }
         if (!config.camera.isOrbital) {
             // Compute Forward Vector
