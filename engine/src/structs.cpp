@@ -23,8 +23,48 @@ void resetCamera(WorldConfig* config)
 void updateCamera(WorldConfig* config)
 {
     config->camera.position = {
-        config->camera.cameraDistance * cos(config->camera.cameraAngleY) * cos(config->camera.cameraAngle),
-        config->camera.cameraDistance * sin(config->camera.cameraAngleY),
-        config->camera.cameraDistance * cos(config->camera.cameraAngleY) * sin(config->camera.cameraAngle)
+        config->camera.lookAt.x + config->camera.cameraDistance * cos(config->camera.cameraAngleY) * cos(config->camera.cameraAngle),
+        config->camera.lookAt.y + config->camera.cameraDistance * sin(config->camera.cameraAngleY),
+        config->camera.lookAt.z + config->camera.cameraDistance * cos(config->camera.cameraAngleY) * sin(config->camera.cameraAngle)
     };
+}
+
+void switchCameraMode(WorldConfig* config)
+{
+
+    // Toggle camera mode
+    config->camera.isOrbital = !config->camera.isOrbital;
+
+    if (!config->camera.isOrbital) {
+        // Compute the vector from the camera position to the lookAt point
+        float dx = config->camera.lookAt.x - config->camera.position.x;
+        float dy = config->camera.lookAt.y - config->camera.position.y;
+        float dz = config->camera.lookAt.z - config->camera.position.z;
+
+        // Normalize the direction vector
+        float length = sqrtf(dx * dx + dy * dy + dz * dz);
+        if (length == 0.0f) {
+            length = 1.0f;
+        }
+        float ndx = dx / length;
+        float ndy = dy / length;
+        float ndz = dz / length;
+
+        config->camera.cameraAngle = atan2f(ndz, ndx);
+        config->camera.cameraAngleY = asinf(ndy);
+    } else {
+        float dx = config->camera.position.x;
+        float dy = config->camera.position.y;
+        float dz = config->camera.position.z;
+        float distance = sqrtf(dx * dx + dy * dy + dz * dz);
+        config->camera.cameraDistance = distance;
+
+        config->camera.cameraAngle = atan2f(dz, dx);
+        config->camera.cameraAngleY = asinf(dy / distance);
+
+        // Set the orbital mode target (lookAt) to the origin
+        config->camera.lookAt.x = 0.0f;
+        config->camera.lookAt.y = 0.0f;
+        config->camera.lookAt.z = 0.0f;
+    }
 }
