@@ -1,6 +1,7 @@
 #ifndef DRAW_HPP
 #define DRAW_HPP
 
+#include "structs.hpp"
 #include "vector"
 
 #ifdef __APPLE__
@@ -19,8 +20,8 @@
 
 void drawAxis();
 
-void drawWithoutVBOs(std::vector<std::vector<float>> modelsPoints);
+void drawWithoutVBOs(const GroupConfig& group);
 
-void drawWithVBOs(std::vector<GLuint> buffers, std::vector<GLuint> verticesCount);
+void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group);
 
 #endif
