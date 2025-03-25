@@ -1,63 +1,205 @@
 <world>
-	<window width="1000" height="800" />
-	<camera>
-		<position x="10" y="10" z="10" />
-		<lookAt x="0" y="0" z="0" />
-		<up x="0" y="1" z="0" />
-		<projection fov="60" near="1" far="1000" />
-	</camera>
-	<group>
-		<transform>
-			<translate x="4" y="0" z="4" />
-		</transform>
-		<models>
-			<model file="../../objects/sphere.3d" />
-		</models>
-		<group>
-			<transform>
-				<translate x="0" y="3" z="0"/>
-				<scale x="0.5" y="0.5" z="0.5"/>
-			</transform>
-			<models>
-				<model file="../../objects/sphere.3d" />
-			</models>
-			<group>
-				<transform>
-                    <scale x="0.1" y="0.1" z="0.1"/>
-				</transform>
-                <group>
-                    <transform>
-                        <translate x="0" y="1" z="0"/>
-                        <rotate x="0" y="0" z="15"/>
-                    </transform>
-                    <group>
-                        <transform>
-                            <translate x="19" y="0" z="-5"/>
-                        </transform>
-                        <models>
-                            <model file="../../objects/sphere.3d" />
-                        </models>
-                    </group>
-                    <group>
-                        <transform>
-                            <translate x="19" y="0" z="5"/>
-                        </transform>
-                        <models>
-                            <model file="../../objects/sphere.3d" />
-                        </models>
-                    </group>
-                </group>
-			</group>
-            <group>
+    <window width="1080" height="720" />
+    <camera>
+        <position x="10" y="10" z="10" />
+        <lookAt x="0" y="0" z="0" />
+        <up x="0" y="1" z="0" />
+        <projection fov="60" near="1" far="1000" />
+    </camera>
+    
+    <group name="SolarSystem">
+        <!-- Sun permanece inalterado (não há translate) -->
+        <group name="Sun">
+            <transform>
+                <scale x="3" y="3" z="3" />
+            </transform>
+            <models>
+                <model file="../../objects/sphere.3d" />
+            </models>
+        </group>
+        
+        <!-- Mercury: translate de 34.0 passa a ser 34.0 - 25 = 9.0 -->
+        <group name="Mercury">
+            <transform>
+                <rotate angle="305.32" x="0" y="1" z="0" />
+                <translate x="9.0" y="0" z="0" />
+                <scale x="0.04066" y="0.04066" z="0.04066" />
+            </transform>
+            <models>
+                <model file="../../objects/sphere.3d" />
+            </models>
+        </group>
+        
+        <!-- Venus: translate de 35.0 passa a ser 35.0 - 25 = 10.0 -->
+        <group name="Venus">
+            <transform>
+                <rotate angle="87.90" x="0" y="1" z="0" />
+                <translate x="10.0" y="0" z="0" />
+                <scale x="0.10086" y="0.10086" z="0.10086" />
+            </transform>
+            <models>
+                <model file="../../objects/sphere.3d" />
+            </models>
+        </group>
+        
+        <!-- Earth: translate de 35.5 passa a ser 35.5 - 25 = 10.5 -->
+        <group name="Earth">
+            <transform>
+                <rotate angle="111.20" x="0" y="1" z="0" />
+                <translate x="10.5" y="0" z="0" />
+                <scale x="0.10618" y="0.10618" z="0.10618" />
+            </transform>
+            <models>
+                <model file="../../objects/sphere.3d" />
+            </models>
+            <!-- Moon permanece relativa à Earth -->
+            <group name="Moon">
                 <transform>
-                    <scale x="0.3" y="0.3" z="0.3"/>
-                    <rotate x="0" y="0" z="-90"/>
-                    <translate x="2" y="0" z="0"/>
+                    <rotate angle="224.66" x="0" y="1" z="0" />
+                    <translate x="1.85612" y="0" z="0" />
+                    <scale x="0.27272" y="0.27272" z="0.27272" />
                 </transform>
                 <models>
-                    <model file="../../objects/cone.3d" />
+                    <model file="../../objects/sphere.3d" />
                 </models>
             </group>
-		</group>
-	</group>
+        </group>
+        
+        <!-- Mars: translate de 37.0 passa a ser 37.0 - 25 = 12.0 -->
+        <group name="Mars">
+            <transform>
+                <rotate angle="339.11" x="0" y="1" z="0" />
+                <translate x="12.0" y="0" z="0" />
+                <scale x="0.05649" y="0.05649" z="0.05649" />
+            </transform>
+            <models>
+                <model file="../../objects/sphere.3d" />
+            </models>
+            <!-- Phobos -->
+            <group name="Phobos">
+                <transform>
+                    <rotate angle="169.23" x="0" y="1" z="0" />
+                    <translate x="2.43880" y="0" z="0" />
+                    <scale x="0.00327" y="0.00327" z="0.00327" />
+                </transform>
+                <models>
+                    <model file="../../objects/sphere.3d" />
+                </models>
+            </group>
+            <!-- Deimos -->
+            <group name="Deimos">
+                <transform>
+                    <rotate angle="92.97" x="0" y="1" z="0" />
+                    <translate x="2.04395" y="0" z="0" />
+                    <scale x="0.00183" y="0.00183" z="0.00183" />
+                </transform>
+                <models>
+                    <model file="../../objects/sphere.3d" />
+                </models>
+            </group>
+        </group>
+        
+        <!-- Jupiter: translate de 46.0 passa a ser 46.0 - 25 = 21.0 -->
+        <group name="Jupiter">
+            <transform>
+                <rotate angle="249.95" x="0" y="1" z="0" />
+                <translate x="21.0" y="0" z="0" />
+                <scale x="1.16518" y="1.16518" z="1.16518" />
+            </transform>
+            <models>
+                <model file="../../objects/sphere.3d" />
+            </models>
+            <!-- Io -->
+            <group name="Io">
+                <transform>
+                    <rotate angle="25.63" x="0" y="1" z="0" />
+                    <translate x="2.42619" y="0" z="0" />
+                    <scale x="0.02606" y="0.02606" z="0.02606" />
+                </transform>
+                <models>
+                    <model file="../../objects/sphere.3d" />
+                </models>
+            </group>
+            <!-- Europa -->
+            <group name="Europa">
+                <transform>
+                    <rotate angle="122.76" x="0" y="1" z="0" />
+                    <translate x="2.45071" y="0" z="0" />
+                    <scale x="0.02233" y="0.02233" z="0.02233" />
+                </transform>
+                <models>
+                    <model file="../../objects/sphere.3d" />
+                </models>
+            </group>
+        </group>
+        
+        <!-- Saturn: translate de 57.0 passa a ser 57.0 - 25 = 32.0, acrescente 1 unidade para distanciar de Jupiter: 33.0;
+             scale foi de 0.97053, depois para 0.77642 e agora reduzido em mais 10%: 0.77642 * 0.9 ≈ 0.69878 -->
+        <group name="Saturn">
+            <transform>
+                <rotate angle="172.94" x="0" y="1" z="0" />
+                <translate x="33.0" y="0" z="0" />
+                <scale x="0.69878" y="0.69878" z="0.69878" />
+            </transform>
+            <models>
+                <model file="../../objects/sphere.3d" />
+            </models>
+            <!-- Ring de Saturn -->
+            <group name="ring">
+                <transform>
+                    <rotate angle="35" x="1" y="0" z="0" />
+                    <scale x="0.7" y="0.1" z="0.7" />
+                </transform>
+                <models>
+                    <model file="../../objects/torus.3d" />
+                </models>
+            </group>
+        </group>
+        
+        <!-- Uranus: translate de 82.0 passa a ser 82.0 - 25 = 57.0 -->
+        <group name="Uranus">
+            <transform>
+                <rotate angle="329.01" x="0" y="1" z="0" />
+                <translate x="57.0" y="0" z="0" />
+                <scale x="0.42270" y="0.42270" z="0.42270" />
+            </transform>
+            <models>
+                <model file="../../objects/sphere.3d" />
+            </models>
+            <!-- Ariel -->
+            <group name="Ariel">
+                <transform>
+                    <rotate angle="344.83" x="0" y="1" z="0" />
+                    <translate x="1.51444" y="0" z="0" />
+                    <scale x="0.02283" y="0.02283" z="0.02283" />
+                </transform>
+                <models>
+                    <model file="../../objects/sphere.3d" />
+                </models>
+            </group>
+        </group>
+        
+        <!-- Neptune: translate de 109.0 passa a ser 109.0 - 25 = 84.0 -->
+        <group name="Neptune">
+            <transform>
+                <rotate angle="102.54" x="0" y="1" z="0" />
+                <translate x="84.0" y="0" z="0" />
+                <scale x="0.41103" y="0.41103" z="0.41103" />
+            </transform>
+            <models>
+                <model file="../../objects/sphere.3d" />
+            </models>
+            <!-- Triton -->
+            <group name="Triton">
+                <transform>
+                    <rotate angle="86.24" x="0" y="1" z="0" />
+                    <translate x="1.58099" y="0" z="0" />
+                    <scale x="0.05488" y="0.05488" z="0.05488" />
+                </transform>
+                <models>
+                    <model file="../../objects/sphere.3d" />
+                </models>
+            </group>
+        </group>
+    </group>
 </world>

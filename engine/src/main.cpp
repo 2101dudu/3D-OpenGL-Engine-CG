@@ -191,10 +191,12 @@ void mouseMotion(int x, int y)
             config.camera.cameraAngle += smoothedAngle;
             config.camera.cameraAngleY += smoothedAngleY;
 
-            // restrict the camera's Y angle to between -PI/2 and PI/2, plus a bit of a tighter squeeze to avoid looking inline with the Y axis
-            if ((dy >= 0 && config.camera.cameraAngleY <= M_PI / 2 * 0.95) || (dy < 0 && config.camera.cameraAngleY >= -M_PI / 2 * 0.95)) {
-                config.camera.cameraAngleY += dy;
-            }
+            // Clamp vertical angle to prevent flipping
+            float limit = M_PI / 2 * 0.95;
+            if (config.camera.cameraAngleY > limit)
+                config.camera.cameraAngleY = limit;
+            if (config.camera.cameraAngleY < -limit)
+                config.camera.cameraAngleY = -limit;
 
             // Update camera look direction
             float cosY = cosf(config.camera.cameraAngleY);
