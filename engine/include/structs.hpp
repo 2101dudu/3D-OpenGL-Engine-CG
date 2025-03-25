@@ -26,6 +26,8 @@ struct CameraConfig {
     float cameraDistance;
     float sensitivity = 0.005;
     float scrollSensitivity = 0.05f;
+
+    bool isOrbital = true;
 };
 
 struct Transform {
@@ -72,5 +74,7 @@ struct WorldConfig {
 void resetCamera(WorldConfig* config);
 
 void updateCamera(WorldConfig* config);
+
+void switchCameraMode(WorldConfig* config);
 
 #endif

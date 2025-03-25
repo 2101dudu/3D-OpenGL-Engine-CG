@@ -27,6 +27,11 @@
 
 #define FPS_UPDATE_TIME_MS 200
 
+static bool ignoreWarp = false;
+static const int warpThreshold = 50; // adjust based on your window size
+static float smoothedAngle = 0.0f;
+static float smoothedAngleY = 0.0f;
+
 WorldConfig config;
 
 // FPS
@@ -109,14 +114,16 @@ void mouseWheel(int wheel, int direction, int x, int y)
     io.AddMouseWheelEvent(0.0f, wheelDelta);
 
     if (!io.WantCaptureMouse) {
-        config.camera.cameraDistance += wheelDelta * config.camera.scrollSensitivity;
-        if (config.camera.cameraDistance < 1.0f)
-            config.camera.cameraDistance = 1.0f;
-        else if (config.camera.cameraDistance > 120.0f)
-            config.camera.cameraDistance = 120.0f;
+        if (config.camera.isOrbital) {
+            config.camera.cameraDistance += wheelDelta * config.camera.scrollSensitivity;
+            if (config.camera.cameraDistance < 1.0f)
+                config.camera.cameraDistance = 1.0f;
+            else if (config.camera.cameraDistance > 120.0f)
+                config.camera.cameraDistance = 120.0f;
 
-        updateCamera(&config);
-        glutPostRedisplay();
+            updateCamera(&config);
+            glutPostRedisplay();
+        }
     }
 }
 
@@ -131,11 +138,13 @@ void mouseButton(int button, int state, int x, int y)
     }
 
     // click and drag
-    if (!io.WantCaptureMouse && button == GLUT_LEFT_BUTTON) {
-        config.camera.isDragging = (state == GLUT_DOWN);
-        if (config.camera.isDragging) {
-            config.camera.lastX = x;
-            config.camera.lastY = y;
+    if (!io.WantCaptureMouse) {
+        if (config.camera.isOrbital && button == GLUT_LEFT_BUTTON) {
+            config.camera.isDragging = (state == GLUT_DOWN);
+            if (config.camera.isDragging) {
+                config.camera.lastX = x;
+                config.camera.lastY = y;
+            }
         }
     }
 }
@@ -147,7 +156,7 @@ void mouseMotion(int x, int y)
     io.AddMousePosEvent(x, y);
 
     if (!io.WantCaptureMouse) {
-        if (config.camera.isDragging) {
+        if (config.camera.isDragging && config.camera.isOrbital) { // orbital mode
             float dx = (x - config.camera.lastX) * config.camera.sensitivity; // horizontal movement reversed for better feel
             float dy = (y - config.camera.lastY) * config.camera.sensitivity;
 
@@ -163,6 +172,30 @@ void mouseMotion(int x, int y)
 
             updateCamera(&config);
             glutPostRedisplay();
+        } else if (!config.camera.isOrbital) { // FPS mode
+            float dx = (x - config.camera.lastX) * config.camera.sensitivity;
+            float dy = (config.camera.lastY - y) * config.camera.sensitivity; // vertical movement reversed for better feel
+
+            if (config.camera.cameraAngle <= M_PI * 0.95 || config.camera.cameraAngleY >= 0.05) {
+                config.camera.cameraAngle += dx;
+            }
+
+            if (config.camera.cameraAngleY <= M_PI / 2 * 0.95 || config.camera.cameraAngleY >= -M_PI / 2 * 0.95) {
+                config.camera.cameraAngleY += dy;
+            }
+            config.camera.lastX = x;
+            config.camera.lastY = y;
+
+            float cosY = cosf(config.camera.cameraAngleY);
+            float dirX = cosf(config.camera.cameraAngle) * cosY;
+            float dirY = sinf(config.camera.cameraAngleY);
+            float dirZ = sinf(config.camera.cameraAngle) * cosY;
+
+            config.camera.lookAt.x = config.camera.position.x + dirX;
+            config.camera.lookAt.y = config.camera.position.y + dirY;
+            config.camera.lookAt.z = config.camera.position.z + dirZ;
+
+            glutPostRedisplay();
         }
     }
 }
@@ -173,8 +206,74 @@ void keyboardFunc(unsigned char key, int x, int y)
     ImGui_ImplGLUT_KeyboardFunc(key, x, y);
 
     if (!io.WantCaptureKeyboard) {
-        if (key == 82 || key == 114) { // r or R
+        if (key == 82 || key == 114) { // R or r
             resetCamera(&config);
+        }
+        if (key == 27) { // ESC
+            switchCameraMode(&config);
+
+            // glutSetCursor(config.camera.isOrbital ? GLUT_CURSOR_INHERIT : GLUT_CURSOR_NONE);
+        }
+        if (!config.camera.isOrbital) {
+            // Compute Forward Vector
+            float forwardX = config.camera.lookAt.x - config.camera.position.x;
+            float forwardY = config.camera.lookAt.y - config.camera.position.y;
+            float forwardZ = config.camera.lookAt.z - config.camera.position.z;
+
+            // Normalize Forward Vector
+            float forwardLength = sqrt(forwardX * forwardX + forwardY * forwardY + forwardZ * forwardZ);
+            if (forwardLength != 0) {
+                forwardX /= forwardLength;
+                forwardY /= forwardLength;
+                forwardZ /= forwardLength;
+            }
+
+            // Define World Up Vector
+            float upX = 0.0f, upY = 1.0f, upZ = 0.0f;
+
+            // Compute Right Vector (Cross Product of Forward and Up)
+            float rightX = (forwardY * upZ - forwardZ * upY);
+            float rightY = (forwardZ * upX - forwardX * upZ);
+            float rightZ = (forwardX * upY - forwardY * upX);
+
+            // Normalize Right Vector
+            float rightLength = sqrt(rightX * rightX + rightY * rightY + rightZ * rightZ);
+            if (rightLength != 0) {
+                rightX /= rightLength;
+                rightY /= rightLength;
+                rightZ /= rightLength;
+            }
+
+            // Movement Speed
+            float speed = 1.0f;
+
+            // Movement Input
+            if (key == 87 || key == 119) { // W or w (Move Forward)
+                config.camera.position.x += forwardX * speed;
+                config.camera.position.y += forwardY * speed;
+                config.camera.position.z += forwardZ * speed;
+            }
+            if (key == 83 || key == 115) { // S or s (Move Backward)
+                config.camera.position.x -= forwardX * speed;
+                config.camera.position.y -= forwardY * speed;
+                config.camera.position.z -= forwardZ * speed;
+            }
+            if (key == 65 || key == 97) { // A or a (Move Left)
+                config.camera.position.x -= rightX * speed;
+                config.camera.position.y -= rightY * speed;
+                config.camera.position.z -= rightZ * speed;
+            }
+            if (key == 68 || key == 100) { // D or d (Move Right)
+                config.camera.position.x += rightX * speed;
+                config.camera.position.y += rightY * speed;
+                config.camera.position.z += rightZ * speed;
+            }
+
+            config.camera.lookAt.x = config.camera.position.x + forwardX;
+            config.camera.lookAt.y = config.camera.position.y + forwardY;
+            config.camera.lookAt.z = config.camera.position.z + forwardZ;
+
+            glutPostRedisplay();
         }
     }
 }
@@ -206,6 +305,7 @@ void setupCallbacks()
     glutReshapeFunc(updateViewPort);
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMotion);
+    glutPassiveMotionFunc(mouseMotion);
     glutKeyboardFunc(keyboardFunc);
     glutMouseWheelFunc(mouseWheel); // Register the mouse wheel callback
 }
