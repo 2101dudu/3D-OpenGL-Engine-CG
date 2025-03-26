@@ -10,31 +10,37 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group)
     // parse transformations if avilable
     XMLElement* transformElement = groupElement->FirstChildElement("transform");
     if (transformElement) {
-        // parse translations if available
-        XMLElement* translateElement = transformElement->FirstChildElement("translate");
-        if (translateElement) {
-            Transform t;
-            translateElement->QueryFloatAttribute("x", &t.translateX);
-            translateElement->QueryFloatAttribute("y", &t.translateY);
-            translateElement->QueryFloatAttribute("z", &t.translateZ);
-            group.transforms.push_back(t);
-        }
-        // parse rotations if available
+        // Parse the rotate:
         XMLElement* rotateElement = transformElement->FirstChildElement("rotate");
         if (rotateElement) {
             Transform t;
-            rotateElement->QueryFloatAttribute("x", &t.rotateX);
-            rotateElement->QueryFloatAttribute("y", &t.rotateY);
-            rotateElement->QueryFloatAttribute("z", &t.rotateZ);
+            t.type = TransformType::Rotate;
+            rotateElement->QueryFloatAttribute("angle", &t.angle);
+            rotateElement->QueryFloatAttribute("x", &t.x);
+            rotateElement->QueryFloatAttribute("y", &t.y);
+            rotateElement->QueryFloatAttribute("z", &t.z);
             group.transforms.push_back(t);
         }
-        // parse scales if available
+
+        // Parse the translate:
+        XMLElement* translateElement = transformElement->FirstChildElement("translate");
+        if (translateElement) {
+            Transform t;
+            t.type = TransformType::Translate;
+            translateElement->QueryFloatAttribute("x", &t.x);
+            translateElement->QueryFloatAttribute("y", &t.y);
+            translateElement->QueryFloatAttribute("z", &t.z);
+            group.transforms.push_back(t);
+        }
+
+        // Parse the scale:
         XMLElement* scaleElement = transformElement->FirstChildElement("scale");
         if (scaleElement) {
             Transform t;
-            scaleElement->QueryFloatAttribute("x", &t.scaleX);
-            scaleElement->QueryFloatAttribute("y", &t.scaleY);
-            scaleElement->QueryFloatAttribute("z", &t.scaleZ);
+            t.type = TransformType::Scale;
+            scaleElement->QueryFloatAttribute("x", &t.x);
+            scaleElement->QueryFloatAttribute("y", &t.y);
+            scaleElement->QueryFloatAttribute("z", &t.z);
             group.transforms.push_back(t);
         }
     }
