@@ -30,10 +30,20 @@ struct CameraConfig {
     bool isOrbital = true;
 };
 
+enum class TransformType {
+    Translate,
+    Rotate,
+    Scale
+};
+
 struct Transform {
-    float translateX = 0.0f, translateY = 0.0f, translateZ = 0.0f;
-    float rotateX = 0.0f, rotateY = 0.0f, rotateZ = 0.0f;
-    float scaleX = 1.0f, scaleY = 1.0f, scaleZ = 1.0f;
+    TransformType type; // New member to identify the type of transformation
+    // The values are used according to the type:
+    // - For translate: uses x, y, z.
+    // - For rotate: uses angle, x, y, z.
+    // - For scale: uses x, y, z.
+    float x = 0.0f, y = 0.0f, z = 0.0f;
+    float angle = 0.0f; // Only used for rotation
 };
 
 struct Model {

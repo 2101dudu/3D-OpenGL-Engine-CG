@@ -18,6 +18,8 @@
 #include <GL/glew.h>
 // DONT REMOVE THIS COMMENT
 #include <GL/freeglut.h>
+#include <Windows.h>
+extern "C" { __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001; }
 #else
 #include <GL/glew.h>
 // DONT REMOVE THIS COMMENT

@@ -32,17 +32,28 @@ void drawAxis()
     glEnd();
 }
 
+void applyTransformations(const std::vector<Transform>& transforms)
+{
+    for (const auto& t : transforms) {
+        switch (t.type) {
+            case TransformType::Translate:
+                glTranslatef(t.x, t.y, t.z);
+                break;
+            case TransformType::Rotate:
+                glRotatef(t.angle, t.x, t.y, t.z);
+                break;
+            case TransformType::Scale:
+                glScalef(t.x, t.y, t.z);
+                break;
+        }
+    }
+}
+
 void drawWithoutVBOs(const GroupConfig& group)
 {
     glPushMatrix();
 
-    for (const auto& transformation : group.transforms) {
-        glScalef(transformation.scaleX, transformation.scaleY, transformation.scaleZ);
-        glRotatef(transformation.rotateX, 1.0f, 0.0f, 0.0f);
-        glRotatef(transformation.rotateY, 0.0f, 1.0f, 0.0f);
-        glRotatef(transformation.rotateZ, 0.0f, 0.0f, 1.0f);
-        glTranslatef(transformation.translateX, transformation.translateY, transformation.translateZ);
-    }
+    applyTransformations(group.transforms);
 
     glColor3f(group.color.x, group.color.y, group.color.z);
 
@@ -80,13 +91,7 @@ void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group)
 {
     glPushMatrix();
 
-    for (const auto& transformation : group.transforms) {
-        glScalef(transformation.scaleX, transformation.scaleY, transformation.scaleZ);
-        glRotatef(transformation.rotateX, 1.0f, 0.0f, 0.0f);
-        glRotatef(transformation.rotateY, 0.0f, 1.0f, 0.0f);
-        glRotatef(transformation.rotateZ, 0.0f, 0.0f, 1.0f);
-        glTranslatef(transformation.translateX, transformation.translateY, transformation.translateZ);
-    }
+    applyTransformations(group.transforms);
 
     glColor3f(group.color.x, group.color.y, group.color.z);
 
