@@ -36,55 +36,17 @@ void applyTransformations(const std::vector<Transform>& transforms)
 {
     for (const auto& t : transforms) {
         switch (t.type) {
-            case TransformType::Translate:
-                glTranslatef(t.x, t.y, t.z);
-                break;
-            case TransformType::Rotate:
-                glRotatef(t.angle, t.x, t.y, t.z);
-                break;
-            case TransformType::Scale:
-                glScalef(t.x, t.y, t.z);
-                break;
+        case TransformType::Translate:
+            glTranslatef(t.x, t.y, t.z);
+            break;
+        case TransformType::Rotate:
+            glRotatef(t.angle, t.x, t.y, t.z);
+            break;
+        case TransformType::Scale:
+            glScalef(t.x, t.y, t.z);
+            break;
         }
     }
-}
-
-void drawWithoutVBOs(const GroupConfig& group)
-{
-    glPushMatrix();
-
-    applyTransformations(group.transforms);
-
-    glColor3f(group.color.x, group.color.y, group.color.z);
-
-    glBegin(GL_TRIANGLES);
-    for (const auto& model : group.models) {
-        std::vector<float> modelPoints = model.points;
-        for (size_t j = 0; j < modelPoints.size(); j += 9) {
-            float p1_x = modelPoints[j];
-            float p1_y = modelPoints[j + 1];
-            float p1_z = modelPoints[j + 2];
-
-            float p2_x = modelPoints[j + 3];
-            float p2_y = modelPoints[j + 4];
-            float p2_z = modelPoints[j + 5];
-
-            float p3_x = modelPoints[j + 6];
-            float p3_y = modelPoints[j + 7];
-            float p3_z = modelPoints[j + 8];
-
-            glVertex3f(p1_x, p1_y, p1_z);
-            glVertex3f(p2_x, p2_y, p2_z);
-            glVertex3f(p3_x, p3_y, p3_z);
-        }
-    }
-    glEnd();
-
-    for (const auto& subGroup : group.children) {
-        drawWithoutVBOs(subGroup);
-    }
-
-    glPopMatrix();
 }
 
 void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group)

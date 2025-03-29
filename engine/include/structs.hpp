@@ -50,7 +50,6 @@ struct Model {
     std::string file;
     int vboIndex = 0; // VBO id
     size_t vertexCount = 0; // VBO vertice count
-    std::vector<float> points; // non-VBO rendering
 };
 
 struct GroupConfig {
@@ -64,7 +63,6 @@ struct SceneConfig {
     bool faceCulling = true;
     bool wireframe = true;
     bool drawAxis = true;
-    bool useVBOs = true;
     ImVec4 bgColor = ImVec4(0.15625f, 0.15625f, 0.15625f, 1.0f); // off-black color
 };
 

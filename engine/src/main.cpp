@@ -19,7 +19,9 @@
 // DONT REMOVE THIS COMMENT
 #include <GL/freeglut.h>
 #include <Windows.h>
-extern "C" { __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001; }
+extern "C" {
+__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+}
 #else
 #include <GL/glew.h>
 // DONT REMOVE THIS COMMENT
@@ -69,10 +71,7 @@ void renderScene(void)
 
     glColor3f(config.group.color.x, config.group.color.y, config.group.color.z);
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
-    if (config.scene.useVBOs)
-        drawWithVBOs(buffers, config.group);
-    else
-        drawWithoutVBOs(config.group);
+    drawWithVBOs(buffers, config.group);
 
     drawMenu(&config);
 
@@ -354,8 +353,6 @@ void bindPointsToBuffers(GroupConfig* group, int* currVBOIndex)
         glBindBuffer(GL_ARRAY_BUFFER, buffers[*currVBOIndex]);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(), modelPoints.data(), GL_STATIC_DRAW);
 
-        // also store the points for the non-VBO case
-        model.points = modelPoints;
         model.vboIndex = *currVBOIndex;
         (*currVBOIndex)++;
     }

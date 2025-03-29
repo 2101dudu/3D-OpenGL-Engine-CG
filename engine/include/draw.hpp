@@ -20,8 +20,6 @@
 
 void drawAxis();
 
-void drawWithoutVBOs(const GroupConfig& group);
-
 void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group);
 
 #endif
