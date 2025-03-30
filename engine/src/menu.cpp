@@ -66,7 +66,6 @@ void drawMenu(WorldConfig* config)
         ImGui::Checkbox("Cull faces", &config->scene.faceCulling);
         ImGui::Checkbox("Wireframe", &config->scene.wireframe);
         ImGui::Checkbox("Draw axis", &config->scene.drawAxis);
-        ImGui::Checkbox("Use VBOs", &config->scene.useVBOs);
         ImGui::ColorEdit3("Background color", (float*)&config->scene.bgColor);
 
         ImGui::TreePop();

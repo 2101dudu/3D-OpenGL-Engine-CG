@@ -130,17 +130,6 @@ void calculateSphericalCoordinates(float x, float y, float z, float& alpha, floa
     beta = std::asin(y / radius);
 }
 
-void printLoadedFiles(GroupConfig group)
-{
-    for (const auto& model : group.models) {
-        std::cout << "Model file: " << model.file << std::endl;
-    }
-
-    for (const auto& subGroup : group.children) {
-        printLoadedFiles(subGroup);
-    }
-}
-
 void XMLParser::configureFromXML(WorldConfig& config)
 {
     std::cout << "World configuration:" << std::endl;
@@ -159,5 +148,4 @@ void XMLParser::configureFromXML(WorldConfig& config)
     config.camera.cameraDistance = radius;
 
     GroupConfig rootGroup = config.group;
-    printLoadedFiles(rootGroup);
 }
