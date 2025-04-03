@@ -51,6 +51,7 @@ struct Model {
     std::string file;
     int vboIndex = 0; // VBO id
     size_t vertexCount = 0; // VBO vertice count
+    size_t triangleCount = 0; // purely for stats
 };
 
 struct GroupConfig {
@@ -76,7 +77,7 @@ struct WorldConfig {
     WindowConfig window;
     CameraConfig camera;
     GroupConfig group;
-    std::map<char*, Model> filesModels;
+    std::map<std::string, Model> filesModels;
     SceneConfig scene;
     Stats stats;
 };
