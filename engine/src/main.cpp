@@ -32,7 +32,7 @@ __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 #define FPS_UPDATE_TIME_MS 200
 
 static bool ignoreWarp = false;
-static const int warpThreshold = 50; // adjust based on your window size
+static const int warpThreshold = 50;
 static float smoothedAngle = 0.0f;
 static float smoothedAngleY = 0.0f;
 

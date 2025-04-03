@@ -5,7 +5,7 @@
 
 using namespace tinyxml2;
 
-void parseGroup(XMLElement* groupElement, GroupConfig& group)
+void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<char*, Model>& filesModels)
 {
     // parse transformations if avilable
     XMLElement* transformElement = groupElement->FirstChildElement("transform");
@@ -54,6 +54,11 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group)
             if (modelElement->Attribute("file"))
                 modelConfig.file = modelElement->Attribute("file");
             group.models.push_back(modelConfig);
+
+            // if there's no entry on the models' map
+            if (!filesModels.count(modelConfig.file.c_str())) {
+                filesModels[modelConfig.file.c_str()] = modelConfig;
+            }
             modelElement = modelElement->NextSiblingElement("model");
         }
     }
@@ -62,7 +67,7 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group)
     XMLElement* childGroupElement = groupElement->FirstChildElement("group");
     while (childGroupElement) {
         GroupConfig childGroup;
-        parseGroup(childGroupElement, childGroup);
+        parseGroup(childGroupElement, childGroup, filesModels);
         group.children.push_back(childGroup);
         childGroupElement = childGroupElement->NextSiblingElement("group");
     }
@@ -116,8 +121,9 @@ WorldConfig XMLParser::parseXML(const std::string& filename)
     }
 
     XMLElement* group = world->FirstChildElement("group");
+    std::map<char*, Model> filesModels;
     if (group) {
-        parseGroup(group, config.group);
+        parseGroup(group, config.group, filesModels);
     }
 
     return config;

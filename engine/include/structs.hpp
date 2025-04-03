@@ -2,6 +2,7 @@
 #define STRUCTS_HPP
 
 #include "imgui.h"
+#include <map>
 #include <string>
 #include <vector>
 
@@ -75,6 +76,7 @@ struct WorldConfig {
     WindowConfig window;
     CameraConfig camera;
     GroupConfig group;
+    std::map<char*, Model> filesModels;
     SceneConfig scene;
     Stats stats;
 };
