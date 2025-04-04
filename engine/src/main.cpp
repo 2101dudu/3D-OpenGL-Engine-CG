@@ -29,7 +29,8 @@ __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 #include <GL/glut.h>
 #endif
 
-#define FPS_UPDATE_TIME_MS 200
+int frames = 0;
+time_t globalTimer = 0;
 
 static bool ignoreWarp = false;
 static const int warpThreshold = 50; // adjust based on your window size
@@ -37,10 +38,6 @@ static float smoothedAngle = 0.0f;
 static float smoothedAngleY = 0.0f;
 
 WorldConfig config;
-
-// FPS
-int timebase;
-int frames = 0;
 
 // VBOs
 std::vector<GLuint> buffers;
@@ -60,6 +57,9 @@ void updateSceneOptions(void)
 
 void renderScene(void)
 {
+    // update global timers
+    globalTimer = glutGet(GLUT_ELAPSED_TIME);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     gluLookAt(config.camera.position.x, config.camera.position.y, config.camera.position.z,
@@ -78,18 +78,11 @@ void renderScene(void)
     // update scene options based on the menu
     updateSceneOptions();
 
-    // FPS
-    frames++;
-    int time = glutGet(GLUT_ELAPSED_TIME);
-    static float fps = 0.0f;
-    if (time - timebase > FPS_UPDATE_TIME_MS) {
-        fps = frames * 1000.0f / (time - timebase);
-        timebase = time;
-        frames = 0;
-    }
-    config.stats.fps = fps;
-
     glutSwapBuffers();
+
+    // FPS
+    config.stats.fps = calculateFPS();
+    frames++;
 }
 
 void updateViewPort(int w, int h)

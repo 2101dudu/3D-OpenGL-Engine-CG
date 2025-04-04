@@ -39,11 +39,12 @@ enum class TransformType {
 struct Transform {
     TransformType type; // New member to identify the type of transformation
     // The values are used according to the type:
-    // - For translate: uses x, y, z.
-    // - For rotate: uses angle, x, y, z.
+    // - For translate: uses <time> x, y, z.
+    // - For rotate: uses <time/angle>, x, y, z.
     // - For scale: uses x, y, z.
     float x = 0.0f, y = 0.0f, z = 0.0f;
     float angle = 0.0f; // Only used for rotation
+    float time = 0.0f;
 };
 
 struct Model {
