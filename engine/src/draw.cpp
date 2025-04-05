@@ -14,14 +14,8 @@
 
 #include "draw.hpp"
 
-#define FPS_UPDATE_TIME_MS 200
-
-// FPS
-int timebase;
-float fps = 0.0f;
-
-extern int frames;
-extern time_t globalTimer;
+extern float globalTimer;
+extern float timeFactor;
 
 void drawAxis()
 {
@@ -50,8 +44,7 @@ void applyTransformations(const std::vector<Transform>& transforms)
             break;
         case TransformType::Rotate:
             if (t.time > 0.0f) {
-
-                int elapsedInCycle = globalTimer % static_cast<int>(t.time * 1000);
+                int elapsedInCycle = fmod(globalTimer, t.time * 1000);
 
                 float currRotation = (elapsedInCycle / (t.time * 1000.0f)) * 360.0f;
                 glRotatef(currRotation, t.x, t.y, t.z);
@@ -90,15 +83,4 @@ void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group)
     }
 
     glPopMatrix();
-}
-
-float calculateFPS()
-{
-    if (globalTimer - timebase > FPS_UPDATE_TIME_MS) {
-        fps = frames * 1000.0f / (globalTimer - timebase);
-        timebase = globalTimer;
-        frames = 0;
-    }
-
-    return fps;
 }

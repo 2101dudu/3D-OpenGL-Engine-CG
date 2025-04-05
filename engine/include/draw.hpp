@@ -22,6 +22,4 @@ void drawAxis();
 
 void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group);
 
-float calculateFPS();
-
 #endif

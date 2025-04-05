@@ -44,7 +44,9 @@ struct Transform {
     // - For scale: uses x, y, z.
     float x = 0.0f, y = 0.0f, z = 0.0f;
     float angle = 0.0f; // Only used for rotation
+
     float time = 0.0f;
+    float currentRotation = 0.0f; // accumulated rotation angle (in degrees)
 };
 
 struct Model {
@@ -68,7 +70,6 @@ struct SceneConfig {
 };
 
 struct Stats {
-    int fps;
     int64_t numTriangles = 0;
 };
 

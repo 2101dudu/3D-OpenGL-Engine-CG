@@ -13,6 +13,8 @@
 #include "menu.hpp"
 #include "xml_parser.hpp"
 
+extern float timeFactor;
+
 void initializeImGUI(void)
 {
     ImGui::CreateContext();
@@ -33,6 +35,7 @@ void drawMenu(WorldConfig* config)
     ImGui_ImplOpenGL2_NewFrame();
     ImGui_ImplGLUT_NewFrame();
     ImGui::NewFrame();
+    ImGuiIO& io = ImGui::GetIO();
 
     ImGui::Begin("Settings");
     if (ImGui::TreeNodeEx("Camera", ImGuiTreeNodeFlags_Framed)) {
@@ -68,6 +71,8 @@ void drawMenu(WorldConfig* config)
         ImGui::Checkbox("Draw axis", &config->scene.drawAxis);
         ImGui::ColorEdit3("Background color", (float*)&config->scene.bgColor);
 
+        if (ImGui::SliderFloat("Time scale", &timeFactor, 0.0, 10)) { }
+
         ImGui::TreePop();
     }
 
@@ -77,7 +82,7 @@ void drawMenu(WorldConfig* config)
         ImGui::TreePop();
     }
     ImGui::Text("Stats:");
-    ImGui::Text(">> %.3f ms/frame (%d FPS)", 1000.0f / config->stats.fps, config->stats.fps);
+    ImGui::Text(">> %.0f FPS", io.Framerate);
     ImGui::Text(">> Current triangles: %lld", config->stats.numTriangles);
 
     ImGui::End();

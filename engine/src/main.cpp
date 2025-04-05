@@ -29,8 +29,11 @@ __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 #include <GL/glut.h>
 #endif
 
-int frames = 0;
-time_t globalTimer = 0;
+int lastRealTime;
+float globalTimer = 0.0f;
+
+// the time update factor
+float timeFactor = 1;
 
 static bool ignoreWarp = false;
 static const int warpThreshold = 50; // adjust based on your window size
@@ -58,7 +61,11 @@ void updateSceneOptions(void)
 void renderScene(void)
 {
     // update global timers
-    globalTimer = glutGet(GLUT_ELAPSED_TIME);
+    int currentRealTime = glutGet(GLUT_ELAPSED_TIME);
+    float deltaRealTime = (currentRealTime - lastRealTime);
+    float deltaTime = deltaRealTime * timeFactor;
+    globalTimer += deltaTime;
+    lastRealTime = currentRealTime;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
@@ -79,10 +86,6 @@ void renderScene(void)
     updateSceneOptions();
 
     glutSwapBuffers();
-
-    // FPS
-    config.stats.fps = calculateFPS();
-    frames++;
 }
 
 void updateViewPort(int w, int h)
@@ -411,6 +414,7 @@ int main(int argc, char** argv)
     setupCallbacks();
 
     // enter the GLUT main loop
+    lastRealTime = glutGet(GLUT_ELAPSED_TIME);
     glutMainLoop();
 
     shutdownMenu();
