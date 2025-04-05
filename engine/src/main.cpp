@@ -229,7 +229,7 @@ void keyboardFunc(unsigned char key, int x, int y)
             glutWarpPointer(config.window.width / 2, config.window.height / 2);
 
             // hide cursor on FPS
-            glutSetCursor(config.camera.isOrbital ? GLUT_CURSOR_INHERIT : GLUT_CURSOR_NONE);
+            glutSetCursor(config.camera.isOrbital ? GLUT_CURSOR_INHERIT : GLUT_CURSOR_CROSSHAIR);
         }
         if (!config.camera.isOrbital) {
             // Compute Forward Vector
