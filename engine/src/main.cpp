@@ -29,7 +29,11 @@ __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 #include <GL/glut.h>
 #endif
 
-#define FPS_UPDATE_TIME_MS 200
+int lastRealTime;
+float globalTimer = 0.0f;
+
+// the time update factor
+float timeFactor = 1;
 
 static bool ignoreWarp = false;
 static const int warpThreshold = 50;
@@ -37,10 +41,6 @@ static float smoothedAngle = 0.0f;
 static float smoothedAngleY = 0.0f;
 
 WorldConfig config;
-
-// FPS
-int timebase;
-int frames = 0;
 
 // VBOs
 std::vector<GLuint> buffers;
@@ -60,6 +60,13 @@ void updateSceneOptions(void)
 
 void renderScene(void)
 {
+    // update global timers
+    int currentRealTime = glutGet(GLUT_ELAPSED_TIME);
+    float deltaRealTime = (currentRealTime - lastRealTime);
+    float deltaTime = deltaRealTime * timeFactor;
+    globalTimer += deltaTime;
+    lastRealTime = currentRealTime;
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     gluLookAt(config.camera.position.x, config.camera.position.y, config.camera.position.z,
@@ -77,17 +84,6 @@ void renderScene(void)
 
     // update scene options based on the menu
     updateSceneOptions();
-
-    // FPS
-    frames++;
-    int time = glutGet(GLUT_ELAPSED_TIME);
-    static float fps = 0.0f;
-    if (time - timebase > FPS_UPDATE_TIME_MS) {
-        fps = frames * 1000.0f / (time - timebase);
-        timebase = time;
-        frames = 0;
-    }
-    config.stats.fps = fps;
 
     glutSwapBuffers();
 }
@@ -233,7 +229,7 @@ void keyboardFunc(unsigned char key, int x, int y)
             glutWarpPointer(config.window.width / 2, config.window.height / 2);
 
             // hide cursor on FPS
-            glutSetCursor(config.camera.isOrbital ? GLUT_CURSOR_INHERIT : GLUT_CURSOR_NONE);
+            glutSetCursor(config.camera.isOrbital ? GLUT_CURSOR_INHERIT : GLUT_CURSOR_CROSSHAIR);
         }
         if (!config.camera.isOrbital) {
             // Compute Forward Vector
@@ -421,6 +417,7 @@ int main(int argc, char** argv)
     setupCallbacks();
 
     // enter the GLUT main loop
+    lastRealTime = glutGet(GLUT_ELAPSED_TIME);
     glutMainLoop();
 
     shutdownMenu();

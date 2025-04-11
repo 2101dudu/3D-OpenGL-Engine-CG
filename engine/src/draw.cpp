@@ -10,9 +10,13 @@
 // DONT REMOVE THIS COMMENT
 #include <GL/freeglut.h>
 #include <GL/glut.h>
+#include <cmath>
 #endif
 
 #include "draw.hpp"
+
+extern float globalTimer;
+extern float timeFactor;
 
 void drawAxis()
 {
@@ -40,7 +44,14 @@ void applyTransformations(const std::vector<Transform>& transforms)
             glTranslatef(t.x, t.y, t.z);
             break;
         case TransformType::Rotate:
-            glRotatef(t.angle, t.x, t.y, t.z);
+            if (t.time > 0.0f) {
+                int elapsedInCycle = fmod(globalTimer, t.time * 1000);
+
+                float currRotation = (elapsedInCycle / (t.time * 1000.0f)) * 360.0f;
+                glRotatef(currRotation, t.x, t.y, t.z);
+            } else {
+                glRotatef(t.angle, t.x, t.y, t.z);
+            }
             break;
         case TransformType::Scale:
             glScalef(t.x, t.y, t.z);

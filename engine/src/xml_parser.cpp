@@ -15,7 +15,8 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
         if (rotateElement) {
             Transform t;
             t.type = TransformType::Rotate;
-            rotateElement->QueryFloatAttribute("angle", &t.angle);
+            rotateElement->QueryFloatAttribute("angle", &t.angle); // "angle" may be ommited, meaning t.angle == 0
+            rotateElement->QueryFloatAttribute("time", &t.time); // "time" may be ommited, meaning t.angle == 0
             rotateElement->QueryFloatAttribute("x", &t.x);
             rotateElement->QueryFloatAttribute("y", &t.y);
             rotateElement->QueryFloatAttribute("z", &t.z);
