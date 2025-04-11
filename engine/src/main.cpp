@@ -32,7 +32,7 @@ __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 #define FPS_UPDATE_TIME_MS 200
 
 static bool ignoreWarp = false;
-static const int warpThreshold = 50; // adjust based on your window size
+static const int warpThreshold = 50;
 static float smoothedAngle = 0.0f;
 static float smoothedAngleY = 0.0f;
 
@@ -341,51 +341,54 @@ void initializeOpenGLContext()
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
 }
 
-void bindPointsToBuffers(GroupConfig* group, int* currVBOIndex)
+void bindPointsToBuffers()
 {
-    for (auto& model : group->models) {
-        // get info from file
-        ModelInfo modelInfo = parseFile(model.file.c_str());
+    std::map<std::string, Model>::iterator it;
+    int count = 0;
+    for (it = config.filesModels.begin(); it != config.filesModels.end(); it++, count++) {
+        Model* model = &it->second;
+
+        ModelInfo modelInfo = parseFile(model->file);
         std::vector<float> modelPoints = modelInfo.points;
-        config.stats.numTriangles += modelInfo.numTriangles;
 
-        model.vertexCount = modelPoints.size() / 3;
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[*currVBOIndex]);
+        model->vboIndex = count;
+        model->vertexCount = modelPoints.size() / 3;
+        model->triangleCount = modelInfo.numTriangles;
+
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[count]);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(), modelPoints.data(), GL_STATIC_DRAW);
-
-        model.vboIndex = *currVBOIndex;
-        (*currVBOIndex)++;
-    }
-
-    for (auto& subGroup : group->children) {
-        bindPointsToBuffers(&subGroup, currVBOIndex);
     }
 }
 
-int countModels(GroupConfig& group)
+void pointModelsVBOIndex(GroupConfig* group)
 {
-    int models = 0;
-    models += group.models.size();
-    for (auto& subGroup : group.children) {
-        models += countModels(subGroup);
+    for (auto& model : group->models) {
+        Model m = config.filesModels[model.file];
+        model = m;
+        config.stats.numTriangles += model.triangleCount;
     }
-    return models;
+
+    for (auto& subGroup : group->children) {
+        pointModelsVBOIndex(&subGroup);
+    }
 }
 
 void initializeVBOs()
 {
     glEnableClientState(GL_VERTEX_ARRAY);
 
-    // recursively count the number of models
-    int totalNumModels = countModels(config.group);
+    // count the number of models
+    int totalNumModels = config.filesModels.size();
 
     // resize VBOs' buffers
     buffers.resize(totalNumModels);
     glGenBuffers(totalNumModels, buffers.data());
 
-    // recursively bind all of the models to the VBOs' buffer
-    int VBOindex = 0;
-    bindPointsToBuffers(&config.group, &VBOindex);
+    // bind all of the files' models to the VBOs' buffer
+    bindPointsToBuffers();
+
+    // recursively make the models point to their respective VBO index
+    pointModelsVBOIndex(&config.group);
 
     // TODO: check if a reset on the buffer's index is needed
     glBindBuffer(GL_ARRAY_BUFFER, 0);
