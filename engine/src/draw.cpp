@@ -47,13 +47,14 @@ void applyTransformations(const std::vector<Transform>& transforms)
 
                 getGlobalCatmullRomPoint(pos, deriv, t);
 
-                float forward[3] = { deriv[0], deriv[1], deriv[2] };
-                float* rotMatrix = getRotMatrix(forward);
-
                 glTranslatef(pos[0], pos[1], pos[2]);
-                glMultMatrixf(rotMatrix);
 
-                free(rotMatrix);
+                if (t.align) {
+                    float forward[3] = { deriv[0], deriv[1], deriv[2] };
+                    float* rotMatrix = getRotMatrix(forward);
+                    glMultMatrixf(rotMatrix);
+                    free(rotMatrix);
+                }
             } else {
                 glTranslatef(t.x, t.y, t.z);
             }
