@@ -18,6 +18,7 @@
 
 extern float globalTimer;
 extern float timeFactor;
+extern bool drawCatmullRomCurves;
 
 void drawAxis()
 {
@@ -45,7 +46,17 @@ void applyTransformations(const std::vector<Transform>& transforms)
             if (t.curveTime > 0.0f) {
                 float pos[3], deriv[3];
 
-                getGlobalCatmullRomPoint(pos, deriv, t);
+                if (drawCatmullRomCurves) {
+                    glColor3f(1.0f, 1.0f, 0.0f);
+                    glBegin(GL_LINE_LOOP);
+                    for (float _t = 0; _t < 1; _t += 0.01f) {
+                        getGlobalCatmullRomPoint(_t, pos, deriv, t);
+                        glVertex3f(pos[0], pos[1], pos[2]);
+                    }
+                    glEnd();
+                }
+
+                getGlobalCatmullRomPoint(-1.0f, pos, deriv, t);
 
                 glTranslatef(pos[0], pos[1], pos[2]);
 

@@ -101,11 +101,12 @@ void getCatmullRomPoint(float t, float* p0, float* p1, float* p2, float* p3, flo
 }
 
 // given  global t, returns the point in the curve
-void getGlobalCatmullRomPoint(float* pos, float* deriv, const Transform transform)
+void getGlobalCatmullRomPoint(float time, float* pos, float* deriv, const Transform transform)
 {
     size_t pointCount = transform.numberCurvePoints;
 
-    float t = (globalTimer / 10000) * pointCount; // this is the real global t
+    float newTime = time == -1 ? (globalTimer / 10000) : time;
+    float t = newTime * pointCount; // this is the real global t
     int index = floor(t); // which segment
     t = t - index; // where within  the segment
 

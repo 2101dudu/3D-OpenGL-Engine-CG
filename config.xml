@@ -15,6 +15,7 @@
                 <point x="0" y="10" z="0" />
                 <point x="-10" y="0" z="0" />
                 <point x="0" y="0" z="-10" />
+                <point x="0" y="100" z="-10" />
             </translate>
         </transform>
         <group name="Sun">

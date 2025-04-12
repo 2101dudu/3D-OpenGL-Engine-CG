@@ -17,7 +17,7 @@
 #include <GL/glut.h>
 #endif
 
-void getGlobalCatmullRomPoint(float* pos, float* deriv, const Transform t);
+void getGlobalCatmullRomPoint(float time, float* pos, float* deriv, const Transform t);
 
 float* getRotMatrix(float* forward);
 

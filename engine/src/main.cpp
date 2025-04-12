@@ -42,6 +42,8 @@ static float smoothedAngleY = 0.0f;
 
 WorldConfig config;
 
+bool drawCatmullRomCurves = false;
+
 // VBOs
 std::vector<GLuint> buffers;
 
@@ -56,6 +58,8 @@ void updateSceneOptions(void)
     } else {
         glDisable(GL_CULL_FACE);
     }
+
+    drawCatmullRomCurves = config.scene.drawCatmullRomCurves;
 }
 
 void renderScene(void)
