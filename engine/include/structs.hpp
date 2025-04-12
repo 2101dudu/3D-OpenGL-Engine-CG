@@ -51,7 +51,6 @@ struct Transform {
     float currentRotation = 0.0f; // accumulated rotation angle (in degrees)
 
     // catmull rom
-    bool drawWithCatmullRom = false;
     size_t numberCurvePoints = 0;
     float** curvePoints;
 

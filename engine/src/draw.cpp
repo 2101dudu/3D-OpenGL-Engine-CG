@@ -42,7 +42,7 @@ void applyTransformations(const std::vector<Transform>& transforms)
     for (const auto& t : transforms) {
         switch (t.type) {
         case TransformType::Translate:
-            if (t.time > 0.0f) {
+            if (t.curveTime > 0.0f) {
                 float pos[3], deriv[3];
 
                 getGlobalCatmullRomPoint(pos, deriv, t);
@@ -50,7 +50,6 @@ void applyTransformations(const std::vector<Transform>& transforms)
                 float forward[3] = { deriv[0], deriv[1], deriv[2] };
                 float* rotMatrix = getRotMatrix(forward);
 
-                glPushMatrix();
                 glTranslatef(pos[0], pos[1], pos[2]);
                 glMultMatrixf(rotMatrix);
 

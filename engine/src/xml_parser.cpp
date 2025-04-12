@@ -29,11 +29,9 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
             Transform t;
             t.type = TransformType::Translate;
 
-            XMLElement* pointElement = transformElement->FirstChildElement("point");
+            XMLElement* pointElement = translateElement->FirstChildElement("point");
 
             if (pointElement) {
-                t.drawWithCatmullRom = true;
-
                 translateElement->QueryFloatAttribute("time", &t.curveTime); // "time" may be ommited, meaning t.curveTime == 0
                 translateElement->QueryBoolAttribute("align", &t.align); // "align" may be ommited, meaning t.align == false
 

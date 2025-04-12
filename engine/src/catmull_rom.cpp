@@ -105,7 +105,7 @@ void getGlobalCatmullRomPoint(float* pos, float* deriv, const Transform transfor
 {
     size_t pointCount = transform.numberCurvePoints;
 
-    float t = globalTimer * pointCount; // this is the real global t
+    float t = (globalTimer / 10000) * pointCount; // this is the real global t
     int index = floor(t); // which segment
     t = t - index; // where within  the segment
 
