@@ -46,8 +46,17 @@ struct Transform {
     float x = 0.0f, y = 0.0f, z = 0.0f;
     float angle = 0.0f; // Only used for rotation
 
+    // rotation animation
     float time = 0.0f;
     float currentRotation = 0.0f; // accumulated rotation angle (in degrees)
+
+    // catmull rom
+    bool drawWithCatmullRom = false;
+    size_t numberCurvePoints = 0;
+    float** curvePoints;
+
+    float curveTime = 0.0f;
+    bool align = false;
 };
 
 struct Model {
@@ -55,10 +64,6 @@ struct Model {
     int vboIndex = 0; // VBO id
     size_t vertexCount = 0; // VBO vertice count
     size_t triangleCount = 0; // purely for stats
-
-    bool drawWithCatmullRom = false;
-    size_t numberCurvePoints = 0;
-    float** curvePoints;
 };
 
 struct GroupConfig {

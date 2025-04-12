@@ -17,8 +17,8 @@
 #include <GL/glut.h>
 #endif
 
-void renderModelInCurve(const std::vector<GLuint>& buffers, const Model model);
+void getGlobalCatmullRomPoint(float* pos, float* deriv, const Transform t);
 
-void renderVBOModel(const std::vector<GLuint>& buffers, const Model model);
+float* getRotMatrix(float* forward);
 
 #endif

@@ -42,7 +42,22 @@ void applyTransformations(const std::vector<Transform>& transforms)
     for (const auto& t : transforms) {
         switch (t.type) {
         case TransformType::Translate:
-            glTranslatef(t.x, t.y, t.z);
+            if (t.time > 0.0f) {
+                float pos[3], deriv[3];
+
+                getGlobalCatmullRomPoint(pos, deriv, t);
+
+                float forward[3] = { deriv[0], deriv[1], deriv[2] };
+                float* rotMatrix = getRotMatrix(forward);
+
+                glPushMatrix();
+                glTranslatef(pos[0], pos[1], pos[2]);
+                glMultMatrixf(rotMatrix);
+
+                free(rotMatrix);
+            } else {
+                glTranslatef(t.x, t.y, t.z);
+            }
             break;
         case TransformType::Rotate:
             if (t.time > 0.0f) {
@@ -73,11 +88,9 @@ void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group)
     glEnableClientState(GL_VERTEX_ARRAY);
 
     for (const auto& model : group.models) {
-        if (model.drawWithCatmullRom) {
-            renderModelInCurve(buffers, model);
-        } else {
-            renderVBOModel(buffers, model);
-        }
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[model.vboIndex]);
+        glVertexPointer(3, GL_FLOAT, 0, 0);
+        glDrawArrays(GL_TRIANGLES, 0, model.vertexCount);
     }
 
     // TODO: check if this line is necessary

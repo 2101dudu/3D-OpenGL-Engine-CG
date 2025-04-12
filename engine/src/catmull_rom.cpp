@@ -101,9 +101,9 @@ void getCatmullRomPoint(float t, float* p0, float* p1, float* p2, float* p3, flo
 }
 
 // given  global t, returns the point in the curve
-void getGlobalCatmullRomPoint(float* pos, float* deriv, const Model model)
+void getGlobalCatmullRomPoint(float* pos, float* deriv, const Transform transform)
 {
-    size_t pointCount = model.numberCurvePoints;
+    size_t pointCount = transform.numberCurvePoints;
 
     float t = globalTimer * pointCount; // this is the real global t
     int index = floor(t); // which segment
@@ -116,7 +116,7 @@ void getGlobalCatmullRomPoint(float* pos, float* deriv, const Model model)
     indices[2] = (indices[1] + 1) % pointCount;
     indices[3] = (indices[2] + 1) % pointCount;
 
-    float** p = model.curvePoints;
+    float** p = transform.curvePoints;
 
     getCatmullRomPoint(t, p[indices[0]], p[indices[1]], p[indices[2]], p[indices[3]], pos, deriv);
 }
@@ -136,29 +136,4 @@ float* getRotMatrix(float* forward)
     buildRotMatrix(forward, up, right, rotMatrix);
 
     return rotMatrix;
-}
-
-void renderVBOModel(const std::vector<GLuint>& buffers, const Model model)
-{
-    glBindBuffer(GL_ARRAY_BUFFER, buffers[model.vboIndex]);
-    glVertexPointer(3, GL_FLOAT, 0, 0);
-    glDrawArrays(GL_TRIANGLES, 0, model.vertexCount);
-}
-
-void renderModelInCurve(const std::vector<GLuint>& buffers, const Model model)
-{
-    float pos[3], deriv[3];
-
-    getGlobalCatmullRomPoint(pos, deriv, model);
-
-    float forward[3] = { deriv[0], deriv[1], deriv[2] };
-    float* rotMatrix = getRotMatrix(forward);
-
-    glPushMatrix();
-    glTranslatef(pos[0], pos[1], pos[2]);
-    glMultMatrixf(rotMatrix);
-    renderVBOModel(buffers, model);
-    glPopMatrix();
-
-    free(rotMatrix);
 }
