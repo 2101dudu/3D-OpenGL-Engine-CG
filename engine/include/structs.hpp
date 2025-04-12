@@ -55,6 +55,10 @@ struct Model {
     int vboIndex = 0; // VBO id
     size_t vertexCount = 0; // VBO vertice count
     size_t triangleCount = 0; // purely for stats
+
+    bool drawWithCatmullRom = false;
+    size_t numberCurvePoints = 0;
+    float** curvePoints;
 };
 
 struct GroupConfig {

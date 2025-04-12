@@ -13,6 +13,7 @@
 #include <cmath>
 #endif
 
+#include "catmull_rom.hpp"
 #include "draw.hpp"
 
 extern float globalTimer;
@@ -72,11 +73,14 @@ void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group)
     glEnableClientState(GL_VERTEX_ARRAY);
 
     for (const auto& model : group.models) {
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[model.vboIndex]);
-        glVertexPointer(3, GL_FLOAT, 0, 0);
-        glDrawArrays(GL_TRIANGLES, 0, model.vertexCount);
+        if (model.drawWithCatmullRom) {
+            renderModelInCurve(buffers, model);
+        } else {
+            renderVBOModel(buffers, model);
+        }
     }
 
+    // TODO: check if this line is necessary
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     for (const auto& subGroup : group.children) {
