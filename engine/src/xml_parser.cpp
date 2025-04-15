@@ -6,39 +6,39 @@
 
 using namespace tinyxml2;
 
-std::string parsePlanetInfo(XMLElement* groupElement, std::map<std::string, PlanetInfo>& planetsInfo)
+std::string parseGroupsInfo(XMLElement* groupElement, std::map<std::string, GroupInfo>& groupsInfo)
 {
     const char* nameAttr = groupElement->Attribute("name");
     if (!nameAttr)
         return "";
 
-    std::string planetName = nameAttr;
+    std::string groupName = nameAttr;
 
-    // read planet info from the file
+    // read group info from the file
     const char* infoFileAttr = groupElement->Attribute("clickableInfo");
     if (!infoFileAttr)
-        return planetName;
+        return groupName;
 
-    std::ifstream planetInfoFile(infoFileAttr);
-    if (!planetInfoFile.is_open()) {
+    std::ifstream groupInfoFile(infoFileAttr);
+    if (!groupInfoFile.is_open()) {
         std::cerr << "Failed to open file: " << infoFileAttr << std::endl;
-        return planetName;
+        return groupName;
     }
 
-    std::string planetInfoText, line;
-    while (std::getline(planetInfoFile, line)) {
-        planetInfoText += line + '\n';
+    std::string groupInfoText, line;
+    while (std::getline(groupInfoFile, line)) {
+        groupInfoText += line + '\n';
     }
-    planetInfoFile.close();
+    groupInfoFile.close();
 
-    PlanetInfo p;
-    p.planetInfoText = planetInfoText;
-    planetsInfo[planetName] = p;
+    GroupInfo g;
+    g.groupInfoText = groupInfoText;
+    groupsInfo[groupName] = g;
 
-    return planetName;
+    return groupName;
 }
 
-void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::string, Model*>& filesModels, std::map<std::string, PlanetInfo>& planetsInfo, std::string groupName)
+void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::string, Model*>& filesModels, std::map<std::string, GroupInfo>& groupsInfo)
 {
     // parse transformations if avilable
     XMLElement* transformElement = groupElement->FirstChildElement("transform");
@@ -110,9 +110,6 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
     XMLElement* modelsElement = groupElement->FirstChildElement("models");
     if (modelsElement) {
         XMLElement* modelElement = modelsElement->FirstChildElement("model");
-
-        // check now if the current parseGroup iteration is inside a clickable group for faster lookups
-        bool groupIsClickable = planetsInfo.count(groupName);
         while (modelElement) {
             if (modelElement->Attribute("file")) {
                 std::string fileName = modelElement->Attribute("file");
@@ -124,10 +121,6 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
                 if (!filesModels.count(fileName)) {
                     filesModels[fileName] = modelConfig;
                 }
-
-                if (groupIsClickable) {
-                    planetsInfo[groupName].planets.push_back(modelConfig);
-                }
             }
 
             modelElement = modelElement->NextSiblingElement("model");
@@ -137,12 +130,16 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
     // recursively parse nested child groups if available
     XMLElement* childGroupElement = groupElement->FirstChildElement("group");
     while (childGroupElement) {
-        std::string groupName = parsePlanetInfo(childGroupElement, planetsInfo);
+        GroupConfig* childGroup = new GroupConfig();
+        childGroup->groupName = parseGroupsInfo(childGroupElement, groupsInfo);
 
-        GroupConfig childGroup;
-        parseGroup(childGroupElement, childGroup, filesModels, planetsInfo, groupName);
+        parseGroup(childGroupElement, *childGroup, filesModels, groupsInfo);
         group.children.push_back(childGroup);
         childGroupElement = childGroupElement->NextSiblingElement("group");
+    }
+
+    if (groupsInfo.count(group.groupName)) {
+        groupsInfo[group.groupName].group = &group;
     }
 }
 
@@ -195,8 +192,8 @@ WorldConfig XMLParser::parseXML(const std::string& filename)
 
     XMLElement* group = world->FirstChildElement("group");
     if (group) {
-        std::string groupName = parsePlanetInfo(group, config.planetsInfo);
-        parseGroup(group, config.group, config.filesModels, config.planetsInfo, groupName);
+        config.group.groupName = parseGroupsInfo(group, config.groupsInfo);
+        parseGroup(group, config.group, config.filesModels, config.groupsInfo);
     }
 
     return config;

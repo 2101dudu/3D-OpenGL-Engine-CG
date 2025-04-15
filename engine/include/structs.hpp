@@ -69,7 +69,12 @@ struct GroupConfig {
     ImVec4 color = ImVec4(0.78125f, 0.78125f, 0.78125f, 1.0f); // off-white color
     std::vector<Transform> transforms;
     std::vector<Model*> models;
-    std::vector<GroupConfig> children;
+    std::vector<GroupConfig*> children;
+
+    std::string groupName;
+    struct Position {
+        float x = 0, y = 0, z = 0;
+    } center;
 };
 
 struct SceneConfig {
@@ -84,19 +89,16 @@ struct Stats {
     int64_t numTriangles = 0;
 };
 
-struct PlanetInfo {
-    std::string planetInfoText;
-    std::vector<Model*> planets;
-    struct Position {
-        float x = 0, y = 0, z = 0;
-    } center;
+struct GroupInfo {
+    std::string groupInfoText;
+    GroupConfig* group;
 };
 
 struct WorldConfig {
     WindowConfig window;
     CameraConfig camera;
     GroupConfig group;
-    std::map<std::string, PlanetInfo> planetsInfo;
+    std::map<std::string, GroupInfo> groupsInfo;
     std::map<std::string, Model*> filesModels;
     SceneConfig scene;
     Stats stats;

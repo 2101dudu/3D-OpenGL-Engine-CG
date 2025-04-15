@@ -1,3 +1,4 @@
+#include <cstdio>
 #ifdef __APPLE__
 #include <GL/freeglut.h>
 #include <GLUT/glut.h>
@@ -19,6 +20,20 @@
 extern float globalTimer;
 extern float timeFactor;
 extern bool drawCatmullRomCurves;
+
+void updateGroupPosition(GroupConfig& group)
+{
+    // Allocate an array to hold the 4x4 matrix (OpenGL stores matrices in column-major order)
+    GLfloat matrix[16];
+
+    // Retrieves the current model view matrix.
+    glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
+
+    // The translation values are at indices 12, 13, and 14.
+    group.center.x = matrix[12];
+    group.center.y = matrix[13];
+    group.center.z = matrix[14];
+}
 
 void drawAxis()
 {
@@ -87,11 +102,16 @@ void applyTransformations(const std::vector<Transform>& transforms)
     }
 }
 
-void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group)
+void drawWithVBOs(const std::vector<GLuint>& buffers, GroupConfig& group)
 {
     glPushMatrix();
 
     applyTransformations(group.transforms);
+
+    // the center of the group is determined after the transformations
+    if (!group.groupName.empty()) {
+        updateGroupPosition(group);
+    }
 
     glColor3f(group.color.x, group.color.y, group.color.z);
 
@@ -107,8 +127,8 @@ void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group)
     // TODO: check if this line is necessary
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    for (const auto& subGroup : group.children) {
-        drawWithVBOs(buffers, subGroup);
+    for (auto& subGroup : group.children) {
+        drawWithVBOs(buffers, *subGroup);
     }
 
     glPopMatrix();

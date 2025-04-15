@@ -89,6 +89,13 @@ void renderScene(void)
     // update scene options based on the menu
     updateSceneOptions();
 
+    for (const auto& pair : config.groupsInfo) {
+        std::cout << pair.first << " ";
+        std::cout << pair.second.group->center.x << " ";
+        std::cout << pair.second.group->center.y << " ";
+        std::cout << pair.second.group->center.z << " " << std::endl;
+    }
+
     glutSwapBuffers();
 }
 
@@ -369,7 +376,7 @@ void pointModelsVBOIndex(GroupConfig* group)
     }
 
     for (auto& subGroup : group->children) {
-        pointModelsVBOIndex(&subGroup);
+        pointModelsVBOIndex(subGroup);
     }
 }
 
@@ -413,13 +420,6 @@ int main(int argc, char** argv)
 
     // initialize VBOs
     initializeVBOs();
-
-    for (const auto& pair : config.planetsInfo) {
-        std::cout << "Key: " << pair.first << std::endl;
-        for (const auto& model : pair.second.planets) {
-            std::cout << "Value " << model->file << std::endl;
-        }
-    }
 
     // initialize menu
     initializeImGUI();
