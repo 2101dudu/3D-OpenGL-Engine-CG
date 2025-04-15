@@ -18,7 +18,7 @@
                 <point x="0" y="100" z="-10" />
             </translate>
         </transform>
-        <group name="Sun">
+        <group name="Sun" clickableInfo="../../planet_info/sun.txt">
             <transform>
                 <scale x="3" y="3" z="3"/>
             </transform>

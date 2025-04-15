@@ -84,10 +84,19 @@ struct Stats {
     int64_t numTriangles = 0;
 };
 
+struct PlanetInfo {
+    std::string planetInfoText;
+    std::vector<Model*> planets;
+    struct Position {
+        float x = 0, y = 0, z = 0;
+    } center;
+};
+
 struct WorldConfig {
     WindowConfig window;
     CameraConfig camera;
     GroupConfig group;
+    std::map<std::string, PlanetInfo> planetsInfo;
     std::map<std::string, Model> filesModels;
     SceneConfig scene;
     Stats stats;

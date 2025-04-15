@@ -1,11 +1,44 @@
 #include "xml_parser.hpp"
 #include "tinyxml2.h"
 #include <cmath>
+#include <fstream>
 #include <iostream>
 
 using namespace tinyxml2;
 
-void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::string, Model>& filesModels)
+std::string parsePlanetInfo(XMLElement* groupElement, std::map<std::string, PlanetInfo>& planetsInfo)
+{
+    const char* nameAttr = groupElement->Attribute("name");
+    if (!nameAttr)
+        return "";
+
+    std::string planetName = nameAttr;
+
+    // read planet info from the file
+    const char* infoFileAttr = groupElement->Attribute("clickableInfo");
+    if (!infoFileAttr)
+        return planetName;
+
+    std::ifstream planetInfoFile(infoFileAttr);
+    if (!planetInfoFile.is_open()) {
+        std::cerr << "Failed to open file: " << infoFileAttr << std::endl;
+        return planetName;
+    }
+
+    std::string planetInfoText, line;
+    while (std::getline(planetInfoFile, line)) {
+        planetInfoText += line + '\n';
+    }
+    planetInfoFile.close();
+
+    PlanetInfo p;
+    p.planetInfoText = planetInfoText;
+    planetsInfo[planetName] = p;
+
+    return planetName;
+}
+
+void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::string, Model>& filesModels, std::map<std::string, PlanetInfo>& planetsInfo, std::string groupName)
 {
     // parse transformations if avilable
     XMLElement* transformElement = groupElement->FirstChildElement("transform");
@@ -77,6 +110,9 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
     XMLElement* modelsElement = groupElement->FirstChildElement("models");
     if (modelsElement) {
         XMLElement* modelElement = modelsElement->FirstChildElement("model");
+
+        // check now if the current parseGroup iteration is inside a clickable group for faster lookups
+        bool groupIsClickable = planetsInfo.count(groupName);
         while (modelElement) {
             Model modelConfig;
             if (modelElement->Attribute("file")) {
@@ -89,6 +125,10 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
                     filesModels[fileName] = modelConfig;
                 }
             }
+
+            if (groupIsClickable) {
+                planetsInfo[groupName].planets.push_back(&modelConfig);
+            }
             modelElement = modelElement->NextSiblingElement("model");
         }
     }
@@ -96,8 +136,10 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
     // recursively parse nested child groups if available
     XMLElement* childGroupElement = groupElement->FirstChildElement("group");
     while (childGroupElement) {
+        std::string groupName = parsePlanetInfo(childGroupElement, planetsInfo);
+
         GroupConfig childGroup;
-        parseGroup(childGroupElement, childGroup, filesModels);
+        parseGroup(childGroupElement, childGroup, filesModels, planetsInfo, groupName);
         group.children.push_back(childGroup);
         childGroupElement = childGroupElement->NextSiblingElement("group");
     }
@@ -152,7 +194,8 @@ WorldConfig XMLParser::parseXML(const std::string& filename)
 
     XMLElement* group = world->FirstChildElement("group");
     if (group) {
-        parseGroup(group, config.group, config.filesModels);
+        std::string groupName = parsePlanetInfo(group, config.planetsInfo);
+        parseGroup(group, config.group, config.filesModels, config.planetsInfo, groupName);
     }
 
     return config;

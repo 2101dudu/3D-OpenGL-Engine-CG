@@ -414,6 +414,13 @@ int main(int argc, char** argv)
     // initialize VBOs
     initializeVBOs();
 
+    for (const auto& pair : config.planetsInfo) {
+        std::cout << "Key: " << pair.first << std::endl;
+        for (const auto& model : pair.second.planets) {
+            std::cout << "Key: " << model->file << std::endl;
+        }
+    }
+
     // initialize menu
     initializeImGUI();
 
