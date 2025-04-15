@@ -68,7 +68,7 @@ struct Model {
 struct GroupConfig {
     ImVec4 color = ImVec4(0.78125f, 0.78125f, 0.78125f, 1.0f); // off-white color
     std::vector<Transform> transforms;
-    std::vector<Model> models;
+    std::vector<Model*> models;
     std::vector<GroupConfig> children;
 };
 
@@ -97,7 +97,7 @@ struct WorldConfig {
     CameraConfig camera;
     GroupConfig group;
     std::map<std::string, PlanetInfo> planetsInfo;
-    std::map<std::string, Model> filesModels;
+    std::map<std::string, Model*> filesModels;
     SceneConfig scene;
     Stats stats;
 };

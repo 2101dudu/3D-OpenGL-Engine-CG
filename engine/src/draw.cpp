@@ -99,9 +99,9 @@ void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group)
     glEnableClientState(GL_VERTEX_ARRAY);
 
     for (const auto& model : group.models) {
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[model.vboIndex]);
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[model->vboIndex]);
         glVertexPointer(3, GL_FLOAT, 0, 0);
-        glDrawArrays(GL_TRIANGLES, 0, model.vertexCount);
+        glDrawArrays(GL_TRIANGLES, 0, model->vertexCount);
     }
 
     // TODO: check if this line is necessary

@@ -343,10 +343,10 @@ void initializeOpenGLContext()
 
 void bindPointsToBuffers()
 {
-    std::map<std::string, Model>::iterator it;
+    std::map<std::string, Model*>::iterator it;
     int count = 0;
     for (it = config.filesModels.begin(); it != config.filesModels.end(); it++, count++) {
-        Model* model = &it->second;
+        Model* model = it->second;
 
         ModelInfo modelInfo = parseFile(model->file);
         std::vector<float> modelPoints = modelInfo.points;
@@ -363,9 +363,9 @@ void bindPointsToBuffers()
 void pointModelsVBOIndex(GroupConfig* group)
 {
     for (auto& model : group->models) {
-        Model m = config.filesModels[model.file];
+        Model* m = config.filesModels[model->file];
         model = m;
-        config.stats.numTriangles += model.triangleCount;
+        config.stats.numTriangles += model->triangleCount;
     }
 
     for (auto& subGroup : group->children) {
@@ -417,7 +417,7 @@ int main(int argc, char** argv)
     for (const auto& pair : config.planetsInfo) {
         std::cout << "Key: " << pair.first << std::endl;
         for (const auto& model : pair.second.planets) {
-            std::cout << "Key: " << model->file << std::endl;
+            std::cout << "Value " << model->file << std::endl;
         }
     }
 

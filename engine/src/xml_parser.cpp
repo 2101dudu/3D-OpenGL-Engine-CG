@@ -38,7 +38,7 @@ std::string parsePlanetInfo(XMLElement* groupElement, std::map<std::string, Plan
     return planetName;
 }
 
-void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::string, Model>& filesModels, std::map<std::string, PlanetInfo>& planetsInfo, std::string groupName)
+void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::string, Model*>& filesModels, std::map<std::string, PlanetInfo>& planetsInfo, std::string groupName)
 {
     // parse transformations if avilable
     XMLElement* transformElement = groupElement->FirstChildElement("transform");
@@ -114,21 +114,22 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
         // check now if the current parseGroup iteration is inside a clickable group for faster lookups
         bool groupIsClickable = planetsInfo.count(groupName);
         while (modelElement) {
-            Model modelConfig;
             if (modelElement->Attribute("file")) {
                 std::string fileName = modelElement->Attribute("file");
-                modelConfig.file = fileName;
+                Model* modelConfig = new Model();
+                modelConfig->file = fileName;
                 group.models.push_back(modelConfig);
 
                 // if there's no entry on the models' map
                 if (!filesModels.count(fileName)) {
                     filesModels[fileName] = modelConfig;
                 }
+
+                if (groupIsClickable) {
+                    planetsInfo[groupName].planets.push_back(modelConfig);
+                }
             }
 
-            if (groupIsClickable) {
-                planetsInfo[groupName].planets.push_back(&modelConfig);
-            }
             modelElement = modelElement->NextSiblingElement("model");
         }
     }
