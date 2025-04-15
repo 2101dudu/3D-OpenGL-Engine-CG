@@ -12,6 +12,7 @@ add_executable(
   src/utils.cpp
   src/menu.cpp
   src/structs.cpp
+  src/catmull_rom.cpp
   src/imgui/imgui.cpp
   src/imgui/imgui_demo.cpp
   src/imgui/imgui_impl_glut.cpp

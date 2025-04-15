@@ -46,8 +46,16 @@ struct Transform {
     float x = 0.0f, y = 0.0f, z = 0.0f;
     float angle = 0.0f; // Only used for rotation
 
+    // rotation animation
     float time = 0.0f;
     float currentRotation = 0.0f; // accumulated rotation angle (in degrees)
+
+    // catmull rom
+    size_t numberCurvePoints = 0;
+    float** curvePoints;
+
+    float curveTime = 0.0f;
+    bool align = false;
 };
 
 struct Model {
@@ -68,6 +76,7 @@ struct SceneConfig {
     bool faceCulling = true;
     bool wireframe = true;
     bool drawAxis = true;
+    bool drawCatmullRomCurves = false;
     ImVec4 bgColor = ImVec4(0.15625f, 0.15625f, 0.15625f, 1.0f); // off-black color
 };
 

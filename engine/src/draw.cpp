@@ -13,10 +13,12 @@
 #include <cmath>
 #endif
 
+#include "catmull_rom.hpp"
 #include "draw.hpp"
 
 extern float globalTimer;
 extern float timeFactor;
+extern bool drawCatmullRomCurves;
 
 void drawAxis()
 {
@@ -41,7 +43,32 @@ void applyTransformations(const std::vector<Transform>& transforms)
     for (const auto& t : transforms) {
         switch (t.type) {
         case TransformType::Translate:
-            glTranslatef(t.x, t.y, t.z);
+            if (t.curveTime > 0.0f) {
+                float pos[3], deriv[3];
+
+                if (drawCatmullRomCurves) {
+                    glColor3f(1.0f, 1.0f, 0.0f);
+                    glBegin(GL_LINE_LOOP);
+                    for (float _t = 0; _t < 1; _t += 0.01f) {
+                        getGlobalCatmullRomPoint(_t, pos, deriv, t);
+                        glVertex3f(pos[0], pos[1], pos[2]);
+                    }
+                    glEnd();
+                }
+
+                getGlobalCatmullRomPoint(-1.0f, pos, deriv, t);
+
+                glTranslatef(pos[0], pos[1], pos[2]);
+
+                if (t.align) {
+                    float forward[3] = { deriv[0], deriv[1], deriv[2] };
+                    float* rotMatrix = getRotMatrix(forward);
+                    glMultMatrixf(rotMatrix);
+                    free(rotMatrix);
+                }
+            } else {
+                glTranslatef(t.x, t.y, t.z);
+            }
             break;
         case TransformType::Rotate:
             if (t.time > 0.0f) {
@@ -77,6 +104,7 @@ void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group)
         glDrawArrays(GL_TRIANGLES, 0, model.vertexCount);
     }
 
+    // TODO: check if this line is necessary
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     for (const auto& subGroup : group.children) {

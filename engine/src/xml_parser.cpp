@@ -28,9 +28,36 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
         if (translateElement) {
             Transform t;
             t.type = TransformType::Translate;
-            translateElement->QueryFloatAttribute("x", &t.x);
-            translateElement->QueryFloatAttribute("y", &t.y);
-            translateElement->QueryFloatAttribute("z", &t.z);
+
+            XMLElement* pointElement = translateElement->FirstChildElement("point");
+
+            if (pointElement) {
+                translateElement->QueryFloatAttribute("time", &t.curveTime); // "time" may be ommited, meaning t.curveTime == 0
+                translateElement->QueryBoolAttribute("align", &t.align); // "align" may be ommited, meaning t.align == false
+
+                size_t count = 0;
+                for (XMLElement* tmp = pointElement; tmp != nullptr; tmp = tmp->NextSiblingElement("point")) {
+                    count++;
+                }
+                t.numberCurvePoints = count;
+
+                // Dynamically allocate the curvePoints array.
+                // Each point will be stored as an array of 3 floats [x, y, z].
+                t.curvePoints = new float*[count];
+                size_t i = 0;
+                for (XMLElement* tmp = pointElement; tmp != nullptr; tmp = tmp->NextSiblingElement("point")) {
+                    t.curvePoints[i] = new float[3];
+                    tmp->QueryFloatAttribute("x", &t.curvePoints[i][0]);
+                    tmp->QueryFloatAttribute("y", &t.curvePoints[i][1]);
+                    tmp->QueryFloatAttribute("z", &t.curvePoints[i][2]);
+                    i++;
+                }
+            } else {
+                translateElement->QueryFloatAttribute("x", &t.x);
+                translateElement->QueryFloatAttribute("y", &t.y);
+                translateElement->QueryFloatAttribute("z", &t.z);
+            }
+
             group.transforms.push_back(t);
         }
 
