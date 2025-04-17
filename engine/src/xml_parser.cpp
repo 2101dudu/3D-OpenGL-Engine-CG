@@ -6,23 +6,24 @@
 
 using namespace tinyxml2;
 
-std::string parseGroupsInfo(XMLElement* groupElement, std::map<std::string, GroupInfo>& groupsInfo)
+void parseGroupsInfo(XMLElement* groupElement, GroupConfig& group)
 {
     const char* nameAttr = groupElement->Attribute("name");
     if (!nameAttr)
-        return "";
+        return;
 
     std::string groupName = nameAttr;
+    group.name = groupName;
 
     // read group info from the file
     const char* infoFileAttr = groupElement->Attribute("clickableInfo");
     if (!infoFileAttr)
-        return groupName;
+        return;
 
     std::ifstream groupInfoFile(infoFileAttr);
     if (!groupInfoFile.is_open()) {
         std::cerr << "Failed to open file: " << infoFileAttr << std::endl;
-        return groupName;
+        return;
     }
 
     std::string groupInfoText, line;
@@ -31,14 +32,10 @@ std::string parseGroupsInfo(XMLElement* groupElement, std::map<std::string, Grou
     }
     groupInfoFile.close();
 
-    GroupInfo g;
-    g.groupInfoText = groupInfoText;
-    groupsInfo[groupName] = g;
-
-    return groupName;
+    group.infoText = groupInfoText;
 }
 
-void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::string, Model*>& filesModels, std::map<std::string, GroupInfo>& groupsInfo)
+void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::string, Model*>& filesModels)
 {
     // parse transformations if avilable
     XMLElement* transformElement = groupElement->FirstChildElement("transform");
@@ -131,15 +128,11 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
     XMLElement* childGroupElement = groupElement->FirstChildElement("group");
     while (childGroupElement) {
         GroupConfig* childGroup = new GroupConfig();
-        childGroup->groupName = parseGroupsInfo(childGroupElement, groupsInfo);
+        parseGroupsInfo(childGroupElement, *childGroup);
 
-        parseGroup(childGroupElement, *childGroup, filesModels, groupsInfo);
+        parseGroup(childGroupElement, *childGroup, filesModels);
         group.children.push_back(childGroup);
         childGroupElement = childGroupElement->NextSiblingElement("group");
-    }
-
-    if (groupsInfo.count(group.groupName)) {
-        groupsInfo[group.groupName].group = &group;
     }
 }
 
@@ -192,8 +185,8 @@ WorldConfig XMLParser::parseXML(const std::string& filename)
 
     XMLElement* group = world->FirstChildElement("group");
     if (group) {
-        config.group.groupName = parseGroupsInfo(group, config.groupsInfo);
-        parseGroup(group, config.group, config.filesModels, config.groupsInfo);
+        parseGroupsInfo(group, config.group);
+        parseGroup(group, config.group, config.filesModels);
     }
 
     return config;

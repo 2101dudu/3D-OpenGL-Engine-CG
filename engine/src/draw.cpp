@@ -20,19 +20,64 @@
 extern float globalTimer;
 extern float timeFactor;
 extern bool drawCatmullRomCurves;
+extern GLfloat g_viewMatrix[16];
+
+extern WorldConfig config;
+
+// This function assumes an orthonormal view matrix.
+void invertViewMatrix(const GLfloat view[16], GLfloat inv[16])
+{
+    // The upper-left 3x3 is the rotation which is orthonormal.
+    inv[0] = view[0];
+    inv[1] = view[4];
+    inv[2] = view[8];
+    inv[3] = 0.0f;
+    inv[4] = view[1];
+    inv[5] = view[5];
+    inv[6] = view[9];
+    inv[7] = 0.0f;
+    inv[8] = view[2];
+    inv[9] = view[6];
+    inv[10] = view[10];
+    inv[11] = 0.0f;
+
+    // For the translation: inv.translation = -R^T * t
+    inv[12] = -(view[12] * view[0] + view[13] * view[1] + view[14] * view[2]);
+    inv[13] = -(view[12] * view[4] + view[13] * view[5] + view[14] * view[6]);
+    inv[14] = -(view[12] * view[8] + view[13] * view[9] + view[14] * view[10]);
+    inv[15] = 1.0f;
+}
 
 void updateGroupPosition(GroupConfig& group)
 {
     // Allocate an array to hold the 4x4 matrix (OpenGL stores matrices in column-major order)
-    GLfloat matrix[16];
+    GLfloat modelMatrix[16];
+    // Retrieves the current modelview matrix (which is V * M_model)
+    glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
 
-    // Retrieves the current model view matrix.
-    glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
+    // Extract the translation from the model transformation in eye space.
+    float tx = modelMatrix[12];
+    float ty = modelMatrix[13];
+    float tz = modelMatrix[14];
 
-    // The translation values are at indices 12, 13, and 14.
-    group.center.x = matrix[12];
-    group.center.y = matrix[13];
-    group.center.z = matrix[14];
+    // Compute the inverse of the view matrix (which we stored globally)
+    GLfloat invView[16];
+    invertViewMatrix(g_viewMatrix, invView);
+
+    // Multiply the translation (as a 4D vector with w=1) by invView to get world coordinates:
+    float worldX = invView[0] * tx + invView[4] * ty + invView[8] * tz + invView[12];
+    float worldY = invView[1] * tx + invView[5] * ty + invView[9] * tz + invView[13];
+    float worldZ = invView[2] * tx + invView[6] * ty + invView[10] * tz + invView[14];
+
+    group.center.x = worldX;
+    group.center.y = worldY;
+    group.center.z = worldZ;
+
+    if (group.name == "Mercury") {
+        config.camera.lookAt.x = group.center.x;
+        config.camera.lookAt.y = group.center.y;
+        config.camera.lookAt.z = group.center.z;
+    }
 }
 
 void drawAxis()
@@ -109,7 +154,7 @@ void drawWithVBOs(const std::vector<GLuint>& buffers, GroupConfig& group)
     applyTransformations(group.transforms);
 
     // the center of the group is determined after the transformations
-    if (!group.groupName.empty()) {
+    if (!group.name.empty()) {
         updateGroupPosition(group);
     }
 

@@ -32,6 +32,8 @@ __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 int lastRealTime;
 float globalTimer = 0.0f;
 
+GLfloat g_viewMatrix[16];
+
 // the time update factor
 float timeFactor = 1;
 
@@ -71,11 +73,15 @@ void renderScene(void)
     globalTimer += deltaTime;
     lastRealTime = currentRealTime;
 
+    glMatrixMode(GL_MODELVIEW);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     gluLookAt(config.camera.position.x, config.camera.position.y, config.camera.position.z,
         config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
         config.camera.up.x, config.camera.up.y, config.camera.up.z);
+
+    // capture the view matrix (camera transformation)
+    glGetFloatv(GL_MODELVIEW_MATRIX, g_viewMatrix);
 
     if (config.scene.drawAxis)
         drawAxis();
@@ -88,13 +94,6 @@ void renderScene(void)
 
     // update scene options based on the menu
     updateSceneOptions();
-
-    for (const auto& pair : config.groupsInfo) {
-        std::cout << pair.first << " ";
-        std::cout << pair.second.group->center.x << " ";
-        std::cout << pair.second.group->center.y << " ";
-        std::cout << pair.second.group->center.z << " " << std::endl;
-    }
 
     glutSwapBuffers();
 }

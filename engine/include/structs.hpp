@@ -71,7 +71,8 @@ struct GroupConfig {
     std::vector<Model*> models;
     std::vector<GroupConfig*> children;
 
-    std::string groupName;
+    std::string name;
+    std::string infoText;
     struct Position {
         float x = 0, y = 0, z = 0;
     } center;
@@ -89,16 +90,10 @@ struct Stats {
     int64_t numTriangles = 0;
 };
 
-struct GroupInfo {
-    std::string groupInfoText;
-    GroupConfig* group;
-};
-
 struct WorldConfig {
     WindowConfig window;
     CameraConfig camera;
     GroupConfig group;
-    std::map<std::string, GroupInfo> groupsInfo;
     std::map<std::string, Model*> filesModels;
     SceneConfig scene;
     Stats stats;
