@@ -22,6 +22,8 @@ extern float timeFactor;
 extern bool drawCatmullRomCurves;
 extern GLfloat g_viewMatrix[16];
 
+extern WorldConfig config;
+
 // This function assumes an orthonormal view matrix.
 void invertViewMatrix(const GLfloat view[16], GLfloat inv[16])
 {
@@ -139,7 +141,7 @@ void applyTransformations(const std::vector<Transform>& transforms)
     }
 }
 
-void drawWithVBOs(const std::vector<GLuint>& buffers, GroupConfig& group)
+void drawWithVBOs(const std::vector<GLuint>& buffers, GroupConfig& group, bool depthOnly)
 {
     glPushMatrix();
 
@@ -150,12 +152,21 @@ void drawWithVBOs(const std::vector<GLuint>& buffers, GroupConfig& group)
         updateGroupPosition(group);
     }
 
-    glColor3f(group.color.x, group.color.y, group.color.z);
+    if (depthOnly) {
+        float color = group.id / 255.0f;
+        glColor3f(color, color, color);
+    } else {
+        glColor3f(config.group.color.x, config.group.color.y, config.group.color.z);
+    }
 
     // TODO: check if this line is necessary
     glEnableClientState(GL_VERTEX_ARRAY);
 
     for (const auto& model : group.models) {
+        // only draw if it's a regular drawing sequence (depthOnly == false) or when
+        // depth is being checked and the group is clickable
+        if (depthOnly && group.name.empty())
+            continue;
         glBindBuffer(GL_ARRAY_BUFFER, buffers[model->vboIndex]);
         glVertexPointer(3, GL_FLOAT, 0, 0);
         glDrawArrays(GL_TRIANGLES, 0, model->vertexCount);
@@ -165,7 +176,7 @@ void drawWithVBOs(const std::vector<GLuint>& buffers, GroupConfig& group)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     for (auto& subGroup : group.children) {
-        drawWithVBOs(buffers, *subGroup);
+        drawWithVBOs(buffers, *subGroup, depthOnly);
     }
 
     glPopMatrix();

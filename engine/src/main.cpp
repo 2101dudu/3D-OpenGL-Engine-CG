@@ -76,6 +76,7 @@ void renderScene(void)
     glMatrixMode(GL_MODELVIEW);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+    updateCameraLookAt(&config);
     gluLookAt(config.camera.position.x, config.camera.position.y, config.camera.position.z,
         config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
         config.camera.up.x, config.camera.up.y, config.camera.up.z);
@@ -86,9 +87,8 @@ void renderScene(void)
     if (config.scene.drawAxis)
         drawAxis();
 
-    glColor3f(config.group.color.x, config.group.color.y, config.group.color.z);
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
-    drawWithVBOs(buffers, config.group);
+    drawWithVBOs(buffers, config.group, false);
 
     drawMenu(&config);
 
@@ -111,6 +111,49 @@ void updateViewPort(int w, int h)
     gluPerspective(config.camera.projection.fov, (GLfloat)w / (GLfloat)h, config.camera.projection.near1, config.camera.projection.far1);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+}
+
+unsigned char picking(int x, int y)
+{
+    // TODO: Unecessary for now
+    // glDisable(GL_LIGHTING);
+    // glDisable(GL_TEXTURE_2D);
+
+    // set background color to black to differenciate values > 0
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    glDepthFunc(GL_LEQUAL);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glLoadIdentity();
+    gluLookAt(config.camera.position.x, config.camera.position.y, config.camera.position.z,
+        config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
+        config.camera.up.x, config.camera.up.y, config.camera.up.z);
+
+    // re-render scene
+    drawWithVBOs(buffers, config.group, true);
+
+    unsigned char res[4];
+    GLint viewport[4];
+
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glReadPixels(x, viewport[3] - y,
+        1, 1,
+        GL_RGBA, GL_UNSIGNED_BYTE,
+        res);
+
+    // TODO: Unecessary for now
+    // glEnable(GL_LIGHTING);
+    // glEnable(GL_TEXTURE_2D);
+    glDepthFunc(GL_LESS);
+
+    return res[0];
+}
+
+void renderMenu(unsigned char picked)
+{
+    GroupConfig* g = config.clickableGroups[picked];
+    config.camera.tracking = g == NULL ? 0 : picked;
 }
 
 // track mouse scroll events
@@ -152,6 +195,12 @@ void mouseButton(int button, int state, int x, int y)
                 config.camera.lastX = x;
                 config.camera.lastY = y;
             }
+        }
+
+        if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+            unsigned char picked = picking(x, y);
+            renderMenu(picked);
+            glutPostRedisplay();
         }
     }
 }

@@ -62,9 +62,19 @@ void switchCameraMode(WorldConfig* config)
         config->camera.cameraAngle = atan2f(dz, dx);
         config->camera.cameraAngleY = asinf(dy / distance);
 
-        // Set the orbital mode target (lookAt) to the origin
-        config->camera.lookAt.x = 0.0f;
-        config->camera.lookAt.y = 0.0f;
-        config->camera.lookAt.z = 0.0f;
+        updateCameraLookAt(config);
     }
+}
+
+void updateCameraLookAt(WorldConfig* config)
+{
+    const unsigned char picked = config->camera.tracking;
+    if (picked == 0)
+        return;
+    GroupConfig* g = config->clickableGroups[picked];
+    config->camera.lookAt.x = g->center.x;
+    config->camera.lookAt.y = g->center.y;
+    config->camera.lookAt.z = g->center.z;
+
+    updateCamera(config);
 }

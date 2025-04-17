@@ -6,7 +6,10 @@
 
 using namespace tinyxml2;
 
-char lastGroupID = 0;
+// gray depth values need to be >0 (to distinguish from the background color)
+unsigned char lastGroupID = 1;
+
+std::map<unsigned char, GroupConfig*> clickableGroups;
 
 void parseGroupsInfo(XMLElement* groupElement, GroupConfig& group)
 {
@@ -15,7 +18,6 @@ void parseGroupsInfo(XMLElement* groupElement, GroupConfig& group)
         return;
 
     std::string groupName = nameAttr;
-    group.name = groupName;
 
     // read group info from the file
     const char* infoFileAttr = groupElement->Attribute("clickableInfo");
@@ -34,9 +36,11 @@ void parseGroupsInfo(XMLElement* groupElement, GroupConfig& group)
     }
     groupInfoFile.close();
 
+    group.name = groupName;
     group.infoText = groupInfoText;
-    printf("%d\n", lastGroupID);
     group.id = lastGroupID++;
+
+    clickableGroups[group.id] = &group;
 }
 
 void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::string, Model*>& filesModels)
@@ -192,6 +196,8 @@ WorldConfig XMLParser::parseXML(const std::string& filename)
         parseGroupsInfo(group, config.group);
         parseGroup(group, config.group, config.filesModels);
     }
+
+    config.clickableGroups = clickableGroups;
 
     return config;
 }

@@ -28,6 +28,8 @@ struct CameraConfig {
     float sensitivity = 0.005;
     float scrollSensitivity = 0.05f;
 
+    unsigned char tracking = 1;
+
     bool isOrbital = true;
 };
 
@@ -71,7 +73,7 @@ struct GroupConfig {
     std::vector<Model*> models;
     std::vector<GroupConfig*> children;
 
-    char id;
+    unsigned char id;
     std::string name;
     std::string infoText;
     struct Position {
@@ -81,7 +83,7 @@ struct GroupConfig {
 
 struct SceneConfig {
     bool faceCulling = true;
-    bool wireframe = true;
+    bool wireframe = false;
     bool drawAxis = true;
     bool drawCatmullRomCurves = false;
     ImVec4 bgColor = ImVec4(0.15625f, 0.15625f, 0.15625f, 1.0f); // off-black color
@@ -95,6 +97,7 @@ struct WorldConfig {
     WindowConfig window;
     CameraConfig camera;
     GroupConfig group;
+    std::map<unsigned char, GroupConfig*> clickableGroups;
     std::map<std::string, Model*> filesModels;
     SceneConfig scene;
     Stats stats;
@@ -105,5 +108,7 @@ void resetCamera(WorldConfig* config);
 void updateCamera(WorldConfig* config);
 
 void switchCameraMode(WorldConfig* config);
+
+void updateCameraLookAt(WorldConfig* config);
 
 #endif
