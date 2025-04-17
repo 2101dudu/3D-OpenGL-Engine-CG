@@ -22,8 +22,6 @@ extern float timeFactor;
 extern bool drawCatmullRomCurves;
 extern GLfloat g_viewMatrix[16];
 
-extern WorldConfig config;
-
 // This function assumes an orthonormal view matrix.
 void invertViewMatrix(const GLfloat view[16], GLfloat inv[16])
 {
@@ -72,12 +70,6 @@ void updateGroupPosition(GroupConfig& group)
     group.center.x = worldX;
     group.center.y = worldY;
     group.center.z = worldZ;
-
-    if (group.name == "Mercury") {
-        config.camera.lookAt.x = group.center.x;
-        config.camera.lookAt.y = group.center.y;
-        config.camera.lookAt.z = group.center.z;
-    }
 }
 
 void drawAxis()

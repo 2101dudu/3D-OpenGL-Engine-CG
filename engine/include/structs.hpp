@@ -71,6 +71,7 @@ struct GroupConfig {
     std::vector<Model*> models;
     std::vector<GroupConfig*> children;
 
+    char id;
     std::string name;
     std::string infoText;
     struct Position {

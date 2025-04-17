@@ -6,6 +6,8 @@
 
 using namespace tinyxml2;
 
+char lastGroupID = 0;
+
 void parseGroupsInfo(XMLElement* groupElement, GroupConfig& group)
 {
     const char* nameAttr = groupElement->Attribute("name");
@@ -33,6 +35,8 @@ void parseGroupsInfo(XMLElement* groupElement, GroupConfig& group)
     groupInfoFile.close();
 
     group.infoText = groupInfoText;
+    printf("%d\n", lastGroupID);
+    group.id = lastGroupID++;
 }
 
 void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::string, Model*>& filesModels)
