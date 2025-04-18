@@ -86,6 +86,22 @@ void drawMenu(WorldConfig* config)
     ImGui::Text(">> %.0f FPS", io.Framerate);
     ImGui::Text(">> Current triangles: %lld", config->stats.numTriangles);
 
+    // render group info
+    const unsigned char tracking = config->camera.tracking;
+    if (config->camera.showInfoWindow && tracking > 0) {
+        GroupConfig* g = config->clickableGroups[tracking];
+
+        ImVec2 windowSize(300, 400);
+        ImVec2 windowPos(ImGui::GetIO().DisplaySize.x - windowSize.x - 10, 10);
+
+        ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+        ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+
+        ImGui::Begin("Group Info", &config->camera.showInfoWindow, ImGuiWindowFlags_NoResize);
+        ImGui::TextWrapped("%s", g->infoText.c_str());
+        ImGui::End();
+    }
+
     ImGui::End();
     ImGui::Render();
     ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());

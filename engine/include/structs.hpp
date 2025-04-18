@@ -29,6 +29,7 @@ struct CameraConfig {
     float scrollSensitivity = 0.05f;
 
     unsigned char tracking = 1;
+    bool showInfoWindow = true;
 
     bool isOrbital = true;
 };

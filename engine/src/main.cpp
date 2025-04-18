@@ -150,10 +150,11 @@ unsigned char picking(int x, int y)
     return res[0];
 }
 
-void renderMenu(unsigned char picked)
+void focusGroup(unsigned char picked)
 {
     GroupConfig* g = config.clickableGroups[picked];
     config.camera.tracking = g == NULL ? 0 : picked;
+    config.camera.showInfoWindow = true;
 }
 
 // track mouse scroll events
@@ -199,7 +200,7 @@ void mouseButton(int button, int state, int x, int y)
 
         if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
             unsigned char picked = picking(x, y);
-            renderMenu(picked);
+            focusGroup(picked);
             glutPostRedisplay();
         }
     }
