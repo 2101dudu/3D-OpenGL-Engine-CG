@@ -131,6 +131,7 @@ unsigned char picking(int x, int y)
         config.camera.up.x, config.camera.up.y, config.camera.up.z);
 
     // re-render scene
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     drawWithVBOs(buffers, config.group, true);
 
     unsigned char res[4];
@@ -201,7 +202,7 @@ void mouseButton(int button, int state, int x, int y)
         if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
             unsigned char picked = picking(x, y);
             focusGroup(picked);
-            glutPostRedisplay();
+            // glutPostRedisplay();
         }
     }
 }

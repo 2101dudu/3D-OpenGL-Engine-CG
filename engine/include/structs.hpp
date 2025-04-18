@@ -29,7 +29,7 @@ struct CameraConfig {
     float scrollSensitivity = 0.05f;
 
     unsigned char tracking = 1;
-    bool showInfoWindow = true;
+    bool showInfoWindow = false;
 
     bool isOrbital = true;
 };
@@ -84,7 +84,7 @@ struct GroupConfig {
 
 struct SceneConfig {
     bool faceCulling = true;
-    bool wireframe = false;
+    bool wireframe = true;
     bool drawAxis = true;
     bool drawCatmullRomCurves = false;
     ImVec4 bgColor = ImVec4(0.15625f, 0.15625f, 0.15625f, 1.0f); // off-black color
