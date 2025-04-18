@@ -46,7 +46,7 @@
             <models>
                 <model file="../../objects/sphere.3d"/>
             </models>
-            <group name="Earth_Moon_1">
+            <group name="Earth_Moon_1" clickableInfo="../../group_info/earth_moon.txt">
                 <transform>
                     <rotate time="8.109178845072382" x="0" y="1" z="0"/>
                     <translate x="1.607991734819332" y="0.05143478814708191" z="0"/>
@@ -137,7 +137,7 @@
                 </models>
             </group>
         </group>
-        <group name="Saturn">
+        <group name="Saturn" clickableInfo="../../group_info/saturn.txt">
             <transform>
                 <rotate time="14.19704946177892" x="0" y="1" z="0"/>
                 <translate x="60" y="0" z="0"/>
@@ -206,7 +206,7 @@
                 </models>
             </group>
         </group>
-        <group name="Uranus">
+        <group name="Uranus" clickableInfo="../../group_info/uranus.txt">
             <transform>
                 <rotate time="32.2496404002249" x="0" y="1" z="0"/>
                 <translate x="75" y="0" z="0"/>
@@ -246,7 +246,7 @@
                 </models>
             </group>
         </group>
-        <group name="Neptune">
+        <group name="Neptune" clickableInfo="../../group_info/neptune.txt">
             <transform>
                 <rotate time="5.275849069774486" x="0" y="1" z="0"/>
                 <translate x="90" y="0" z="0"/>

@@ -5,10 +5,10 @@
 void resetCamera(WorldConfig* config)
 {
     // cartesian
-    config->camera.position = { 5, 5, 5 };
+    config->camera.tracking = 1;
     config->camera.lookAt = { 0, 0, 0 };
     config->camera.up = { 0, 1, 0 };
-    float zoomInCartesian = 5;
+    float zoomInCartesian = 50;
 
     // translate to spherical
     float distance = std::sqrt(zoomInCartesian * 5.0f + zoomInCartesian * 5.0f + zoomInCartesian * 5.0f);

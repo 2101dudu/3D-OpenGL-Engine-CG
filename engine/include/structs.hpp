@@ -84,10 +84,10 @@ struct GroupConfig {
 
 struct SceneConfig {
     bool faceCulling = true;
-    bool wireframe = true;
+    bool wireframe = false;
     bool drawAxis = true;
     bool drawCatmullRomCurves = false;
-    ImVec4 bgColor = ImVec4(0.15625f, 0.15625f, 0.15625f, 1.0f); // off-black color
+    ImVec4 bgColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f); // off-black color
 };
 
 struct Stats {

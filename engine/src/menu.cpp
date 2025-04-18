@@ -88,7 +88,7 @@ void drawMenu(WorldConfig* config)
 
     // render group info
     const unsigned char tracking = config->camera.tracking;
-    if (config->camera.showInfoWindow && tracking > 0) {
+    if (config->camera.showInfoWindow) {
         GroupConfig* g = config->clickableGroups[tracking];
 
         ImVec2 windowSize(300, 400);

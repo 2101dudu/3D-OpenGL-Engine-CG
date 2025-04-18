@@ -155,7 +155,14 @@ void focusGroup(unsigned char picked)
 {
     GroupConfig* g = config.clickableGroups[picked];
     config.camera.tracking = g == NULL ? 0 : picked;
-    config.camera.showInfoWindow = true;
+    config.camera.showInfoWindow = g == NULL ? false : true;
+
+    if (g == NULL) {
+        config.camera.isOrbital = false;
+        switchCameraMode(&config);
+
+        glutWarpPointer(config.window.width / 2, config.window.height / 2);
+    }
 }
 
 // track mouse scroll events
@@ -206,7 +213,6 @@ void mouseButton(int button, int state, int x, int y)
         if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
             unsigned char picked = picking(x, y);
             focusGroup(picked);
-            // glutPostRedisplay();
         }
     }
 }
