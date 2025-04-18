@@ -17,7 +17,7 @@
                 <model file="../../objects/sphere.3d"/>
             </models>
         </group>
-        <group name="Mercury" clickableInfo="../../group_info/sun.txt">
+        <group name="Mercury" clickableInfo="../../group_info/mercury.txt">
             <transform>
                 <rotate time="31.899812889221547" x="0" y="1" z="0"/>
                 <translate x="10" y="0" z="0"/>
@@ -27,7 +27,7 @@
                 <model file="../../objects/sphere.3d"/>
             </models>
         </group>
-        <group name="Venus">
+        <group name="Venus" clickableInfo="../../group_info/venus.txt">
             <transform>
                 <rotate time="29.65020204695002" x="0" y="1" z="0"/>
                 <translate x="15" y="0" z="0"/>
@@ -37,7 +37,7 @@
                 <model file="../../objects/sphere.3d"/>
             </models>
         </group>
-        <group name="Earth">
+        <group name="Earth" clickableInfo="../../group_info/earth.txt">
             <transform>
                 <rotate time="1.6468562054252234" x="0" y="1" z="0"/>
                 <translate x="20" y="0" z="0"/>
@@ -57,7 +57,7 @@
                 </models>
             </group>
         </group>
-        <group name="Mars">
+        <group name="Mars" clickableInfo="../../group_info/mars.txt">
             <transform>
                 <rotate time="4.620396199771781" x="0" y="1" z="0"/>
                 <translate x="27" y="0" z="0"/>
@@ -87,7 +87,7 @@
                 </models>
             </group>
         </group>
-        <group name="Jupiter">
+        <group name="Jupiter" clickableInfo="../../group_info/jupiter.txt">
             <transform>
                 <rotate time="28.71737925092519" x="0" y="1" z="0"/>
                 <translate x="45" y="0" z="0"/>

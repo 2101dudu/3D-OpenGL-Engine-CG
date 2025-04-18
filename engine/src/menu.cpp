@@ -84,7 +84,7 @@ void drawMenu(WorldConfig* config)
     }
     ImGui::Text("Stats:");
     ImGui::Text(">> %.0f FPS", io.Framerate);
-    ImGui::Text(">> Current triangles: %lld", config->stats.numTriangles);
+    ImGui::Text(">> Current triangles: %ld", config->stats.numTriangles);
 
     // render group info
     const unsigned char tracking = config->camera.tracking;
@@ -98,6 +98,7 @@ void drawMenu(WorldConfig* config)
         ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
 
         ImGui::Begin("Group Info", &config->camera.showInfoWindow, ImGuiWindowFlags_NoResize);
+        ImGui::Text("%s:", g->name.c_str());
         ImGui::TextWrapped("%s", g->infoText.c_str());
         ImGui::End();
     }
