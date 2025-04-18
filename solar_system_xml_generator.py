@@ -117,7 +117,7 @@ def main():
     up.set("z", "0")
     projection = ET.SubElement(camera, "projection")
     projection.set("fov", "60")
-    projection.set("near", "1")
+    projection.set("near", "0.01")
     projection.set("far", "1000")
 
     solar_system = ET.SubElement(world, "group")

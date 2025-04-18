@@ -167,11 +167,15 @@ void mouseWheel(int wheel, int direction, int x, int y)
 
     if (!io.WantCaptureMouse) {
         if (config.camera.isOrbital) {
-            config.camera.cameraDistance += wheelDelta * config.camera.scrollSensitivity;
-            if (config.camera.cameraDistance < 1.0f)
-                config.camera.cameraDistance = 1.0f;
-            else if (config.camera.cameraDistance > 120.0f)
-                config.camera.cameraDistance = 120.0f;
+
+            float distance = config.camera.cameraDistance;
+            float adaptiveSpeed = config.camera.scrollSensitivity * std::max(0.01f, distance * 0.4f);
+
+            config.camera.cameraDistance += wheelDelta * adaptiveSpeed;
+            if (config.camera.cameraDistance < config.camera.projection.near1)
+                config.camera.cameraDistance = config.camera.projection.near1;
+            else if (config.camera.cameraDistance > config.camera.projection.far1)
+                config.camera.cameraDistance = config.camera.projection.far1;
 
             updateCamera(&config);
             glutPostRedisplay();
