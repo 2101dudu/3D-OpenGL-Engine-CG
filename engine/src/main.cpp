@@ -342,19 +342,6 @@ void initializeOpenGLContext()
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
 }
 
-void pointModelsVBOIndex(GroupConfig* group)
-{
-    for (auto& model : group->models) {
-        Model m = config.filesModels[model.file];
-        model = m;
-        config.stats.numTriangles += model.triangleCount;
-    }
-
-    for (auto& subGroup : group->children) {
-        pointModelsVBOIndex(&subGroup);
-    }
-}
-
 void bindPointsToBuffers()
 {
     int count = 0;
@@ -384,6 +371,19 @@ void bindPointsToBuffers()
         model.vertexCount = mi.points.size() / 3;
         model.indexCount = mi.indices.size();
         model.triangleCount = mi.numTriangles;
+    }
+}
+
+void pointModelsVBOIndex(GroupConfig* group)
+{
+    for (auto& model : group->models) {
+        Model m = config.filesModels[model.file];
+        model = m;
+        config.stats.numTriangles += model.triangleCount;
+    }
+
+    for (auto& subGroup : group->children) {
+        pointModelsVBOIndex(&subGroup);
     }
 }
 

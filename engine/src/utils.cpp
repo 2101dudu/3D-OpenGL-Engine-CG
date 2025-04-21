@@ -56,17 +56,17 @@ ModelInfo parseFile(const std::string& filename)
         std::string line;
         while (std::getline(file, line)) {
             if (startsWith(line, "v ")) {
-                float x,y,z;
-                sscanf(line.c_str(),"v %f %f %f",&x,&y,&z);
+                float x, y, z;
+                sscanf(line.c_str(), "v %f %f %f", &x, &y, &z);
                 allPoints.push_back(x);
                 allPoints.push_back(y);
                 allPoints.push_back(z);
-            } else if (startsWith(line, "f ")) {
-                int a,b,c;
-                sscanf(line.c_str(),"f %d/%*d/%*d %d/%*d/%*d %d/%*d/%*d",&a,&b,&c); // Get first vertex index of each face element
-                associations.push_back(a-1); // Convert to 0-based index
-                associations.push_back(b-1);
-                associations.push_back(c-1);
+            } else if (startsWith(line, "f ")) { // Face
+                int a, b, c;
+                sscanf(line.c_str(), "f %d/%*d/%*d %d/%*d/%*d %d/%*d/%*d", &a, &b, &c); // Get first vertex index of each face element
+                associations.push_back(a - 1); // Convert to 0-based index
+                associations.push_back(b - 1);
+                associations.push_back(c - 1);
             }
         }
         modelInfo.points = std::move(allPoints);
