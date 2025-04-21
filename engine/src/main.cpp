@@ -355,16 +355,8 @@ void pointModelsVBOIndex(GroupConfig* group)
     }
 }
 
-void initializeVBOs()
+void bindPointsToBuffers()
 {
-    glEnableClientState(GL_VERTEX_ARRAY);
-
-    int totalNumModels = config.filesModels.size();
-    vboBuffers.resize(totalNumModels);
-    iboBuffers.resize(totalNumModels);
-    glGenBuffers(totalNumModels, vboBuffers.data());
-    glGenBuffers(totalNumModels, iboBuffers.data());
-
     int count = 0;
     for (auto it = config.filesModels.begin(); it != config.filesModels.end(); ++it, ++count) {
         const std::string& fname = it->first;
@@ -386,19 +378,31 @@ void initializeVBOs()
             mi.indices.data(),
             GL_STATIC_DRAW);
 
-        // Guarda no Model
+        // Stores in Model
         model.vboIndex = count;
         model.iboIndex = count;
         model.vertexCount = mi.points.size() / 3;
         model.indexCount = mi.indices.size();
         model.triangleCount = mi.numTriangles;
     }
+}
 
-    // desliga buffers
+void initializeVBOs()
+{
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    int totalNumModels = config.filesModels.size();
+    vboBuffers.resize(totalNumModels);
+    iboBuffers.resize(totalNumModels);
+    glGenBuffers(totalNumModels, vboBuffers.data());
+    glGenBuffers(totalNumModels, iboBuffers.data());
+
+    bindPointsToBuffers();
+
+    // Turns off buffers
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    // associa VBO/IBO aos modelos no group
     pointModelsVBOIndex(&config.group);
 }
 

@@ -103,19 +103,17 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
         // IBO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[model.iboIndex]);
 
-        // Desenha
         glDrawElements(GL_TRIANGLES,
                        model.indexCount,
                        GL_UNSIGNED_INT,
                        0);
 
-        // Opcional: desliga o ELEMENT_ARRAY
+        // Optional: turns off ELEMENT_ARRAY
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    // Chamada recursiva — passa ambos os vetores
     for (const auto& child : group.children) {
         drawWithVBOs(vboBuffers, iboBuffers, child);
     }
