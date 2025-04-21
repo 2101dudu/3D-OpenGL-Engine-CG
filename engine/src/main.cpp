@@ -45,7 +45,8 @@ WorldConfig config;
 bool drawCatmullRomCurves = false;
 
 // VBOs
-std::vector<GLuint> buffers;
+std::vector<GLuint> vboBuffers;
+std::vector<GLuint> iboBuffers; // armazena IBOs de índices
 
 void updateSceneOptions(void)
 {
@@ -82,7 +83,7 @@ void renderScene(void)
 
     glColor3f(config.group.color.x, config.group.color.y, config.group.color.z);
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
-    drawWithVBOs(buffers, config.group);
+    drawWithVBOs(vboBuffers, iboBuffers, config.group);
 
     drawMenu(&config);
 
@@ -341,25 +342,6 @@ void initializeOpenGLContext()
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
 }
 
-void bindPointsToBuffers()
-{
-    std::map<std::string, Model>::iterator it;
-    int count = 0;
-    for (it = config.filesModels.begin(); it != config.filesModels.end(); it++, count++) {
-        Model* model = &it->second;
-
-        ModelInfo modelInfo = parseFile(model->file);
-        std::vector<float> modelPoints = modelInfo.points;
-
-        model->vboIndex = count;
-        model->vertexCount = modelPoints.size() / 3;
-        model->triangleCount = modelInfo.numTriangles;
-
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[count]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * modelPoints.size(), modelPoints.data(), GL_STATIC_DRAW);
-    }
-}
-
 void pointModelsVBOIndex(GroupConfig* group)
 {
     for (auto& model : group->models) {
@@ -377,21 +359,47 @@ void initializeVBOs()
 {
     glEnableClientState(GL_VERTEX_ARRAY);
 
-    // count the number of models
     int totalNumModels = config.filesModels.size();
+    vboBuffers.resize(totalNumModels);
+    iboBuffers.resize(totalNumModels);
+    glGenBuffers(totalNumModels, vboBuffers.data());
+    glGenBuffers(totalNumModels, iboBuffers.data());
 
-    // resize VBOs' buffers
-    buffers.resize(totalNumModels);
-    glGenBuffers(totalNumModels, buffers.data());
+    int count = 0;
+    for (auto it = config.filesModels.begin(); it != config.filesModels.end(); ++it, ++count) {
+        const std::string& fname = it->first;
+        Model& model = it->second;
 
-    // bind all of the files' models to the VBOs' buffer
-    bindPointsToBuffers();
+        ModelInfo mi = parseFile(model.file);
 
-    // recursively make the models point to their respective VBO index
-    pointModelsVBOIndex(&config.group);
+        // VBO
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[count]);
+        glBufferData(GL_ARRAY_BUFFER,
+            mi.points.size() * sizeof(float),
+            mi.points.data(),
+            GL_STATIC_DRAW);
 
-    // TODO: check if a reset on the buffer's index is needed
+        // IBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[count]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+            mi.indices.size() * sizeof(unsigned int),
+            mi.indices.data(),
+            GL_STATIC_DRAW);
+
+        // Guarda no Model
+        model.vboIndex = count;
+        model.iboIndex = count;
+        model.vertexCount = mi.points.size() / 3;
+        model.indexCount = mi.indices.size();
+        model.triangleCount = mi.numTriangles;
+    }
+
+    // desliga buffers
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    // associa VBO/IBO aos modelos no group
+    pointModelsVBOIndex(&config.group);
 }
 
 int main(int argc, char** argv)

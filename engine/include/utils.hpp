@@ -10,7 +10,8 @@ struct Association {
 
 struct ModelInfo {
     std::vector<float> points;
-    int64_t numTriangles;
+    std::vector<unsigned int> indices;    // ← NOVO: índices
+    int64_t numTriangles;                 // em triângulos
 };
 
 ModelInfo parseFile(const std::string& filename);

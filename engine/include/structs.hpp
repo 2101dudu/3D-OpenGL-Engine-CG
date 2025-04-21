@@ -61,7 +61,9 @@ struct Transform {
 struct Model {
     std::string file;
     int vboIndex = 0; // VBO id
+    int iboIndex = 0;          // IBO/EBO id (índices)
     size_t vertexCount = 0; // VBO vertice count
+    size_t indexCount = 0;     // número de índices (3 × #triângulos)
     size_t triangleCount = 0; // purely for stats
 };
 

@@ -87,28 +87,37 @@ void applyTransformations(const std::vector<Transform>& transforms)
     }
 }
 
-void drawWithVBOs(const std::vector<GLuint>& buffers, const GroupConfig& group)
+void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
+                  const std::vector<GLuint>& iboBuffers,
+                  const GroupConfig& group)
 {
     glPushMatrix();
-
     applyTransformations(group.transforms);
-
-    glColor3f(group.color.x, group.color.y, group.color.z);
-
-    // TODO: check if this line is necessary
     glEnableClientState(GL_VERTEX_ARRAY);
 
     for (const auto& model : group.models) {
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[model.vboIndex]);
+        // VBO
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[model.vboIndex]);
         glVertexPointer(3, GL_FLOAT, 0, 0);
-        glDrawArrays(GL_TRIANGLES, 0, model.vertexCount);
+
+        // IBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[model.iboIndex]);
+
+        // Desenha
+        glDrawElements(GL_TRIANGLES,
+                       model.indexCount,
+                       GL_UNSIGNED_INT,
+                       0);
+
+        // Opcional: desliga o ELEMENT_ARRAY
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    // TODO: check if this line is necessary
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    for (const auto& subGroup : group.children) {
-        drawWithVBOs(buffers, subGroup);
+    // Chamada recursiva — passa ambos os vetores
+    for (const auto& child : group.children) {
+        drawWithVBOs(vboBuffers, iboBuffers, child);
     }
 
     glPopMatrix();
