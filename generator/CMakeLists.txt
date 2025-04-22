@@ -20,6 +20,8 @@ add_executable(${PROJECT_NAME}
 	src/cone.cpp
 	include/torus.hpp
 	src/torus.cpp
+	include/Bezier.hpp
+	src/Bezier.cpp
 )
 
 include_directories(include)
