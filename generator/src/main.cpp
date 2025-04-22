@@ -6,10 +6,11 @@
 #include "plane.hpp"
 #include "sphere.hpp"
 #include "torus.hpp"
+#include "Bezier.hpp"
 
 #include <string>
 
-void executeCommand(const std::string& command, const std::vector<int>& args, const std::string& filename)
+void executeCommand(const std::string& command, const std::vector<int>& args, const std::string& filename, int argc, char* argv[])
 {
     std::string project_filename = "../../objects/" + filename;
 
@@ -25,6 +26,10 @@ void executeCommand(const std::string& command, const std::vector<int>& args, co
         Torus::createTorus(args[0], args[1], args[2], args[3], project_filename);
     } else if (command == "cylinder" && args.size() == 4) {
         Cylinder::createCylinder(args[0], args[1], args[2], args[3], project_filename);
+    } else if (command == "bezier" && args.size() == 1 && argc >= 5) {
+        std::string inputPatchFile = argv[argc - 2];
+        std::string outputFile = "../../objects/" + std::string(argv[argc - 1]);
+        Bezier::createBezierModel(inputPatchFile, args[0], outputFile);
     } else {
         std::cerr << "Unknown command or incorrect parameters: " << command << std::endl;
     }
@@ -32,22 +37,35 @@ void executeCommand(const std::string& command, const std::vector<int>& args, co
 
 int main(int argc, char* argv[])
 {
-    // minimum: "generator command param1 param2 ..."
     if (argc < 5) {
         std::cerr << "Usage: generator <command> <param1> <param2> ...\n";
         return 1;
     }
 
-    // first argument is the command
     std::string command = argv[1];
     std::vector<int> args;
 
-    // convert parameters to integers
-    for (int i = 2; i < argc - 1; ++i) {
-        args.push_back(std::stoi(argv[i]));
+    if (command == "bezier") {
+        try {
+            args.push_back(std::stoi(argv[2]));
+        }
+        catch (...) {
+            std::cerr << "Error: tesselation parameter is invalid for bezier.\n";
+            return 1;
+        }
+    }
+    else {
+        for (int i = 2; i < argc - 1; ++i) {
+            try {
+                args.push_back(std::stoi(argv[i]));
+            }
+            catch (...) {
+                std::cerr << "Error: invalid argument for the command: " << command << ".\n";
+                return 1;
+            }
+        }
     }
 
-    executeCommand(command, args, argv[argc - 1]);
-
+    executeCommand(command, args, argv[argc - 1], argc, argv);
     return 0;
 }
