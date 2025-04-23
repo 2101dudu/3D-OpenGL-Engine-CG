@@ -30,9 +30,13 @@ def create_model(file):
     return model
 
 
-def create_group(name, transform_data, model_file):
+def create_group(name, clickableInfo, transform_data, model_file):
     group = ET.Element("group")
     group.set("name", name)
+
+    if clickableInfo != "":
+        group.set("clickableInfo", clickableInfo)
+
     transform = create_transform(transform_data.get("rotate"),
                                  transform_data.get("translate"),
                                  transform_data.get("scale"))
@@ -42,7 +46,7 @@ def create_group(name, transform_data, model_file):
     return group
 
 
-def create_moon(moon_name, model_file):
+def create_moon(moon_name, model_file, isEarth):
     # Generates a random number to use as the time per full rotation
     time = random.uniform(0, 30)
     moon_distance = random.uniform(1.5, 3.5)
@@ -53,7 +57,11 @@ def create_moon(moon_name, model_file):
         "translate": {"x": moon_distance, "y": y_offset, "z": 0},
         "scale": {"x": scale_factor, "y": scale_factor, "z": scale_factor}
     }
-    return create_group(moon_name, transform, model_file)
+
+    if isEarth:
+        return create_group(moon_name, "../../group_info/earth_moon.txt", transform, model_file)
+
+    return create_group(moon_name, "", transform, model_file)
 
 
 def add_asteroid_belt(parent, num_asteroids, min_dist, max_dist):
@@ -118,7 +126,7 @@ def main():
     up.set("z", "0")
     projection = ET.SubElement(camera, "projection")
     projection.set("fov", "60")
-    projection.set("near", "1")
+    projection.set("near", "0.01")
     projection.set("far", "1000")
 
     solar_system = ET.SubElement(world, "group")
@@ -127,19 +135,19 @@ def main():
     # Sun (static at the center)
     sun_transform = {"rotate": {"time": 100,
                                 "x": 0, "y": 1, "z": 0}, "translate": None, "scale": {"x": 3, "y": 3, "z": 3}}
-    sun = create_group("Sun", sun_transform, "../../objects/sphere.3d")
+    sun = create_group("Sun", "../../group_info/sun.txt", sun_transform, "../../objects/sphere.3d")
     solar_system.append(sun)
 
     # Planet data: (name, distance, scale)
     planet_data = [
-        ("Mercury", 10, 0.04),
-        ("Venus", 15, 0.1),
-        ("Earth", 20, 0.11),
-        ("Mars", 27, 0.06),
-        ("Jupiter", 45, 1.3),
-        ("Saturn", 60, 0.7),
-        ("Uranus", 75, 0.42),
-        ("Neptune", 90, 0.41)
+        ("Mercury", "../../group_info/mercury.txt", 10, 0.04),
+        ("Venus", "../../group_info/venus.txt", 15, 0.1),
+        ("Earth", "../../group_info/earth.txt", 20, 0.11),
+        ("Mars", "../../group_info/mars.txt", 27, 0.06),
+        ("Jupiter", "../../group_info/jupiter.txt", 45, 1.3),
+        ("Saturn", "../../group_info/saturn.txt", 60, 0.7),
+        ("Uranus", "../../group_info/uranus.txt", 75, 0.42),
+        ("Neptune", "../../group_info/neptune.txt", 90, 0.41)
     ]
 
     # Number of moons for each planet
@@ -150,7 +158,7 @@ def main():
         "Uranus": 3, "Neptune": 2
     }
 
-    for planet, distance, scale in planet_data:
+    for planet, clickableInfo, distance, scale in planet_data:
         # Orbital distribution: uses a random time per full rotation
         time = random.uniform(0, 50)
         transform = {
@@ -159,11 +167,15 @@ def main():
             "scale": {"x": scale, "y": scale, "z": scale}
         }
         planet_group = create_group(
-            planet, transform, "../../objects/sphere.3d")
+            planet, clickableInfo, transform, "../../objects/sphere.3d")
         # Adds moons randomly
         for i in range(moons_per_planet[planet]):
-            moon = create_moon(f"{planet}_Moon_{i+1}",
-                               "../../objects/sphere.3d")
+            if planet == "Earth":
+                moon = create_moon(f"{planet}_Moon_{i+1}",
+                               "../../objects/sphere.3d", True)
+            else:
+                moon = create_moon(f"{planet}_Moon_{i+1}",
+                                "../../objects/sphere.3d", False)
             planet_group.append(moon)
         solar_system.append(planet_group)
 

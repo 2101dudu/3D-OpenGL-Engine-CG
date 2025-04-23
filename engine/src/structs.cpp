@@ -5,10 +5,10 @@
 void resetCamera(WorldConfig* config)
 {
     // cartesian
-    config->camera.position = { 5, 5, 5 };
+    config->camera.tracking = 1;
     config->camera.lookAt = { 0, 0, 0 };
     config->camera.up = { 0, 1, 0 };
-    float zoomInCartesian = 5;
+    float zoomInCartesian = 50;
 
     // translate to spherical
     float distance = std::sqrt(zoomInCartesian * 5.0f + zoomInCartesian * 5.0f + zoomInCartesian * 5.0f);
@@ -36,6 +36,9 @@ void switchCameraMode(WorldConfig* config)
     config->camera.isOrbital = !config->camera.isOrbital;
 
     if (!config->camera.isOrbital) {
+        config->camera.tracking = 0;
+        config->camera.showInfoWindow = false;
+
         // Compute the vector from the camera position to the lookAt point
         float dx = config->camera.lookAt.x - config->camera.position.x;
         float dy = config->camera.lookAt.y - config->camera.position.y;
@@ -62,9 +65,19 @@ void switchCameraMode(WorldConfig* config)
         config->camera.cameraAngle = atan2f(dz, dx);
         config->camera.cameraAngleY = asinf(dy / distance);
 
-        // Set the orbital mode target (lookAt) to the origin
-        config->camera.lookAt.x = 0.0f;
-        config->camera.lookAt.y = 0.0f;
-        config->camera.lookAt.z = 0.0f;
+        updateCameraLookAt(config);
     }
+}
+
+void updateCameraLookAt(WorldConfig* config)
+{
+    const unsigned char picked = config->camera.tracking;
+    if (picked == 0)
+        return;
+    GroupConfig* g = config->clickableGroups[picked];
+    config->camera.lookAt.x = g->center.x;
+    config->camera.lookAt.y = g->center.y;
+    config->camera.lookAt.z = g->center.z;
+
+    updateCamera(config);
 }

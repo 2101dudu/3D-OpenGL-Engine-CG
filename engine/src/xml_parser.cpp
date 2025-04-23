@@ -1,11 +1,49 @@
 #include "xml_parser.hpp"
 #include "tinyxml2.h"
 #include <cmath>
+#include <fstream>
 #include <iostream>
 
 using namespace tinyxml2;
 
-void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::string, Model>& filesModels)
+// gray depth values need to be >0 (to distinguish from the background color)
+unsigned char lastGroupID = 1;
+
+std::map<unsigned char, GroupConfig*> clickableGroups;
+
+void parseGroupsInfo(XMLElement* groupElement, GroupConfig& group)
+{
+    const char* nameAttr = groupElement->Attribute("name");
+    if (!nameAttr)
+        return;
+
+    std::string groupName = nameAttr;
+
+    // read group info from the file
+    const char* infoFileAttr = groupElement->Attribute("clickableInfo");
+    if (!infoFileAttr)
+        return;
+
+    std::ifstream groupInfoFile(infoFileAttr);
+    if (!groupInfoFile.is_open()) {
+        std::cerr << "Failed to open file: " << infoFileAttr << std::endl;
+        return;
+    }
+
+    std::string groupInfoText, line;
+    while (std::getline(groupInfoFile, line)) {
+        groupInfoText += line + '\n';
+    }
+    groupInfoFile.close();
+
+    group.name = groupName;
+    group.infoText = groupInfoText;
+    group.id = lastGroupID++;
+
+    clickableGroups[group.id] = &group;
+}
+
+void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::string, Model*>& filesModels)
 {
     // parse transformations if avilable
     XMLElement* transformElement = groupElement->FirstChildElement("transform");
@@ -78,10 +116,10 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
     if (modelsElement) {
         XMLElement* modelElement = modelsElement->FirstChildElement("model");
         while (modelElement) {
-            Model modelConfig;
             if (modelElement->Attribute("file")) {
                 std::string fileName = modelElement->Attribute("file");
-                modelConfig.file = fileName;
+                Model* modelConfig = new Model();
+                modelConfig->file = fileName;
                 group.models.push_back(modelConfig);
 
                 // if there's no entry on the models' map
@@ -89,6 +127,7 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
                     filesModels[fileName] = modelConfig;
                 }
             }
+
             modelElement = modelElement->NextSiblingElement("model");
         }
     }
@@ -96,8 +135,10 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
     // recursively parse nested child groups if available
     XMLElement* childGroupElement = groupElement->FirstChildElement("group");
     while (childGroupElement) {
-        GroupConfig childGroup;
-        parseGroup(childGroupElement, childGroup, filesModels);
+        GroupConfig* childGroup = new GroupConfig();
+        parseGroupsInfo(childGroupElement, *childGroup);
+
+        parseGroup(childGroupElement, *childGroup, filesModels);
         group.children.push_back(childGroup);
         childGroupElement = childGroupElement->NextSiblingElement("group");
     }
@@ -152,8 +193,11 @@ WorldConfig XMLParser::parseXML(const std::string& filename)
 
     XMLElement* group = world->FirstChildElement("group");
     if (group) {
+        parseGroupsInfo(group, config.group);
         parseGroup(group, config.group, config.filesModels);
     }
+
+    config.clickableGroups = clickableGroups;
 
     return config;
 }

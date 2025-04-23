@@ -1,3 +1,4 @@
+#include <cstdio>
 #ifdef __APPLE__
 #include <GL/freeglut.h>
 #include <GLUT/glut.h>
@@ -19,6 +20,59 @@
 extern float globalTimer;
 extern float timeFactor;
 extern bool drawCatmullRomCurves;
+extern GLfloat g_viewMatrix[16];
+
+extern WorldConfig config;
+
+// This function assumes an orthonormal view matrix.
+void invertViewMatrix(const GLfloat view[16], GLfloat inv[16])
+{
+    // The upper-left 3x3 is the rotation which is orthonormal.
+    inv[0] = view[0];
+    inv[1] = view[4];
+    inv[2] = view[8];
+    inv[3] = 0.0f;
+    inv[4] = view[1];
+    inv[5] = view[5];
+    inv[6] = view[9];
+    inv[7] = 0.0f;
+    inv[8] = view[2];
+    inv[9] = view[6];
+    inv[10] = view[10];
+    inv[11] = 0.0f;
+
+    // For the translation: inv.translation = -R^T * t
+    inv[12] = -(view[12] * view[0] + view[13] * view[1] + view[14] * view[2]);
+    inv[13] = -(view[12] * view[4] + view[13] * view[5] + view[14] * view[6]);
+    inv[14] = -(view[12] * view[8] + view[13] * view[9] + view[14] * view[10]);
+    inv[15] = 1.0f;
+}
+
+void updateGroupPosition(GroupConfig& group)
+{
+    // Allocate an array to hold the 4x4 matrix (OpenGL stores matrices in column-major order)
+    GLfloat modelMatrix[16];
+    // Retrieves the current modelview matrix (which is V * M_model)
+    glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
+
+    // Extract the translation from the model transformation in eye space.
+    float tx = modelMatrix[12];
+    float ty = modelMatrix[13];
+    float tz = modelMatrix[14];
+
+    // Compute the inverse of the view matrix (which we stored globally)
+    GLfloat invView[16];
+    invertViewMatrix(g_viewMatrix, invView);
+
+    // Multiply the translation (as a 4D vector with w=1) by invView to get world coordinates:
+    float worldX = invView[0] * tx + invView[4] * ty + invView[8] * tz + invView[12];
+    float worldY = invView[1] * tx + invView[5] * ty + invView[9] * tz + invView[13];
+    float worldZ = invView[2] * tx + invView[6] * ty + invView[10] * tz + invView[14];
+
+    group.center.x = worldX;
+    group.center.y = worldY;
+    group.center.z = worldZ;
+}
 
 void drawAxis()
 {
@@ -89,10 +143,24 @@ void applyTransformations(const std::vector<Transform>& transforms)
 
 void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
                   const std::vector<GLuint>& iboBuffers,
-                  const GroupConfig& group)
+                  const GroupConfig& group,
+                  bool depthOnly)
 {
     glPushMatrix();
     applyTransformations(group.transforms);
+  
+  
+    // the center of the group is determined after the transformations
+    if (!group.name.empty()) {
+        updateGroupPosition(group);
+    }
+
+    if (depthOnly) {
+        float color = group.id / 255.0f;
+        glColor3f(color, color, color);
+    } else {
+        glColor3f(config.group.color.x, config.group.color.y, config.group.color.z);
+    }
     glEnableClientState(GL_VERTEX_ARRAY);
 
     for (const auto& model : group.models) {
@@ -115,7 +183,7 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     for (const auto& child : group.children) {
-        drawWithVBOs(vboBuffers, iboBuffers, child);
+        drawWithVBOs(vboBuffers, iboBuffers, child, depthOnly);
     }
 
     glPopMatrix();
