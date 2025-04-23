@@ -134,7 +134,7 @@ unsigned char picking(int x, int y)
 
     // re-render scene
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    drawWithVBOs(buffers, config.group, true);
+    drawWithVBOs(vboBuffers, iboBuffers, config.group, true);
 
     unsigned char res[4];
     GLint viewport[4];
@@ -417,9 +417,9 @@ void bindPointsToBuffers()
     int count = 0;
     for (auto it = config.filesModels.begin(); it != config.filesModels.end(); ++it, ++count) {
         const std::string& fname = it->first;
-        Model& model = it->second;
+        Model* model = it->second;
 
-        ModelInfo mi = parseFile(model.file);
+        ModelInfo mi = parseFile(model->file);
 
         // VBO
         glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[count]);
@@ -436,11 +436,11 @@ void bindPointsToBuffers()
             GL_STATIC_DRAW);
 
         // Stores in Model
-        model.vboIndex = count;
-        model.iboIndex = count;
-        model.vertexCount = mi.points.size() / 3;
-        model.indexCount = mi.indices.size();
-        model.triangleCount = mi.numTriangles;
+        model->vboIndex = count;
+        model->iboIndex = count;
+        model->vertexCount = mi.points.size() / 3;
+        model->indexCount = mi.indices.size();
+        model->triangleCount = mi.numTriangles;
     }
 }
 

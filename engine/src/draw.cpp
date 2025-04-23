@@ -143,7 +143,7 @@ void applyTransformations(const std::vector<Transform>& transforms)
 
 void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
                   const std::vector<GLuint>& iboBuffers,
-                  const GroupConfig& group,
+                  GroupConfig& group,
                   bool depthOnly)
 {
     glPushMatrix();
@@ -165,14 +165,14 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
 
     for (const auto& model : group.models) {
         // VBO
-        glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[model.vboIndex]);
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[model->vboIndex]);
         glVertexPointer(3, GL_FLOAT, 0, 0);
 
         // IBO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[model.iboIndex]);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[model->iboIndex]);
 
         glDrawElements(GL_TRIANGLES,
-                       model.indexCount,
+                       model->indexCount,
                        GL_UNSIGNED_INT,
                        0);
 
@@ -182,8 +182,8 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    for (const auto& child : group.children) {
-        drawWithVBOs(vboBuffers, iboBuffers, child, depthOnly);
+    for (auto& child : group.children) {
+        drawWithVBOs(vboBuffers, iboBuffers, *child, depthOnly);
     }
 
     glPopMatrix();
