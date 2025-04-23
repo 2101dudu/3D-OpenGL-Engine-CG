@@ -36,6 +36,9 @@ void switchCameraMode(WorldConfig* config)
     config->camera.isOrbital = !config->camera.isOrbital;
 
     if (!config->camera.isOrbital) {
+        config->camera.tracking = 0;
+        config->camera.showInfoWindow = false;
+
         // Compute the vector from the camera position to the lookAt point
         float dx = config->camera.lookAt.x - config->camera.position.x;
         float dy = config->camera.lookAt.y - config->camera.position.y;

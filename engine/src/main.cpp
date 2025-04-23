@@ -157,11 +157,11 @@ void focusGroup(unsigned char picked)
     config.camera.tracking = g == NULL ? 0 : picked;
     config.camera.showInfoWindow = g == NULL ? false : true;
 
-    if (g == NULL) {
-        config.camera.isOrbital = false;
-        switchCameraMode(&config);
+    if (g != NULL) {
+        config.camera.isOrbital = true;
 
-        glutWarpPointer(config.window.width / 2, config.window.height / 2);
+        // hide cursor on FPS
+        glutSetCursor(config.camera.isOrbital ? GLUT_CURSOR_INHERIT : GLUT_CURSOR_CROSSHAIR);
     }
 }
 
@@ -184,7 +184,9 @@ void mouseWheel(int wheel, int direction, int x, int y)
             else if (config.camera.cameraDistance > config.camera.projection.far1)
                 config.camera.cameraDistance = config.camera.projection.far1;
 
-            updateCamera(&config);
+            if (config.camera.tracking != 0) {
+                updateCamera(&config);
+            }
             glutPostRedisplay();
         }
     }
@@ -238,7 +240,7 @@ void mouseMotion(int x, int y)
             config.camera.lastX = x;
             config.camera.lastY = y;
 
-            updateCamera(&config);
+            //updateCamera(&config);
             glutPostRedisplay();
         } else if (!config.camera.isOrbital) { // FPS mode
             if (ignoreWarp) {
