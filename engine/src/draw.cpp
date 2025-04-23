@@ -141,12 +141,15 @@ void applyTransformations(const std::vector<Transform>& transforms)
     }
 }
 
-void drawWithVBOs(const std::vector<GLuint>& buffers, GroupConfig& group, bool depthOnly)
+void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
+                  const std::vector<GLuint>& iboBuffers,
+                  GroupConfig& group,
+                  bool depthOnly)
 {
     glPushMatrix();
-
     applyTransformations(group.transforms);
-
+  
+  
     // the center of the group is determined after the transformations
     if (!group.name.empty()) {
         updateGroupPosition(group);
@@ -158,25 +161,29 @@ void drawWithVBOs(const std::vector<GLuint>& buffers, GroupConfig& group, bool d
     } else {
         glColor3f(config.group.color.x, config.group.color.y, config.group.color.z);
     }
-
-    // TODO: check if this line is necessary
     glEnableClientState(GL_VERTEX_ARRAY);
 
     for (const auto& model : group.models) {
-        // only draw if it's a regular drawing sequence (depthOnly == false) or when
-        // depth is being checked and the group is clickable
-        if (depthOnly && group.name.empty())
-            continue;
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[model->vboIndex]);
+        // VBO
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[model->vboIndex]);
         glVertexPointer(3, GL_FLOAT, 0, 0);
-        glDrawArrays(GL_TRIANGLES, 0, model->vertexCount);
+
+        // IBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[model->iboIndex]);
+
+        glDrawElements(GL_TRIANGLES,
+                       model->indexCount,
+                       GL_UNSIGNED_INT,
+                       0);
+
+        // Optional: turns off ELEMENT_ARRAY
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    // TODO: check if this line is necessary
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    for (auto& subGroup : group.children) {
-        drawWithVBOs(buffers, *subGroup, depthOnly);
+    for (auto& child : group.children) {
+        drawWithVBOs(vboBuffers, iboBuffers, *child, depthOnly);
     }
 
     glPopMatrix();

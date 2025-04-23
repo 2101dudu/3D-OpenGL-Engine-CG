@@ -34,36 +34,33 @@ ModelInfo parseFile(const std::string& filename)
         size_t numPoints;
         file >> numPoints;
         std::vector<float> allPoints(3 * numPoints);
-        for (size_t i = 0; i < numPoints; ++i) {
+        for (size_t i = 0; i < numPoints; ++i)
             file >> allPoints[3 * i] >> allPoints[3 * i + 1] >> allPoints[3 * i + 2];
-        }
 
         file >> modelInfo.numTriangles;
+        // Reads associations (1-based)
         std::vector<int> associations(3 * modelInfo.numTriangles);
-        for (size_t i = 0; i < modelInfo.numTriangles; ++i) {
+        for (size_t i = 0; i < modelInfo.numTriangles; ++i)
             file >> associations[3 * i] >> associations[3 * i + 1] >> associations[3 * i + 2];
-        }
 
-        for (size_t i = 0; i < modelInfo.numTriangles; ++i) {
-            for (size_t j = 0; j < 3; ++j) {
-                size_t index = (associations[3 * i + j] - 1) * 3;
-                modelInfo.points.push_back(allPoints[index]);
-                modelInfo.points.push_back(allPoints[index + 1]);
-                modelInfo.points.push_back(allPoints[index + 2]);
-            }
-        }
+        // Moves uniques vertex's
+        modelInfo.points = std::move(allPoints);
+        // Builds 0-based indexes
+        modelInfo.indices.resize(associations.size());
+        for (size_t i = 0; i < associations.size(); ++i)
+            modelInfo.indices[i] = associations[i] - 1;
+
     } else if (endsWith(filename, ".obj")) {
         std::vector<float> allPoints;
         std::vector<int> associations;
         std::string line;
-
         while (std::getline(file, line)) {
-            if (startsWith(line, "v ")) { // Vertex
+            if (startsWith(line, "v ")) {
                 float x, y, z;
                 sscanf(line.c_str(), "v %f %f %f", &x, &y, &z);
-                modelInfo.points.push_back(x);
-                modelInfo.points.push_back(y);
-                modelInfo.points.push_back(z);
+                allPoints.push_back(x);
+                allPoints.push_back(y);
+                allPoints.push_back(z);
             } else if (startsWith(line, "f ")) { // Face
                 int a, b, c;
                 sscanf(line.c_str(), "f %d/%*d/%*d %d/%*d/%*d %d/%*d/%*d", &a, &b, &c); // Get first vertex index of each face element
@@ -72,10 +69,11 @@ ModelInfo parseFile(const std::string& filename)
                 associations.push_back(c - 1);
             }
         }
-
-        modelInfo.numTriangles = associations.size();
-    } else {
-        std::cerr << "Error: Unsupported file format " << filename << std::endl;
+        modelInfo.points = std::move(allPoints);
+        modelInfo.indices.resize(associations.size());
+        for (size_t i = 0; i < associations.size(); ++i)
+            modelInfo.indices[i] = associations[i];
+        modelInfo.numTriangles = associations.size()/3;
     }
 
     file.close();
