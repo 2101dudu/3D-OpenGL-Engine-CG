@@ -32,6 +32,8 @@ __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 int lastRealTime;
 float globalTimer = 0.0f;
 
+GLfloat g_viewMatrix[16];
+
 // the time update factor
 float timeFactor = 1;
 
@@ -71,18 +73,22 @@ void renderScene(void)
     globalTimer += deltaTime;
     lastRealTime = currentRealTime;
 
+    glMatrixMode(GL_MODELVIEW);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+    updateCameraLookAt(&config);
     gluLookAt(config.camera.position.x, config.camera.position.y, config.camera.position.z,
         config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
         config.camera.up.x, config.camera.up.y, config.camera.up.z);
 
+    // capture the view matrix (camera transformation)
+    glGetFloatv(GL_MODELVIEW_MATRIX, g_viewMatrix);
+
     if (config.scene.drawAxis)
         drawAxis();
 
-    glColor3f(config.group.color.x, config.group.color.y, config.group.color.z);
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
-    drawWithVBOs(buffers, config.group);
+    drawWithVBOs(buffers, config.group, false);
 
     drawMenu(&config);
 
@@ -107,6 +113,58 @@ void updateViewPort(int w, int h)
     glLoadIdentity();
 }
 
+unsigned char picking(int x, int y)
+{
+    // TODO: Unecessary for now
+    // glDisable(GL_LIGHTING);
+    // glDisable(GL_TEXTURE_2D);
+
+    // set background color to black to differenciate values > 0
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    glDepthFunc(GL_LEQUAL);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glLoadIdentity();
+    gluLookAt(config.camera.position.x, config.camera.position.y, config.camera.position.z,
+        config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
+        config.camera.up.x, config.camera.up.y, config.camera.up.z);
+
+    // re-render scene
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    drawWithVBOs(buffers, config.group, true);
+
+    unsigned char res[4];
+    GLint viewport[4];
+
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glReadPixels(x, viewport[3] - y,
+        1, 1,
+        GL_RGBA, GL_UNSIGNED_BYTE,
+        res);
+
+    // TODO: Unecessary for now
+    // glEnable(GL_LIGHTING);
+    // glEnable(GL_TEXTURE_2D);
+    glDepthFunc(GL_LESS);
+
+    return res[0];
+}
+
+void focusGroup(unsigned char picked)
+{
+    GroupConfig* g = config.clickableGroups[picked];
+    config.camera.tracking = g == NULL ? 0 : picked;
+    config.camera.showInfoWindow = g == NULL ? false : true;
+
+    if (g != NULL) {
+        config.camera.isOrbital = true;
+
+        // hide cursor on FPS
+        glutSetCursor(config.camera.isOrbital ? GLUT_CURSOR_INHERIT : GLUT_CURSOR_CROSSHAIR);
+    }
+}
+
 // track mouse scroll events
 void mouseWheel(int wheel, int direction, int x, int y)
 {
@@ -116,13 +174,19 @@ void mouseWheel(int wheel, int direction, int x, int y)
 
     if (!io.WantCaptureMouse) {
         if (config.camera.isOrbital) {
-            config.camera.cameraDistance += wheelDelta * config.camera.scrollSensitivity;
-            if (config.camera.cameraDistance < 1.0f)
-                config.camera.cameraDistance = 1.0f;
-            else if (config.camera.cameraDistance > 120.0f)
-                config.camera.cameraDistance = 120.0f;
 
-            updateCamera(&config);
+            float distance = config.camera.cameraDistance;
+            float adaptiveSpeed = config.camera.scrollSensitivity * std::max(0.01f, distance * 0.4f);
+
+            config.camera.cameraDistance += wheelDelta * adaptiveSpeed;
+            if (config.camera.cameraDistance < config.camera.projection.near1)
+                config.camera.cameraDistance = config.camera.projection.near1;
+            else if (config.camera.cameraDistance > config.camera.projection.far1)
+                config.camera.cameraDistance = config.camera.projection.far1;
+
+            if (config.camera.tracking != 0) {
+                updateCamera(&config);
+            }
             glutPostRedisplay();
         }
     }
@@ -146,6 +210,11 @@ void mouseButton(int button, int state, int x, int y)
                 config.camera.lastX = x;
                 config.camera.lastY = y;
             }
+        }
+
+        if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+            unsigned char picked = picking(x, y);
+            focusGroup(picked);
         }
     }
 }
@@ -171,7 +240,7 @@ void mouseMotion(int x, int y)
             config.camera.lastX = x;
             config.camera.lastY = y;
 
-            updateCamera(&config);
+            //updateCamera(&config);
             glutPostRedisplay();
         } else if (!config.camera.isOrbital) { // FPS mode
             if (ignoreWarp) {
@@ -343,10 +412,10 @@ void initializeOpenGLContext()
 
 void bindPointsToBuffers()
 {
-    std::map<std::string, Model>::iterator it;
+    std::map<std::string, Model*>::iterator it;
     int count = 0;
     for (it = config.filesModels.begin(); it != config.filesModels.end(); it++, count++) {
-        Model* model = &it->second;
+        Model* model = it->second;
 
         ModelInfo modelInfo = parseFile(model->file);
         std::vector<float> modelPoints = modelInfo.points;
@@ -363,13 +432,13 @@ void bindPointsToBuffers()
 void pointModelsVBOIndex(GroupConfig* group)
 {
     for (auto& model : group->models) {
-        Model m = config.filesModels[model.file];
+        Model* m = config.filesModels[model->file];
         model = m;
-        config.stats.numTriangles += model.triangleCount;
+        config.stats.numTriangles += model->triangleCount;
     }
 
     for (auto& subGroup : group->children) {
-        pointModelsVBOIndex(&subGroup);
+        pointModelsVBOIndex(subGroup);
     }
 }
 
