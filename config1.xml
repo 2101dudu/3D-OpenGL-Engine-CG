@@ -10,7 +10,7 @@
     <group name="teste">
         <group name="Teapot">
             <models>
-                <model file="../../objects/comet.3d"/>
+                <model file="../../objects/teapot.3d"/>
             </models>
         </group>
 
@@ -19,7 +19,7 @@
                 <translate x="10" y="0" z="0"/>
             </transform>
             <models>
-                <model file="../../objects/teapot2.3d"/>
+                <model file="../../objects/comet.3d"/>
             </models>
         </group>
     </group>

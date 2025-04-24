@@ -118,10 +118,10 @@ void Bezier::createBezierModel(const std::string& patchFile,
         // Emit two triangles per quad with consistent CCW winding
         for (int i = 0; i < tessellationLevel; ++i) {
             for (int j = 0; j < tessellationLevel; ++j) {
-                int a = idx[i][j];
-                int b = idx[i+1][j];
-                int c = idx[i+1][j+1];
-                int d = idx[i][j+1];
+                int a = idx[i][j] + 1;
+                int b = idx[i+1][j] + 1;
+                int c = idx[i+1][j+1] + 1;
+                int d = idx[i][j+1] + 1;
                 generator.addAssociation(a, b, c);
                 generator.addAssociation(a, c, d);
             }
