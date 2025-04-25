@@ -28,7 +28,7 @@ struct CameraConfig {
     float sensitivity = 0.005;
     float scrollSensitivity = 0.05f;
 
-    unsigned char tracking = 1;
+    unsigned char tracking = 0;
     bool showInfoWindow = false;
 
     bool isOrbital = true;
@@ -66,7 +66,7 @@ struct Model {
     int vboIndex = 0; // VBO id
     int iboIndex = 0; // IBO id
     size_t vertexCount = 0; // VBO vertice count
-    size_t indexCount = 0;  // IBO number count (3 × #triangles)
+    size_t indexCount = 0; // IBO number count (3 × #triangles)
     size_t triangleCount = 0; // purely for stats
 };
 
