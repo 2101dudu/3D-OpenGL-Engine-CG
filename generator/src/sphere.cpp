@@ -1,7 +1,3 @@
-//
-// Created by Eduardo Faria on 19/02/2025.
-//
-
 #include "sphere.hpp"
 #define _USE_MATH_DEFINES
 #include <math.h>
