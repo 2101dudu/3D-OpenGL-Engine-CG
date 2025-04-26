@@ -1,7 +1,3 @@
-//
-// Created by Eduardo Faria on 15/02/2025.
-//
-
 #include "plane.hpp"
 
 void Plane::createPlane(int dimension, int divPerEdge, const std::string& filename)

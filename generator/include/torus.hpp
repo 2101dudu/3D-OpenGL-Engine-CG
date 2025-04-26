@@ -1,7 +1,3 @@
-//
-// Created by Eduardo Faria on 21/02/2025.
-//
-
 #ifndef TORUS_H
 #define TORUS_H
 

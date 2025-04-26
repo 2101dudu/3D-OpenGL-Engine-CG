@@ -1,7 +1,3 @@
-//
-// Created by Eduardo Faria on 21/02/2025.
-//
-
 #include "torus.hpp"
 #define _USE_MATH_DEFINES
 #include <math.h>

@@ -1,7 +1,3 @@
-//
-// Created by Eduardo Faria on 17/02/2025.
-//
-
 #include "box.hpp"
 
 void Box::createBox(int dimension, int divPerEdge, const std::string& filename)

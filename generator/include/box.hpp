@@ -1,12 +1,8 @@
-//
-// Created by Eduardo Faria on 17/02/2025.
-//
-
 #ifndef BOX_H
 #define BOX_H
 
-#include "PointsGenerator.hpp"
 #include "FileWriter.hpp"
+#include "PointsGenerator.hpp"
 
 class Box {
 public:
@@ -14,4 +10,4 @@ public:
     static void createBox(int dimension, int divPerEdge, const std::string& filename);
 };
 
-#endif //BOX_H
+#endif // BOX_H
