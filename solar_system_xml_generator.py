@@ -63,6 +63,43 @@ def create_moon(moon_name, model_file, isEarth):
 
     return create_group(moon_name, "", transform, model_file)
 
+def create_comet_group():
+    comet_group = ET.Element("group")
+    comet_group.set("name", "Comet")
+
+    transform = ET.SubElement(comet_group, "transform")
+    translate = ET.SubElement(transform, "translate")
+    translate.set("time", "50")
+    translate.set("align", "True")
+
+    points = [
+        {"x": 40, "y": 0, "z": 0},
+        {"x": 24, "y": 16, "z": 20},
+        {"x": 10, "y": 30, "z": 10},
+        {"x": -6, "y": 40, "z": 24},
+        {"x": -20, "y": 20, "z": -10},
+        {"x": -40, "y": 0, "z": 0},
+        {"x": -20, "y": -20, "z": -30},
+        {"x": 10, "y": -30, "z": -40},
+        {"x": 24, "y": -16, "z": -20}
+    ]
+
+    for p in points:
+        point = ET.SubElement(translate, "point")
+        point.set("x", str(p["x"]))
+        point.set("y", str(p["y"]))
+        point.set("z", str(p["z"]))
+
+    scale = ET.SubElement(transform, "scale")
+    scale.set("x", "0.6")
+    scale.set("y", "0.6")
+    scale.set("z", "0.6")
+
+    models = ET.SubElement(comet_group, "models")
+    model = ET.SubElement(models, "model")
+    model.set("file", "../../objects/comet.3d")
+
+    return comet_group
 
 def add_asteroid_belt(parent, num_asteroids, min_dist, max_dist):
     # Creates an asteroid belt with random positions and scales
@@ -101,7 +138,6 @@ def prettify_xml(elem):
     reparsed = minidom.parseString(rough_string)
     return reparsed.toprettyxml(indent="    ")
 
-
 def main():
     world = ET.Element("world")
 
@@ -131,6 +167,10 @@ def main():
 
     solar_system = ET.SubElement(world, "group")
     solar_system.set("name", "SolarSystem")
+
+    # Comet group
+    comet = create_comet_group()
+    solar_system.append(comet)
 
     # Sun (static at the center)
     sun_transform = {"rotate": {"time": 100,
