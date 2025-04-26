@@ -242,7 +242,6 @@ void mouseMotion(int x, int y)
             config.camera.lastX = x;
             config.camera.lastY = y;
 
-            //updateCamera(&config);
             glutPostRedisplay();
         } else if (!config.camera.isOrbital) { // FPS mode
             if (ignoreWarp) {
