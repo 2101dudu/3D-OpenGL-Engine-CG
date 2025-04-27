@@ -142,16 +142,15 @@ void applyTransformations(const std::vector<Transform>& transforms)
 }
 
 void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
-                  const std::vector<GLuint>& iboBuffers,
-                  GroupConfig& group,
-                  bool depthOnly)
+    const std::vector<GLuint>& iboBuffers,
+    GroupConfig& group,
+    bool depthOnly)
 {
     glPushMatrix();
     applyTransformations(group.transforms);
-  
-  
+
     // the center of the group is determined after the transformations
-    if (!group.name.empty()) {
+    if (config.camera.tracking == group.id && !group.name.empty()) {
         updateGroupPosition(group);
     }
 
@@ -172,9 +171,9 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[model->iboIndex]);
 
         glDrawElements(GL_TRIANGLES,
-                       model->indexCount,
-                       GL_UNSIGNED_INT,
-                       0);
+            model->indexCount,
+            GL_UNSIGNED_INT,
+            0);
 
         // Optional: turns off ELEMENT_ARRAY
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
