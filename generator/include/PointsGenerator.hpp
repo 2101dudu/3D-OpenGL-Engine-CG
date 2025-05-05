@@ -1,5 +1,6 @@
-// PointsGenerator.hpp
-#pragma once
+#ifndef PointsGenerator_HPP
+#define PointsGenerator_HPP
+
 #include <vector>
 
 #ifdef __APPLE__
@@ -31,3 +32,5 @@ private:
     std::vector<Point> points;
     std::vector<Association> associations;
 };
+
+#endif

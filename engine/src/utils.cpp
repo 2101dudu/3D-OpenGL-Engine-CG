@@ -90,7 +90,6 @@ ModelInfo parseFile(const std::string& filename)
         for (size_t i = 0; i < numPoints; ++i) {
             file >> rawPoints[3 * i] >> rawPoints[3 * i + 1] >> rawPoints[3 * i + 2];
             file >> rawNormals[3 * i] >> rawNormals[3 * i + 1] >> rawNormals[3 * i + 2];
-            printf("Normal -> x: %f, y: %f, z: %f\n", rawNormals[3 * i], rawNormals[3 * i + 1], rawNormals[3 * i + 2]);
         }
 
         file >> numTriangles;
@@ -138,8 +137,8 @@ ModelInfo parseFile(const std::string& filename)
     for (unsigned int idx : rawIndices) {
         Vec3 pos { rawPoints[3 * idx], rawPoints[3 * idx + 1], rawPoints[3 * idx + 2] };
         Vec3 norm { rawNormals[3 * idx], rawNormals[3 * idx + 1], rawNormals[3 * idx + 2] };
-        Vertex v{ pos, norm };
-    
+        Vertex v { pos, norm };
+
         auto it = indexMap.find(v);
         if (it == indexMap.end()) {
             int newIdx = static_cast<int>(uniquePoints.size() / 3);
