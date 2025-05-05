@@ -48,6 +48,7 @@ bool drawCatmullRomCurves = false;
 
 // VBOs
 std::vector<GLuint> vboBuffers;
+std::vector<GLuint> vboBuffersNormals;
 std::vector<GLuint> iboBuffers; // armazena IBOs de índices
 
 void updateSceneOptions(void)
@@ -67,6 +68,8 @@ void updateSceneOptions(void)
 
 void renderScene(void)
 {
+    float pos[4] = {0.0, 5.0, 0.0, 1.0};
+
     // update global timers
     int currentRealTime = glutGet(GLUT_ELAPSED_TIME);
     float deltaRealTime = (currentRealTime - lastRealTime);
@@ -77,6 +80,7 @@ void renderScene(void)
     glMatrixMode(GL_MODELVIEW);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+
     updateCameraLookAt(&config);
     gluLookAt(config.camera.position.x, config.camera.position.y, config.camera.position.z,
         config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
@@ -88,9 +92,20 @@ void renderScene(void)
     if (config.scene.drawAxis)
         drawAxis();
 
+	glLightfv(GL_LIGHT0, GL_POSITION, pos);
+    
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
 
-    drawWithVBOs(vboBuffers, iboBuffers, config.group, false);
+    float dark[] = { 0.2, 0.2, 0.2, 1.0 };
+	float white[] = { 0.8, 0.8, 0.8, 1.0 };
+	float red[] = { 0.8, 0.2, 0.2, 1.0 };
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+	glMaterialf(GL_FRONT, GL_SHININESS, 128);
+
+
+    //glutSolidSphere(1, 10, 10);
+    drawWithVBOs(vboBuffers, vboBuffersNormals, iboBuffers, config.group, false);
 
     drawMenu(&config);
 
@@ -117,8 +132,7 @@ void updateViewPort(int w, int h)
 
 unsigned char picking(int x, int y)
 {
-    // TODO: Unecessary for now
-    // glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHTING);
     // glDisable(GL_TEXTURE_2D);
 
     // set background color to black to differenciate values > 0
@@ -134,7 +148,7 @@ unsigned char picking(int x, int y)
 
     // re-render scene
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    drawWithVBOs(vboBuffers, iboBuffers, config.group, true);
+    drawWithVBOs(vboBuffers, vboBuffersNormals, iboBuffers, config.group, true);
 
     unsigned char res[4];
     GLint viewport[4];
@@ -145,8 +159,7 @@ unsigned char picking(int x, int y)
         GL_RGBA, GL_UNSIGNED_BYTE,
         res);
 
-    // TODO: Unecessary for now
-    // glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
     // glEnable(GL_TEXTURE_2D);
     glDepthFunc(GL_LESS);
 
@@ -409,6 +422,20 @@ void initializeOpenGLContext()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    
+    float dark[4] = {0.2, 0.2, 0.2, 1.0};
+    float white[4] = {1.0, 1.0, 1.0, 1.0};
+    float black[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
+    // light colors
+    glLightfv(GL_LIGHT0, GL_AMBIENT, dark);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, white);
+
+    // controls global ambient light
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, black);
 }
 
 void bindPointsToBuffers()
@@ -425,6 +452,12 @@ void bindPointsToBuffers()
         glBufferData(GL_ARRAY_BUFFER,
             mi.points.size() * sizeof(float),
             mi.points.data(),
+            GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffersNormals[count]);
+        glBufferData(GL_ARRAY_BUFFER,
+            mi.normals.size() * sizeof(float),
+            mi.normals.data(),
             GL_STATIC_DRAW);
 
         // IBO
@@ -462,8 +495,10 @@ void initializeVBOs()
 
     int totalNumModels = config.filesModels.size();
     vboBuffers.resize(totalNumModels);
+    vboBuffersNormals.resize(totalNumModels);
     iboBuffers.resize(totalNumModels);
     glGenBuffers(totalNumModels, vboBuffers.data());
+    glGenBuffers(totalNumModels, vboBuffersNormals.data());
     glGenBuffers(totalNumModels, iboBuffers.data());
 
     bindPointsToBuffers();

@@ -22,7 +22,7 @@ void Torus::createTorus(float radius, float minorRadius, int slices, int stacks,
             float y = minorRadius * sinf(currBeta);
             float z = (radius + minorRadius * cosf(currBeta)) * sinf(currAlpha);
 
-            pointGen.addPoint(x, y, z);
+            pointGen.addPoint(x, y, z, 0, 0, 0);
 
             int currPointIndex = i * stacks + j + 1;
             int nextCurrPointIndex = i * stacks + ((j + 1) % stacks) + 1;

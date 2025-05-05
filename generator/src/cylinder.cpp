@@ -16,7 +16,7 @@ void Cylinder::createCylinder(int radius, int height, int slices, int stacks, co
             float x = radius * cos(angle);
             float y = currentHeight;
             float z = radius * sin(angle);
-            pointGen.addPoint(x, y, z);
+            pointGen.addPoint(x, y, z, 0, 0, 0);
 
             int currPointIndex = i * slices + (j + 1);
             int neighbourPointIndex = (currPointIndex + 1) % (slices * (i + 1) + 1);
@@ -41,10 +41,10 @@ void Cylinder::createCylinder(int radius, int height, int slices, int stacks, co
     }
 
     // now we add the top-monst centered point
-    pointGen.addPoint(0, height, 0);
+    pointGen.addPoint(0, height, 0, 0, 0, 0);
 
-    pointGen.addPoint(0, 0, 0);
-    int bottomCenterIndex = pointGen.points.size();
+    pointGen.addPoint(0, 0, 0, 0, 0, 0);
+    int bottomCenterIndex = pointGen.getPoints().size();
 
     for (int j = 0; j < slices; ++j) {
         int p1 = j + 1; // an index, for now, is never 0

@@ -142,6 +142,7 @@ void applyTransformations(const std::vector<Transform>& transforms)
 }
 
 void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
+    const std::vector<GLuint>& vboBuffersNormals,
     const std::vector<GLuint>& iboBuffers,
     GroupConfig& group,
     bool depthOnly)
@@ -167,6 +168,10 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
         glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[model->vboIndex]);
         glVertexPointer(3, GL_FLOAT, 0, 0);
 
+        glEnableClientState(GL_NORMAL_ARRAY);
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffersNormals[model->vboIndex]);
+        glNormalPointer(GL_FLOAT, 0, 0);
+
         // IBO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[model->iboIndex]);
 
@@ -182,7 +187,7 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     for (auto& child : group.children) {
-        drawWithVBOs(vboBuffers, iboBuffers, *child, depthOnly);
+        drawWithVBOs(vboBuffers, vboBuffersNormals, iboBuffers, *child, depthOnly);
     }
 
     glPopMatrix();

@@ -17,7 +17,7 @@ void Cone::createCone(float radius, float height, int slices, int stacks, const 
             float x = currentRadius * cos(angle);
             float y = currentHeight;
             float z = currentRadius * sin(angle);
-            generator.addPoint(x, y, z);
+            generator.addPoint(x, y, z, 0, 0, 0);
 
             int currPointIndex = i * slices + (j + 1);
             int neighbourPointIndex = (currPointIndex + 1) % (slices * (i + 1) + 1);
@@ -37,8 +37,8 @@ void Cone::createCone(float radius, float height, int slices, int stacks, const 
         }
     }
 
-    generator.addPoint(0, 0, 0);
-    int baseCenterIndex = generator.points.size();
+    generator.addPoint(0, 0, 0, 0, 0, 0);
+    int baseCenterIndex = generator.getPoints().size();
 
     // if we have 9 slices, i.e., 9 points, we need to
     // have N associations

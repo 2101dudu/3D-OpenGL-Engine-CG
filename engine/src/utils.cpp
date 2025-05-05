@@ -49,6 +49,25 @@ struct Vec3Hash {
     }
 };
 
+struct Vertex {
+    Vec3 position;
+    Vec3 normal;
+
+    bool operator==(const Vertex& other) const
+    {
+        return position == other.position && normal == other.normal;
+    }
+};
+
+struct VertexHash {
+    size_t operator()(const Vertex& v) const noexcept
+    {
+        size_t h1 = Vec3Hash()(v.position);
+        size_t h2 = Vec3Hash()(v.normal);
+        return h1 ^ (h2 << 1); // Combine hashes
+    }
+};
+
 ModelInfo parseFile(const std::string& filename)
 {
     ModelInfo modelInfo;
@@ -59,6 +78,7 @@ ModelInfo parseFile(const std::string& filename)
     }
 
     std::vector<float> rawPoints;
+    std::vector<float> rawNormals;
     std::vector<unsigned int> rawIndices;
     size_t numTriangles = 0;
 
@@ -66,8 +86,11 @@ ModelInfo parseFile(const std::string& filename)
         size_t numPoints;
         file >> numPoints;
         rawPoints.resize(3 * numPoints);
+        rawNormals.resize(3 * numPoints);
         for (size_t i = 0; i < numPoints; ++i) {
             file >> rawPoints[3 * i] >> rawPoints[3 * i + 1] >> rawPoints[3 * i + 2];
+            file >> rawNormals[3 * i] >> rawNormals[3 * i + 1] >> rawNormals[3 * i + 2];
+            printf("Normal -> x: %f, y: %f, z: %f\n", rawNormals[3 * i], rawNormals[3 * i + 1], rawNormals[3 * i + 2]);
         }
 
         file >> numTriangles;
@@ -110,15 +133,22 @@ ModelInfo parseFile(const std::string& filename)
     uniquePoints.reserve(rawPoints.size());
     newIndices.reserve(rawIndices.size());
 
-    std::unordered_map<Vec3, int, Vec3Hash> indexMap;
+    std::unordered_map<Vertex, int, VertexHash> indexMap;
+
     for (unsigned int idx : rawIndices) {
-        Vec3 v { rawPoints[3 * idx], rawPoints[3 * idx + 1], rawPoints[3 * idx + 2] };
+        Vec3 pos { rawPoints[3 * idx], rawPoints[3 * idx + 1], rawPoints[3 * idx + 2] };
+        Vec3 norm { rawNormals[3 * idx], rawNormals[3 * idx + 1], rawNormals[3 * idx + 2] };
+        Vertex v{ pos, norm };
+    
         auto it = indexMap.find(v);
         if (it == indexMap.end()) {
             int newIdx = static_cast<int>(uniquePoints.size() / 3);
-            uniquePoints.push_back(v.x);
-            uniquePoints.push_back(v.y);
-            uniquePoints.push_back(v.z);
+            uniquePoints.push_back(pos.x);
+            uniquePoints.push_back(pos.y);
+            uniquePoints.push_back(pos.z);
+            modelInfo.normals.push_back(norm.x);
+            modelInfo.normals.push_back(norm.y);
+            modelInfo.normals.push_back(norm.z);
             indexMap[v] = newIdx;
             newIndices.push_back(newIdx);
         } else {

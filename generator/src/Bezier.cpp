@@ -109,8 +109,8 @@ void Bezier::createBezierModel(const std::string& patchFile,
             for (int j = 0; j < rows; ++j) {
                 float fv = float(j) / tessellationLevel;
                 Vec3 pt = evaluateBezierPatch(patchCP, fu, fv);
-                int pointIndex = generator.points.size();
-                generator.addPoint(pt.x, pt.y, pt.z);
+                int pointIndex = generator.getPoints().size();
+                generator.addPoint(pt.x, pt.y, pt.z, 0, 0, 0);
                 idx[i][j] = pointIndex;
             }
         }

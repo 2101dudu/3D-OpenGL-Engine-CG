@@ -22,7 +22,12 @@ void Sphere::createSphere(int radius, int slices, int stacks, const std::string&
             float y = sinf(currBeta) * radius;
             float z = sinf(currAlpha) * radius * cos(currBeta);
 
-            pointGen.addPoint(x, y, z);
+            // Normal
+            float nx = x /= radius;
+            float ny = y /= radius;
+            float nz = z /= radius;
+
+            pointGen.addPoint(x, y, z, nx, ny, nz);
 
             int currPointIndex = (stacks + 1) * i + j + 1;
 

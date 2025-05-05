@@ -1,3 +1,4 @@
+// FileWriter.cpp
 #include "FileWriter.hpp"
 #include <iostream>
 
@@ -8,12 +9,16 @@ void FileWriter::writeToFile(const std::string& fileName, const PointsGenerator&
         return;
     }
 
-    file << generator.points.size() << "\n";
-    for (const auto& p : generator.points) {
-        file << p.x << " " << p.y << " " << p.z << "\n";
+    // Write vertices with normals
+    file << generator.getPoints().size() << "\n";
+    for (const auto& p : generator.getPoints()) {
+        file << p.x << " " << p.y << " " << p.z
+             << " " << p.nx << " " << p.ny << " " << p.nz << "\n";
     }
-    file << generator.associations.size() << "\n";
-    for (const auto& a : generator.associations) {
+
+    // Write associations (triangles)
+    file << generator.getAssociations().size() << "\n";
+    for (const auto& a : generator.getAssociations()) {
         file << a.p1 << " " << a.p2 << " " << a.p3 << "\n";
     }
 
