@@ -175,6 +175,15 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
         // IBO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[model->iboIndex]);
 
+        // Set material properties
+        if (!depthOnly && config.scene.lighting) {
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, model->material.diffuse);
+            glMaterialfv(GL_FRONT, GL_AMBIENT, model->material.ambient);
+            glMaterialfv(GL_FRONT, GL_SPECULAR, model->material.specular);
+            glMaterialfv(GL_FRONT, GL_EMISSION, model->material.emissive);
+            glMaterialf(GL_FRONT, GL_SHININESS, model->material.shininess);
+        }
+
         glDrawElements(GL_TRIANGLES,
             model->indexCount,
             GL_UNSIGNED_INT,

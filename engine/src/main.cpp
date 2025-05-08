@@ -51,6 +51,88 @@ std::vector<GLuint> vboBuffers;
 std::vector<GLuint> vboBuffersNormals;
 std::vector<GLuint> iboBuffers; // armazena IBOs de índices
 
+const char* configFilePath;
+bool hotReload = false;
+
+WorldConfig loadConfiguration(const char* configFile)
+{
+    WorldConfig cfg = XMLParser::parseXML(configFile);
+    XMLParser::configureFromXML(cfg);
+    return cfg;
+}
+
+void bindPointsToBuffers()
+{
+    int count = 0;
+    for (auto it = config.filesModels.begin(); it != config.filesModels.end(); ++it, ++count) {
+        const std::string& fname = it->first;
+        Model* model = it->second;
+
+        ModelInfo mi = parseFile(model->file);
+
+        // VBO
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[count]);
+        glBufferData(GL_ARRAY_BUFFER,
+            mi.points.size() * sizeof(float),
+            mi.points.data(),
+            GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffersNormals[count]);
+        glBufferData(GL_ARRAY_BUFFER,
+            mi.normals.size() * sizeof(float),
+            mi.normals.data(),
+            GL_STATIC_DRAW);
+
+        // IBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[count]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+            mi.indices.size() * sizeof(unsigned int),
+            mi.indices.data(),
+            GL_STATIC_DRAW);
+
+        // Stores in Model
+        model->vboIndex = count;
+        model->iboIndex = count;
+        model->vertexCount = mi.points.size() / 3;
+        model->indexCount = mi.indices.size();
+        model->triangleCount = mi.numTriangles;
+    }
+}
+
+void pointModelsVBOIndex(GroupConfig* group)
+{
+    for (auto& model : group->models) {
+        Model* m = config.filesModels[model->file];
+        model = m;
+        config.stats.numTriangles += model->triangleCount;
+    }
+
+    for (auto& subGroup : group->children) {
+        pointModelsVBOIndex(subGroup);
+    }
+}
+
+void initializeVBOs()
+{
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    int totalNumModels = config.filesModels.size();
+    vboBuffers.resize(totalNumModels);
+    vboBuffersNormals.resize(totalNumModels);
+    iboBuffers.resize(totalNumModels);
+    glGenBuffers(totalNumModels, vboBuffers.data());
+    glGenBuffers(totalNumModels, vboBuffersNormals.data());
+    glGenBuffers(totalNumModels, iboBuffers.data());
+
+    bindPointsToBuffers();
+
+    // Turns off buffers
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    pointModelsVBOIndex(&config.group);
+}
+
 void updateSceneOptions(void)
 {
     uint32_t mode = config.scene.wireframe ? GL_LINE : GL_FILL;
@@ -59,8 +141,21 @@ void updateSceneOptions(void)
 
     if (config.scene.faceCulling) {
         glEnable(GL_CULL_FACE);
-    } else {
+    }
+    else {
         glDisable(GL_CULL_FACE);
+    }
+
+    if (config.scene.lighting) {
+        glEnable(GL_LIGHTING);
+    }
+    else {
+        glDisable(GL_LIGHTING);
+    }
+
+    if (hotReload) {
+        config = loadConfiguration(configFilePath);
+        initializeVBOs();
     }
 
     drawCatmullRomCurves = config.scene.drawCatmullRomCurves;
@@ -68,7 +163,7 @@ void updateSceneOptions(void)
 
 void renderScene(void)
 {
-    float pos[4] = {0.0, 5.0, 0.0, 1.0};
+    float pos[4] = {0.0, 0.0, 0.0, 1.0};
 
     // update global timers
     int currentRealTime = glutGet(GLUT_ELAPSED_TIME);
@@ -89,20 +184,17 @@ void renderScene(void)
     // capture the view matrix (camera transformation)
     glGetFloatv(GL_MODELVIEW_MATRIX, g_viewMatrix);
 
-    if (config.scene.drawAxis)
+    if (config.scene.drawAxis) {
+        if (config.scene.lighting)
+            glDisable(GL_LIGHTING);
         drawAxis();
+        if (config.scene.lighting)
+            glEnable(GL_LIGHTING);
+    }
 
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
     
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
-
-    float dark[] = { 0.2, 0.2, 0.2, 1.0 };
-	float white[] = { 0.8, 0.8, 0.8, 1.0 };
-	float red[] = { 0.8, 0.2, 0.2, 1.0 };
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, white);
-	glMaterialf(GL_FRONT, GL_SHININESS, 128);
-
 
     //glutSolidSphere(1, 10, 10);
     drawWithVBOs(vboBuffers, vboBuffersNormals, iboBuffers, config.group, false);
@@ -132,7 +224,8 @@ void updateViewPort(int w, int h)
 
 unsigned char picking(int x, int y)
 {
-    glDisable(GL_LIGHTING);
+    if (config.scene.lighting)
+        glDisable(GL_LIGHTING);
     // glDisable(GL_TEXTURE_2D);
 
     // set background color to black to differenciate values > 0
@@ -159,7 +252,8 @@ unsigned char picking(int x, int y)
         GL_RGBA, GL_UNSIGNED_BYTE,
         res);
 
-    glEnable(GL_LIGHTING);
+    if (config.scene.lighting)
+        glEnable(GL_LIGHTING);
     // glEnable(GL_TEXTURE_2D);
     glDepthFunc(GL_LESS);
 
@@ -389,13 +483,6 @@ void initializeGLUTPreWindow(int argc, char** argv)
     glutInitWindowPosition(100, 100);
 }
 
-WorldConfig loadConfiguration(const char* configFile)
-{
-    WorldConfig cfg = XMLParser::parseXML(configFile);
-    XMLParser::configureFromXML(cfg);
-    return cfg;
-}
-
 void createWindowWithConfig()
 {
     glutInitWindowSize(config.window.width, config.window.height);
@@ -438,78 +525,6 @@ void initializeOpenGLContext()
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, black);
 }
 
-void bindPointsToBuffers()
-{
-    int count = 0;
-    for (auto it = config.filesModels.begin(); it != config.filesModels.end(); ++it, ++count) {
-        const std::string& fname = it->first;
-        Model* model = it->second;
-
-        ModelInfo mi = parseFile(model->file);
-
-        // VBO
-        glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[count]);
-        glBufferData(GL_ARRAY_BUFFER,
-            mi.points.size() * sizeof(float),
-            mi.points.data(),
-            GL_STATIC_DRAW);
-
-        glBindBuffer(GL_ARRAY_BUFFER, vboBuffersNormals[count]);
-        glBufferData(GL_ARRAY_BUFFER,
-            mi.normals.size() * sizeof(float),
-            mi.normals.data(),
-            GL_STATIC_DRAW);
-
-        // IBO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[count]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-            mi.indices.size() * sizeof(unsigned int),
-            mi.indices.data(),
-            GL_STATIC_DRAW);
-
-        // Stores in Model
-        model->vboIndex = count;
-        model->iboIndex = count;
-        model->vertexCount = mi.points.size() / 3;
-        model->indexCount = mi.indices.size();
-        model->triangleCount = mi.numTriangles;
-    }
-}
-
-void pointModelsVBOIndex(GroupConfig* group)
-{
-    for (auto& model : group->models) {
-        Model* m = config.filesModels[model->file];
-        model = m;
-        config.stats.numTriangles += model->triangleCount;
-    }
-
-    for (auto& subGroup : group->children) {
-        pointModelsVBOIndex(subGroup);
-    }
-}
-
-void initializeVBOs()
-{
-    glEnableClientState(GL_VERTEX_ARRAY);
-
-    int totalNumModels = config.filesModels.size();
-    vboBuffers.resize(totalNumModels);
-    vboBuffersNormals.resize(totalNumModels);
-    iboBuffers.resize(totalNumModels);
-    glGenBuffers(totalNumModels, vboBuffers.data());
-    glGenBuffers(totalNumModels, vboBuffersNormals.data());
-    glGenBuffers(totalNumModels, iboBuffers.data());
-
-    bindPointsToBuffers();
-
-    // Turns off buffers
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    pointModelsVBOIndex(&config.group);
-}
-
 int main(int argc, char** argv)
 {
     if (argc < 2) {
@@ -519,7 +534,8 @@ int main(int argc, char** argv)
 
     // pre-window initialization: Setup GLUT and load configuration
     initializeGLUTPreWindow(argc, argv);
-    config = loadConfiguration(argv[1]);
+    configFilePath = argv[1];
+    config = loadConfiguration(configFilePath);
 
     // create the window using configuration parameters
     createWindowWithConfig();
