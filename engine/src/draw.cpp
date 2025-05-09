@@ -101,6 +101,8 @@ void applyTransformations(const std::vector<Transform>& transforms)
                 float pos[3], deriv[3];
 
                 if (drawCatmullRomCurves) {
+                    if (config.scene.lighting)
+                        glDisable(GL_LIGHTING);
                     glColor3f(1.0f, 1.0f, 0.0f);
                     glBegin(GL_LINE_LOOP);
                     for (float _t = 0; _t < 1; _t += 0.01f) {
@@ -108,6 +110,8 @@ void applyTransformations(const std::vector<Transform>& transforms)
                         glVertex3f(pos[0], pos[1], pos[2]);
                     }
                     glEnd();
+                    if (config.scene.lighting)
+                        glEnable(GL_LIGHTING);
                 }
 
                 getGlobalCatmullRomPoint(-1.0f, pos, deriv, t);
