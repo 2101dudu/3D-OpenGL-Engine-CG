@@ -106,6 +106,15 @@ struct Stats {
     int64_t numTriangles = 0;
 };
 
+enum class LightType { POINT, DIRECTIONAL, SPOTLIGHT };
+
+struct LightConfig {
+    LightType type;
+    float position[4]; // w = 1 for point, 0 for directional
+    float direction[3];
+    float cutoff;
+};
+
 struct WorldConfig {
     WindowConfig window;
     CameraConfig camera;
@@ -114,6 +123,7 @@ struct WorldConfig {
     std::map<std::string, Model*> filesModels;
     SceneConfig scene;
     Stats stats;
+    std::vector<LightConfig> lights;
 };
 
 void resetCamera(WorldConfig* config);

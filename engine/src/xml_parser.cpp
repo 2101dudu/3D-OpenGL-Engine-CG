@@ -238,6 +238,48 @@ WorldConfig XMLParser::parseXML(const std::string& filename)
         }
     }
 
+    // Parse lights
+    XMLElement* lightsElement = world->FirstChildElement("lights");
+    if (lightsElement) {
+        for (XMLElement* lightEl = lightsElement->FirstChildElement("light");
+            lightEl != nullptr;
+            lightEl = lightEl->NextSiblingElement("light")) {
+
+            LightConfig light;
+            const char* type = lightEl->Attribute("type");
+
+            if (strcmp(type, "point") == 0) {
+                light.type = LightType::POINT;
+                lightEl->QueryFloatAttribute("posX", &light.position[0]);
+                lightEl->QueryFloatAttribute("posY", &light.position[1]);
+                lightEl->QueryFloatAttribute("posZ", &light.position[2]);
+                light.position[3] = 1.0f;
+            }
+            else if (strcmp(type, "directional") == 0) {
+                light.type = LightType::DIRECTIONAL;
+                lightEl->QueryFloatAttribute("dirX", &light.position[0]);
+                lightEl->QueryFloatAttribute("dirY", &light.position[1]);
+                lightEl->QueryFloatAttribute("dirZ", &light.position[2]);
+                light.position[3] = 0.0f;
+            }
+            else if (strcmp(type, "spotlight") == 0) {
+                light.type = LightType::SPOTLIGHT;
+                lightEl->QueryFloatAttribute("posX", &light.position[0]);
+                lightEl->QueryFloatAttribute("posY", &light.position[1]);
+                lightEl->QueryFloatAttribute("posZ", &light.position[2]);
+                light.position[3] = 1.0f;
+
+                lightEl->QueryFloatAttribute("dirX", &light.direction[0]);
+                lightEl->QueryFloatAttribute("dirY", &light.direction[1]);
+                lightEl->QueryFloatAttribute("dirZ", &light.direction[2]);
+
+                lightEl->QueryFloatAttribute("cutoff", &light.cutoff);
+            }
+
+            config.lights.push_back(light);
+        }
+    }
+
     XMLElement* group = world->FirstChildElement("group");
     if (group) {
         parseGroupsInfo(group, config.group);

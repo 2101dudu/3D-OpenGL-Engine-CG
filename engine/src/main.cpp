@@ -192,7 +192,22 @@ void renderScene(void)
             glEnable(GL_LIGHTING);
     }
 
-	glLightfv(GL_LIGHT0, GL_POSITION, pos);
+    for (size_t i = 0; i < config.lights.size(); ++i) {
+        const LightConfig& light = config.lights[i];
+        GLenum lightID = GL_LIGHT0 + static_cast<GLenum>(i);
+        glEnable(lightID);
+
+        glLightfv(lightID, GL_POSITION, light.position);
+
+        if (light.type == LightType::SPOTLIGHT) {
+            glLightfv(lightID, GL_SPOT_DIRECTION, light.direction);
+            glLightf(lightID, GL_SPOT_CUTOFF, light.cutoff);
+        }
+        else {
+            // For point or directional, use default OpenGL cutoff
+            glLightf(lightID, GL_SPOT_CUTOFF, 180.0f);
+        }
+    }
     
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
 
