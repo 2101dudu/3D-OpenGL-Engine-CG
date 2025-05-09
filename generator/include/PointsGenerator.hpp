@@ -3,14 +3,6 @@
 
 #include <vector>
 
-#ifdef __APPLE__
-#define CAST_POINT (Point)
-#define CAST_ASSOCIATION (Association)
-#else
-#define CAST_POINT
-#define CAST_ASSOCIATION
-#endif
-
 struct Point {
     float x, y, z;
     float nx, ny, nz;
