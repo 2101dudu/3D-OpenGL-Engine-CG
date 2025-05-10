@@ -10,9 +10,9 @@
     <lights>
         <light type="point" posX="0" posY="10" posZ="0" />
         <light type="directional" dirX="1" dirY="1" dirZ="1"/>
-        <light type="spotlight" posX="0" posY="10" posZ="0"
-        dirX="1" dirY="1" dirZ="1"
-        cutoff="45" />
+        <light type="spotlight" posX="0" posY="10" posZ="10"
+        dirX="0" dirY="-1" dirZ="-1"
+        cutoff="180" />
     </lights>
     <group name="LightningTest">
         <group name="Sun" clickableInfo="../../group_info/sun.txt">
@@ -25,7 +25,7 @@
                         <diffuse R="200" G="50" B="50" />
                         <ambient R="50" G="50" B="50" />
                         <specular R="200" G="200" B="200" />
-                        <emissive R="0" G="0" B="0" />
+                        <emissive R="10" G="10" B="100" />
                         <shininess value="128" />
                     </color>
                 </model>
@@ -38,7 +38,15 @@
                 <scale x="1.3" y="1.3" z="1.3"/>
             </transform>
             <models>
-                <model file="../../objects/sphere.3d"/>
+                <model file="../../objects/plane.3d">
+                    <color>
+                        <diffuse R="200" G="50" B="50" />
+                        <ambient R="50" G="50" B="50" />
+                        <specular R="200" G="200" B="200" />
+                        <emissive R="0" G="0" B="0" />
+                        <shininess value="128" />
+                    </color>
+                </model>
             </models>
         </group>
     </group>

@@ -54,6 +54,9 @@ std::vector<GLuint> iboBuffers; // armazena IBOs de índices
 const char* configFilePath;
 bool hotReload = false;
 
+const float dark[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+const float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 WorldConfig loadConfiguration(const char* configFile)
 {
     WorldConfig cfg = XMLParser::parseXML(configFile);
@@ -193,6 +196,9 @@ void renderScene(void)
         GLenum lightID = GL_LIGHT0 + static_cast<GLenum>(i);
         glEnable(lightID);
 
+        glLightfv(lightID, GL_AMBIENT, dark);
+        glLightfv(lightID, GL_DIFFUSE, white);
+        glLightfv(lightID, GL_SPECULAR, white);
         glLightfv(lightID, GL_POSITION, light.position);
 
         if (light.type == LightType::SPOTLIGHT) {
@@ -523,15 +529,7 @@ void initializeOpenGLContext()
     glEnable(GL_LIGHT0);
     glEnable(GL_RESCALE_NORMAL);
 
-    float dark[4] = { 0.2, 0.2, 0.2, 1.0 };
-    float white[4] = { 1.0, 1.0, 1.0, 1.0 };
-    float black[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-    // light colors
-    glLightfv(GL_LIGHT0, GL_AMBIENT, dark);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, white);
-
+    float black[4] = { 0.1f, 0.1f, 0.1f, 0.0f };
     // controls global ambient light
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, black);
 }
