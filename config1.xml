@@ -22,11 +22,11 @@
             <models>
                 <model file="../../objects/sphere.3d">
                     <color>
-                        <diffuse R="200" G="200" B="200" />
+                        <diffuse R="200" G="50" B="50" />
                         <ambient R="50" G="50" B="50" />
-                        <specular R="0" G="0" B="0" />
+                        <specular R="200" G="200" B="200" />
                         <emissive R="0" G="0" B="0" />
-                        <shininess value="0" />
+                        <shininess value="128" />
                     </color>
                 </model>
             </models>

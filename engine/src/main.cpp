@@ -141,15 +141,13 @@ void updateSceneOptions(void)
 
     if (config.scene.faceCulling) {
         glEnable(GL_CULL_FACE);
-    }
-    else {
+    } else {
         glDisable(GL_CULL_FACE);
     }
 
     if (config.scene.lighting) {
         glEnable(GL_LIGHTING);
-    }
-    else {
+    } else {
         glDisable(GL_LIGHTING);
     }
 
@@ -163,8 +161,6 @@ void updateSceneOptions(void)
 
 void renderScene(void)
 {
-    float pos[4] = {0.0, 0.0, 0.0, 1.0};
-
     // update global timers
     int currentRealTime = glutGet(GLUT_ELAPSED_TIME);
     float deltaRealTime = (currentRealTime - lastRealTime);
@@ -202,16 +198,15 @@ void renderScene(void)
         if (light.type == LightType::SPOTLIGHT) {
             glLightfv(lightID, GL_SPOT_DIRECTION, light.direction);
             glLightf(lightID, GL_SPOT_CUTOFF, light.cutoff);
-        }
-        else {
+        } else {
             // For point or directional, use default OpenGL cutoff
             glLightf(lightID, GL_SPOT_CUTOFF, 180.0f);
         }
     }
-    
+
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
 
-    //glutSolidSphere(1, 10, 10);
+    // glutSolidSphere(1, 10, 10);
     drawWithVBOs(vboBuffers, vboBuffersNormals, iboBuffers, config.group, false);
 
     drawMenu(&config);
@@ -526,10 +521,11 @@ void initializeOpenGLContext()
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-    
-    float dark[4] = {0.2, 0.2, 0.2, 1.0};
-    float white[4] = {1.0, 1.0, 1.0, 1.0};
-    float black[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    glEnable(GL_RESCALE_NORMAL);
+
+    float dark[4] = { 0.2, 0.2, 0.2, 1.0 };
+    float white[4] = { 1.0, 1.0, 1.0, 1.0 };
+    float black[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
     // light colors
     glLightfv(GL_LIGHT0, GL_AMBIENT, dark);
