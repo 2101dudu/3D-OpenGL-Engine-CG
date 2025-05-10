@@ -526,7 +526,6 @@ void initializeOpenGLContext()
     glEnable(GL_CULL_FACE);
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
     glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
     glEnable(GL_RESCALE_NORMAL);
 
     float black[4] = { 0.1f, 0.1f, 0.1f, 0.0f };
