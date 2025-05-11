@@ -70,6 +70,7 @@ def create_moon(moon_name, model_file, isEarth):
 def create_comet_group():
     comet_group = ET.Element("group")
     comet_group.set("name", "Comet")
+    comet_group.set("clickableInfo", "../../group_info/comet.txt")
 
     transform = ET.SubElement(comet_group, "transform")
     translate = ET.SubElement(transform, "translate")
@@ -102,6 +103,8 @@ def create_comet_group():
     models = ET.SubElement(comet_group, "models")
     model = ET.SubElement(models, "model")
     model.set("file", "../../objects/comet.3d")
+
+    create_color_element(model)
 
     return comet_group
 
@@ -142,7 +145,7 @@ def prettify_xml(elem):
     reparsed = minidom.parseString(rough_string)
     return reparsed.toprettyxml(indent="    ")
 
-def create_color_element(model_elem, diffuse=(200,200,200), ambient=(50,50,50), specular=(0,0,0), emissive=(0,0,0), shininess=0):
+def create_color_element(model_elem, diffuse=(127,127,127), ambient=(204,204,204), specular=(255,255,255), emissive=(0,0,0), shininess=100):
     color = ET.SubElement(model_elem, "color")
 
     d = ET.SubElement(color, "diffuse")
@@ -240,7 +243,7 @@ def main():
 
     for planet, clickableInfo, distance, scale in planet_data:
         # Orbital distribution: uses a random time per full rotation
-        time = random.uniform(0, 50)
+        time = random.uniform(10, 50)
         transform = {
             "rotate": {"time": time, "x": 0, "y": 1, "z": 0},
             "translate": {"x": distance, "y": 0, "z": 0},
