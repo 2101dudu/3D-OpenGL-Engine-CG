@@ -120,6 +120,53 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
                 std::string fileName = modelElement->Attribute("file");
                 Model* modelConfig = new Model();
                 modelConfig->file = fileName;
+                XMLElement* colorElement = modelElement->FirstChildElement("color");
+                if (colorElement) {
+                    XMLElement* diffuse = colorElement->FirstChildElement("diffuse");
+                    if (diffuse) {
+                        diffuse->QueryFloatAttribute("R", &modelConfig->material.diffuse[0]);
+                        diffuse->QueryFloatAttribute("G", &modelConfig->material.diffuse[1]);
+                        diffuse->QueryFloatAttribute("B", &modelConfig->material.diffuse[2]);
+                        modelConfig->material.diffuse[3] = 1.0f;
+                    }
+
+                    XMLElement* ambient = colorElement->FirstChildElement("ambient");
+                    if (ambient) {
+                        ambient->QueryFloatAttribute("R", &modelConfig->material.ambient[0]);
+                        ambient->QueryFloatAttribute("G", &modelConfig->material.ambient[1]);
+                        ambient->QueryFloatAttribute("B", &modelConfig->material.ambient[2]);
+                        modelConfig->material.ambient[3] = 1.0f;
+                    }
+
+                    XMLElement* specular = colorElement->FirstChildElement("specular");
+                    if (specular) {
+                        specular->QueryFloatAttribute("R", &modelConfig->material.specular[0]);
+                        specular->QueryFloatAttribute("G", &modelConfig->material.specular[1]);
+                        specular->QueryFloatAttribute("B", &modelConfig->material.specular[2]);
+                        modelConfig->material.specular[3] = 1.0f;
+                    }
+
+                    XMLElement* emissive = colorElement->FirstChildElement("emissive");
+                    if (emissive) {
+                        emissive->QueryFloatAttribute("R", &modelConfig->material.emissive[0]);
+                        emissive->QueryFloatAttribute("G", &modelConfig->material.emissive[1]);
+                        emissive->QueryFloatAttribute("B", &modelConfig->material.emissive[2]);
+                        modelConfig->material.emissive[3] = 1.0f;
+                    }
+
+                    XMLElement* shininess = colorElement->FirstChildElement("shininess");
+                    if (shininess) {
+                        shininess->QueryFloatAttribute("value", &modelConfig->material.shininess);
+                    }
+
+                    // converts from 0–255 to 0.0–1.0
+                    for (int i = 0; i < 3; i++) {
+                        modelConfig->material.diffuse[i]  /= 255.0f;
+                        modelConfig->material.ambient[i]  /= 255.0f;
+                        modelConfig->material.specular[i] /= 255.0f;
+                        modelConfig->material.emissive[i] /= 255.0f;
+                    }
+                }
                 group.models.push_back(modelConfig);
 
                 // if there's no entry on the models' map
@@ -188,6 +235,48 @@ WorldConfig XMLParser::parseXML(const std::string& filename)
             projection->QueryFloatAttribute("fov", &config.camera.projection.fov);
             projection->QueryFloatAttribute("near", &config.camera.projection.near1);
             projection->QueryFloatAttribute("far", &config.camera.projection.far1);
+        }
+    }
+
+    // Parse lights
+    XMLElement* lightsElement = world->FirstChildElement("lights");
+    if (lightsElement) {
+        for (XMLElement* lightEl = lightsElement->FirstChildElement("light");
+            lightEl != nullptr;
+            lightEl = lightEl->NextSiblingElement("light")) {
+
+            LightConfig light;
+            const char* type = lightEl->Attribute("type");
+
+            if (strcmp(type, "point") == 0) {
+                light.type = LightType::POINT;
+                lightEl->QueryFloatAttribute("posX", &light.position[0]);
+                lightEl->QueryFloatAttribute("posY", &light.position[1]);
+                lightEl->QueryFloatAttribute("posZ", &light.position[2]);
+                light.position[3] = 1.0f;
+            }
+            else if (strcmp(type, "directional") == 0) {
+                light.type = LightType::DIRECTIONAL;
+                lightEl->QueryFloatAttribute("dirX", &light.position[0]);
+                lightEl->QueryFloatAttribute("dirY", &light.position[1]);
+                lightEl->QueryFloatAttribute("dirZ", &light.position[2]);
+                light.position[3] = 0.0f;
+            }
+            else if (strcmp(type, "spotlight") == 0) {
+                light.type = LightType::SPOTLIGHT;
+                lightEl->QueryFloatAttribute("posX", &light.position[0]);
+                lightEl->QueryFloatAttribute("posY", &light.position[1]);
+                lightEl->QueryFloatAttribute("posZ", &light.position[2]);
+                light.position[3] = 1.0f;
+
+                lightEl->QueryFloatAttribute("dirX", &light.direction[0]);
+                lightEl->QueryFloatAttribute("dirY", &light.direction[1]);
+                lightEl->QueryFloatAttribute("dirZ", &light.direction[2]);
+
+                lightEl->QueryFloatAttribute("cutoff", &light.cutoff);
+            }
+
+            config.lights.push_back(light);
         }
     }
 

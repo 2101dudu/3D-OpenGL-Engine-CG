@@ -1,12 +1,12 @@
 // bezier.cpp
 #include "Bezier.hpp"
 #include "FileWriter.hpp"
+#include <algorithm>
+#include <cmath>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <vector>
-#include <iostream>
-#include <cmath>
-#include <algorithm>
 
 struct Vec3 {
     float x, y, z;
@@ -15,19 +15,25 @@ struct Vec3 {
 };
 
 // Bernstein polynomial of degree 3
-static float bernstein(int i, float t) {
+static float bernstein(int i, float t)
+{
     switch (i) {
-        case 0: return (1 - t) * (1 - t) * (1 - t);
-        case 1: return 3 * t * (1 - t) * (1 - t);
-        case 2: return 3 * t * t * (1 - t);
-        case 3: return t * t * t;
+    case 0:
+        return (1 - t) * (1 - t) * (1 - t);
+    case 1:
+        return 3 * t * (1 - t) * (1 - t);
+    case 2:
+        return 3 * t * t * (1 - t);
+    case 3:
+        return t * t * t;
     }
     return 0.0f;
 }
 
 // Evaluate a 3x3-degree Bézier patch at (u,v)
-static Vec3 evaluateBezierPatch(const std::vector<Vec3>& cp, float u, float v) {
-    Vec3 point{0, 0, 0};
+static Vec3 evaluateBezierPatch(const std::vector<Vec3>& cp, float u, float v)
+{
+    Vec3 point { 0, 0, 0 };
     for (int i = 0; i < 4; ++i) {
         float bu = bernstein(i, u);
         for (int j = 0; j < 4; ++j) {
@@ -37,10 +43,70 @@ static Vec3 evaluateBezierPatch(const std::vector<Vec3>& cp, float u, float v) {
     }
     return point;
 }
+//
+// derivative of Bernstein basis of degree 3
+static float bernsteinD(int i, float t)
+{
+    switch (i) {
+    case 0:
+        return -3 * (1 - t) * (1 - t);
+    case 1:
+        return 3 * (1 - t) * (1 - t) - 6 * t * (1 - t);
+    case 2:
+        return 6 * t * (1 - t) - 3 * t * t;
+    case 3:
+        return 3 * t * t;
+    }
+    return 0.0f;
+}
+
+static Vec3 evalDu(const std::vector<Vec3>& cp, float u, float v)
+{
+    Vec3 du { 0, 0, 0 };
+    for (int i = 0; i < 4; ++i) {
+        float bu = bernsteinD(i, u);
+        for (int j = 0; j < 4; ++j) {
+            float bv = bernstein(j, v);
+            du = du + cp[i * 4 + j] * (bu * bv);
+        }
+    }
+    return du;
+}
+
+static Vec3 evalDv(const std::vector<Vec3>& cp, float u, float v)
+{
+    Vec3 dv { 0, 0, 0 };
+    for (int i = 0; i < 4; ++i) {
+        float bu = bernstein(i, u);
+        for (int j = 0; j < 4; ++j) {
+            float bv = bernsteinD(j, v);
+            dv = dv + cp[i * 4 + j] * (bu * bv);
+        }
+    }
+    return dv;
+}
+
+static Vec3 cross(const Vec3& a, const Vec3& b)
+{
+    return {
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x
+    };
+}
+
+static Vec3 normalize(const Vec3& v)
+{
+    float len = std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    if (len == 0)
+        return { 0, 0, 0 };
+    return { v.x / len, v.y / len, v.z / len };
+}
 
 void Bezier::createBezierModel(const std::string& patchFile,
-                               int tessellationLevel,
-                               const std::string& outputFile) {
+    int tessellationLevel,
+    const std::string& outputFile)
+{
     std::ifstream file(patchFile);
     if (!file) {
         std::cerr << "Error: Cannot open patch file: " << patchFile << std::endl;
@@ -60,7 +126,7 @@ void Bezier::createBezierModel(const std::string& patchFile,
         std::vector<int> idxs;
         std::string tok;
         while (std::getline(ss, tok, ',')) {
-            idxs.push_back(std::stoi(tok));  // assume 0-based indices in .patch file
+            idxs.push_back(std::stoi(tok)); // assume 0-based indices in .patch file
         }
         if (idxs.size() == 16)
             patches.push_back(idxs);
@@ -76,12 +142,13 @@ void Bezier::createBezierModel(const std::string& patchFile,
     controlPoints.reserve(numControlPoints);
     for (int i = 0; i < numControlPoints; ++i) {
         std::string line;
-        if (!std::getline(file, line)) break;
+        if (!std::getline(file, line))
+            break;
         line.erase(0, line.find_first_not_of(" \t\n\r"));
         line.erase(line.find_last_not_of(" \t\n\r") + 1);
         std::replace(line.begin(), line.end(), ',', ' ');
         std::istringstream ciss(line);
-        Vec3 cp{0,0,0};
+        Vec3 cp { 0, 0, 0 };
         ciss >> cp.x >> cp.y >> cp.z;
         controlPoints.push_back(cp);
     }
@@ -109,8 +176,12 @@ void Bezier::createBezierModel(const std::string& patchFile,
             for (int j = 0; j < rows; ++j) {
                 float fv = float(j) / tessellationLevel;
                 Vec3 pt = evaluateBezierPatch(patchCP, fu, fv);
-                int pointIndex = generator.points.size();
-                generator.addPoint(pt.x, pt.y, pt.z);
+                Vec3 du = evalDu(patchCP, fu, fv);
+                Vec3 dv = evalDv(patchCP, fu, fv);
+                Vec3 n = normalize(cross(du, dv));
+                generator.addPoint(pt.x, pt.y, pt.z, n.x, n.y, n.z);
+
+                int pointIndex = generator.getPoints().size();
                 idx[i][j] = pointIndex;
             }
         }
@@ -118,10 +189,10 @@ void Bezier::createBezierModel(const std::string& patchFile,
         // Emit two triangles per quad with consistent CCW winding
         for (int i = 0; i < tessellationLevel; ++i) {
             for (int j = 0; j < tessellationLevel; ++j) {
-                int a = idx[i][j] + 1;
-                int b = idx[i+1][j] + 1;
-                int c = idx[i+1][j+1] + 1;
-                int d = idx[i][j+1] + 1;
+                int a = idx[i][j];
+                int b = idx[i + 1][j];
+                int c = idx[i + 1][j + 1];
+                int d = idx[i][j + 1];
                 generator.addAssociation(a, b, c);
                 generator.addAssociation(a, c, d);
             }
@@ -130,4 +201,3 @@ void Bezier::createBezierModel(const std::string& patchFile,
 
     FileWriter::writeToFile(outputFile, generator);
 }
-

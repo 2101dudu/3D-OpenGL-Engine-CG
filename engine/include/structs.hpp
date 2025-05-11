@@ -61,6 +61,14 @@ struct Transform {
     bool align = false;
 };
 
+struct Material {
+    float diffuse[4];
+    float ambient[4];
+    float specular[4];
+    float emissive[4];
+    float shininess;
+};
+
 struct Model {
     std::string file;
     int vboIndex = 0; // VBO id
@@ -68,6 +76,7 @@ struct Model {
     size_t vertexCount = 0; // VBO vertice count
     size_t indexCount = 0; // IBO number count (3 × #triangles)
     size_t triangleCount = 0; // purely for stats
+    Material material;
 };
 
 struct GroupConfig {
@@ -89,11 +98,21 @@ struct SceneConfig {
     bool wireframe = false;
     bool drawAxis = true;
     bool drawCatmullRomCurves = false;
+    bool lighting = true;
     ImVec4 bgColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f); // off-black color
 };
 
 struct Stats {
     int64_t numTriangles = 0;
+};
+
+enum class LightType { POINT, DIRECTIONAL, SPOTLIGHT };
+
+struct LightConfig {
+    LightType type;
+    float position[4]; // w = 1 for point, 0 for directional
+    float direction[3];
+    float cutoff;
 };
 
 struct WorldConfig {
@@ -104,6 +123,7 @@ struct WorldConfig {
     std::map<std::string, Model*> filesModels;
     SceneConfig scene;
     Stats stats;
+    std::vector<LightConfig> lights;
 };
 
 void resetCamera(WorldConfig* config);

@@ -48,7 +48,93 @@ bool drawCatmullRomCurves = false;
 
 // VBOs
 std::vector<GLuint> vboBuffers;
+std::vector<GLuint> vboBuffersNormals;
 std::vector<GLuint> iboBuffers; // armazena IBOs de índices
+
+const char* configFilePath;
+bool hotReload = false;
+
+const float dark[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+const float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+WorldConfig loadConfiguration(const char* configFile)
+{
+    WorldConfig cfg = XMLParser::parseXML(configFile);
+    XMLParser::configureFromXML(cfg);
+    return cfg;
+}
+
+void bindPointsToBuffers()
+{
+    int count = 0;
+    for (auto it = config.filesModels.begin(); it != config.filesModels.end(); ++it, ++count) {
+        const std::string& fname = it->first;
+        Model* model = it->second;
+
+        ModelInfo mi = parseFile(model->file);
+
+        // VBO
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[count]);
+        glBufferData(GL_ARRAY_BUFFER,
+            mi.points.size() * sizeof(float),
+            mi.points.data(),
+            GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffersNormals[count]);
+        glBufferData(GL_ARRAY_BUFFER,
+            mi.normals.size() * sizeof(float),
+            mi.normals.data(),
+            GL_STATIC_DRAW);
+
+        // IBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[count]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+            mi.indices.size() * sizeof(unsigned int),
+            mi.indices.data(),
+            GL_STATIC_DRAW);
+
+        // Stores in Model
+        model->vboIndex = count;
+        model->iboIndex = count;
+        model->vertexCount = mi.points.size() / 3;
+        model->indexCount = mi.indices.size();
+        model->triangleCount = mi.numTriangles;
+    }
+}
+
+void pointModelsVBOIndex(GroupConfig* group)
+{
+    for (auto& model : group->models) {
+        Model* m = config.filesModels[model->file];
+        model = m;
+        config.stats.numTriangles += model->triangleCount;
+    }
+
+    for (auto& subGroup : group->children) {
+        pointModelsVBOIndex(subGroup);
+    }
+}
+
+void initializeVBOs()
+{
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    int totalNumModels = config.filesModels.size();
+    vboBuffers.resize(totalNumModels);
+    vboBuffersNormals.resize(totalNumModels);
+    iboBuffers.resize(totalNumModels);
+    glGenBuffers(totalNumModels, vboBuffers.data());
+    glGenBuffers(totalNumModels, vboBuffersNormals.data());
+    glGenBuffers(totalNumModels, iboBuffers.data());
+
+    bindPointsToBuffers();
+
+    // Turns off buffers
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    pointModelsVBOIndex(&config.group);
+}
 
 void updateSceneOptions(void)
 {
@@ -60,6 +146,17 @@ void updateSceneOptions(void)
         glEnable(GL_CULL_FACE);
     } else {
         glDisable(GL_CULL_FACE);
+    }
+
+    if (config.scene.lighting) {
+        glEnable(GL_LIGHTING);
+    } else {
+        glDisable(GL_LIGHTING);
+    }
+
+    if (hotReload) {
+        config = loadConfiguration(configFilePath);
+        initializeVBOs();
     }
 
     drawCatmullRomCurves = config.scene.drawCatmullRomCurves;
@@ -77,6 +174,7 @@ void renderScene(void)
     glMatrixMode(GL_MODELVIEW);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+
     updateCameraLookAt(&config);
     gluLookAt(config.camera.position.x, config.camera.position.y, config.camera.position.z,
         config.camera.lookAt.x, config.camera.lookAt.y, config.camera.lookAt.z,
@@ -85,12 +183,37 @@ void renderScene(void)
     // capture the view matrix (camera transformation)
     glGetFloatv(GL_MODELVIEW_MATRIX, g_viewMatrix);
 
-    if (config.scene.drawAxis)
+    if (config.scene.drawAxis) {
+        if (config.scene.lighting)
+            glDisable(GL_LIGHTING);
         drawAxis();
+        if (config.scene.lighting)
+            glEnable(GL_LIGHTING);
+    }
+
+    for (size_t i = 0; i < config.lights.size(); ++i) {
+        const LightConfig& light = config.lights[i];
+        GLenum lightID = GL_LIGHT0 + static_cast<GLenum>(i);
+        glEnable(lightID);
+
+        glLightfv(lightID, GL_AMBIENT, dark);
+        glLightfv(lightID, GL_DIFFUSE, white);
+        glLightfv(lightID, GL_SPECULAR, white);
+        glLightfv(lightID, GL_POSITION, light.position);
+
+        if (light.type == LightType::SPOTLIGHT) {
+            glLightfv(lightID, GL_SPOT_DIRECTION, light.direction);
+            glLightf(lightID, GL_SPOT_CUTOFF, light.cutoff);
+        } else {
+            // For point or directional, use default OpenGL cutoff
+            glLightf(lightID, GL_SPOT_CUTOFF, 180.0f);
+        }
+    }
 
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
 
-    drawWithVBOs(vboBuffers, iboBuffers, config.group, false);
+    // glutSolidSphere(1, 10, 10);
+    drawWithVBOs(vboBuffers, vboBuffersNormals, iboBuffers, config.group, false);
 
     drawMenu(&config);
 
@@ -117,8 +240,8 @@ void updateViewPort(int w, int h)
 
 unsigned char picking(int x, int y)
 {
-    // TODO: Unecessary for now
-    // glDisable(GL_LIGHTING);
+    if (config.scene.lighting)
+        glDisable(GL_LIGHTING);
     // glDisable(GL_TEXTURE_2D);
 
     // set background color to black to differenciate values > 0
@@ -134,7 +257,7 @@ unsigned char picking(int x, int y)
 
     // re-render scene
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    drawWithVBOs(vboBuffers, iboBuffers, config.group, true);
+    drawWithVBOs(vboBuffers, vboBuffersNormals, iboBuffers, config.group, true);
 
     unsigned char res[4];
     GLint viewport[4];
@@ -145,8 +268,8 @@ unsigned char picking(int x, int y)
         GL_RGBA, GL_UNSIGNED_BYTE,
         res);
 
-    // TODO: Unecessary for now
-    // glEnable(GL_LIGHTING);
+    if (config.scene.lighting)
+        glEnable(GL_LIGHTING);
     // glEnable(GL_TEXTURE_2D);
     glDepthFunc(GL_LESS);
 
@@ -376,13 +499,6 @@ void initializeGLUTPreWindow(int argc, char** argv)
     glutInitWindowPosition(100, 100);
 }
 
-WorldConfig loadConfiguration(const char* configFile)
-{
-    WorldConfig cfg = XMLParser::parseXML(configFile);
-    XMLParser::configureFromXML(cfg);
-    return cfg;
-}
-
 void createWindowWithConfig()
 {
     glutInitWindowSize(config.window.width, config.window.height);
@@ -409,70 +525,12 @@ void initializeOpenGLContext()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
-}
+    glEnable(GL_LIGHTING);
+    glEnable(GL_RESCALE_NORMAL);
 
-void bindPointsToBuffers()
-{
-    int count = 0;
-    for (auto it = config.filesModels.begin(); it != config.filesModels.end(); ++it, ++count) {
-        const std::string& fname = it->first;
-        Model* model = it->second;
-
-        ModelInfo mi = parseFile(model->file);
-
-        // VBO
-        glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[count]);
-        glBufferData(GL_ARRAY_BUFFER,
-            mi.points.size() * sizeof(float),
-            mi.points.data(),
-            GL_STATIC_DRAW);
-
-        // IBO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[count]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-            mi.indices.size() * sizeof(unsigned int),
-            mi.indices.data(),
-            GL_STATIC_DRAW);
-
-        // Stores in Model
-        model->vboIndex = count;
-        model->iboIndex = count;
-        model->vertexCount = mi.points.size() / 3;
-        model->indexCount = mi.indices.size();
-        model->triangleCount = mi.numTriangles;
-    }
-}
-
-void pointModelsVBOIndex(GroupConfig* group)
-{
-    for (auto& model : group->models) {
-        Model* m = config.filesModels[model->file];
-        model = m;
-        config.stats.numTriangles += model->triangleCount;
-    }
-
-    for (auto& subGroup : group->children) {
-        pointModelsVBOIndex(subGroup);
-    }
-}
-
-void initializeVBOs()
-{
-    glEnableClientState(GL_VERTEX_ARRAY);
-
-    int totalNumModels = config.filesModels.size();
-    vboBuffers.resize(totalNumModels);
-    iboBuffers.resize(totalNumModels);
-    glGenBuffers(totalNumModels, vboBuffers.data());
-    glGenBuffers(totalNumModels, iboBuffers.data());
-
-    bindPointsToBuffers();
-
-    // Turns off buffers
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    pointModelsVBOIndex(&config.group);
+    float black[4] = { 0.1f, 0.1f, 0.1f, 0.0f };
+    // controls global ambient light
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, black);
 }
 
 int main(int argc, char** argv)
@@ -484,7 +542,8 @@ int main(int argc, char** argv)
 
     // pre-window initialization: Setup GLUT and load configuration
     initializeGLUTPreWindow(argc, argv);
-    config = loadConfiguration(argv[1]);
+    configFilePath = argv[1];
+    config = loadConfiguration(configFilePath);
 
     // create the window using configuration parameters
     createWindowWithConfig();

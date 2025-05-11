@@ -9,6 +9,7 @@
 #include "torus.hpp"
 
 #include <string>
+#include <iostream>
 
 void executeCommand(const std::string& command, const std::vector<int>& args, const std::string& filename, int argc, char* argv[])
 {

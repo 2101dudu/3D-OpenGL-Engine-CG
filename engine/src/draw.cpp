@@ -101,6 +101,8 @@ void applyTransformations(const std::vector<Transform>& transforms)
                 float pos[3], deriv[3];
 
                 if (drawCatmullRomCurves) {
+                    if (config.scene.lighting)
+                        glDisable(GL_LIGHTING);
                     glColor3f(1.0f, 1.0f, 0.0f);
                     glBegin(GL_LINE_LOOP);
                     for (float _t = 0; _t < 1; _t += 0.01f) {
@@ -108,6 +110,8 @@ void applyTransformations(const std::vector<Transform>& transforms)
                         glVertex3f(pos[0], pos[1], pos[2]);
                     }
                     glEnd();
+                    if (config.scene.lighting)
+                        glEnable(GL_LIGHTING);
                 }
 
                 getGlobalCatmullRomPoint(-1.0f, pos, deriv, t);
@@ -142,6 +146,7 @@ void applyTransformations(const std::vector<Transform>& transforms)
 }
 
 void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
+    const std::vector<GLuint>& vboBuffersNormals,
     const std::vector<GLuint>& iboBuffers,
     GroupConfig& group,
     bool depthOnly)
@@ -167,8 +172,21 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
         glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[model->vboIndex]);
         glVertexPointer(3, GL_FLOAT, 0, 0);
 
+        glEnableClientState(GL_NORMAL_ARRAY);
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffersNormals[model->vboIndex]);
+        glNormalPointer(GL_FLOAT, 0, 0);
+
         // IBO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[model->iboIndex]);
+
+        // Set material properties
+        if (!depthOnly && config.scene.lighting) {
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, model->material.diffuse);
+            glMaterialfv(GL_FRONT, GL_AMBIENT, model->material.ambient);
+            glMaterialfv(GL_FRONT, GL_SPECULAR, model->material.specular);
+            glMaterialfv(GL_FRONT, GL_EMISSION, model->material.emissive);
+            glMaterialf(GL_FRONT, GL_SHININESS, model->material.shininess);
+        }
 
         glDrawElements(GL_TRIANGLES,
             model->indexCount,
@@ -182,7 +200,7 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     for (auto& child : group.children) {
-        drawWithVBOs(vboBuffers, iboBuffers, *child, depthOnly);
+        drawWithVBOs(vboBuffers, vboBuffersNormals, iboBuffers, *child, depthOnly);
     }
 
     glPopMatrix();

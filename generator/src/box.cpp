@@ -55,7 +55,7 @@ void Box::createBox(int dimension, int divPerEdge, const std::string& filename)
                 const float y = isYNormal ? dy : maxWidth - 2.0f * (i * isXNormal + j * isZNormal) / divPerEdge;
                 const float z = isZNormal ? dz : maxWidth - 2.0f * j / divPerEdge;
 
-                pointGen.addPoint(x, y, z);
+                pointGen.addPoint(x, y, z, u, v, w);
 
                 int currPointIndex = k * pointsPerEdge * pointsPerEdge + i * pointsPerEdge + j + 1;
 

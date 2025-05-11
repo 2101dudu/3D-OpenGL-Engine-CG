@@ -14,6 +14,7 @@
 #include "xml_parser.hpp"
 
 extern float timeFactor;
+extern bool hotReload;
 
 void initializeImGUI(void)
 {
@@ -70,9 +71,15 @@ void drawMenu(WorldConfig* config)
         ImGui::Checkbox("Wireframe", &config->scene.wireframe);
         ImGui::Checkbox("Draw axis", &config->scene.drawAxis);
         ImGui::Checkbox("Draw Catmull-Rom curves", &config->scene.drawCatmullRomCurves);
+        ImGui::Checkbox("Lighting", &config->scene.lighting);
         ImGui::ColorEdit3("Background color", (float*)&config->scene.bgColor);
 
         if (ImGui::SliderFloat("Time scale", &timeFactor, 0.0, 10)) { }
+
+        hotReload = false;
+        if (ImGui::Button("Reload config file")) { 
+            hotReload = true;
+        }
 
         ImGui::TreePop();
     }

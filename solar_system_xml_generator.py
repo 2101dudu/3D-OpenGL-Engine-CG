@@ -24,9 +24,13 @@ def create_transform(rotate, translate, scale):
     return transform
 
 
-def create_model(file):
+def create_model(file, add_color=True):
     model = ET.Element("model")
     model.set("file", file)
+
+    if add_color:
+        create_color_element(model)
+    
     return model
 
 
@@ -66,6 +70,7 @@ def create_moon(moon_name, model_file, isEarth):
 def create_comet_group():
     comet_group = ET.Element("group")
     comet_group.set("name", "Comet")
+    comet_group.set("clickableInfo", "../../group_info/comet.txt")
 
     transform = ET.SubElement(comet_group, "transform")
     translate = ET.SubElement(transform, "translate")
@@ -98,6 +103,8 @@ def create_comet_group():
     models = ET.SubElement(comet_group, "models")
     model = ET.SubElement(models, "model")
     model.set("file", "../../objects/comet.3d")
+
+    create_color_element(model)
 
     return comet_group
 
@@ -138,6 +145,32 @@ def prettify_xml(elem):
     reparsed = minidom.parseString(rough_string)
     return reparsed.toprettyxml(indent="    ")
 
+def create_color_element(model_elem, diffuse=(127,127,127), ambient=(204,204,204), specular=(255,255,255), emissive=(0,0,0), shininess=100):
+    color = ET.SubElement(model_elem, "color")
+
+    d = ET.SubElement(color, "diffuse")
+    d.set("R", str(diffuse[0]))
+    d.set("G", str(diffuse[1]))
+    d.set("B", str(diffuse[2]))
+
+    a = ET.SubElement(color, "ambient")
+    a.set("R", str(ambient[0]))
+    a.set("G", str(ambient[1]))
+    a.set("B", str(ambient[2]))
+
+    s = ET.SubElement(color, "specular")
+    s.set("R", str(specular[0]))
+    s.set("G", str(specular[1]))
+    s.set("B", str(specular[2]))
+
+    e = ET.SubElement(color, "emissive")
+    e.set("R", str(emissive[0]))
+    e.set("G", str(emissive[1]))
+    e.set("B", str(emissive[2]))
+
+    sh = ET.SubElement(color, "shininess")
+    sh.set("value", str(shininess))
+
 def main():
     world = ET.Element("world")
 
@@ -164,6 +197,16 @@ def main():
     projection.set("fov", "60")
     projection.set("near", "0.01")
     projection.set("far", "1000")
+
+    # Lights definition
+    lights = ET.SubElement(world, "lights")
+
+    # Point light at the center (Sun)
+    point_light = ET.SubElement(lights, "light")
+    point_light.set("type", "point")
+    point_light.set("posX", "0")
+    point_light.set("posY", "0")
+    point_light.set("posZ", "0")
 
     solar_system = ET.SubElement(world, "group")
     solar_system.set("name", "SolarSystem")
@@ -200,7 +243,7 @@ def main():
 
     for planet, clickableInfo, distance, scale in planet_data:
         # Orbital distribution: uses a random time per full rotation
-        time = random.uniform(0, 50)
+        time = random.uniform(10, 50)
         transform = {
             "rotate": {"time": time, "x": 0, "y": 1, "z": 0},
             "translate": {"x": distance, "y": 0, "z": 0},
