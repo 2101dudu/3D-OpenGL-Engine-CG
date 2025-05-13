@@ -186,7 +186,9 @@ ModelInfo parseFile(const std::string& filename)
         }
     }
 
-    printf("Condensed %s from %zu raw floats to %zu unique floats\n", filename.c_str(), rawPoints.size(), uniquePoints.size());
+    if (rawPoints.size() > uniquePoints.size()) {
+        printf("Condensed %s from %zu raw floats to %zu unique floats\n", filename.c_str(), rawPoints.size(), uniquePoints.size());
+    }
 
     modelInfo.points = std::move(uniquePoints);
     modelInfo.indices = std::move(newIndices);

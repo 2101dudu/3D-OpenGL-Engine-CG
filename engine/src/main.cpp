@@ -98,7 +98,10 @@ int loadTexture(std::string s)
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    printf("[DEBUG] 0x%X\n", ilGetError());
+    ILenum err = ilGetError();
+    if (err != IL_NO_ERROR) {
+        printf("[DEBUG] 0x%X\n", err);
+    }
 
     return texID;
 }
