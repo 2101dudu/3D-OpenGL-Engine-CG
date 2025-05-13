@@ -89,12 +89,7 @@ struct ModelCore {
 
     bool operator==(const ModelCore& o) const
     {
-        return file == o.file
-            && vboIndex == o.vboIndex
-            && iboIndex == o.iboIndex
-            && vertexCount == o.vertexCount
-            && indexCount == o.indexCount
-            && triangleCount == o.triangleCount;
+        return file == o.file;
     }
 };
 
@@ -109,8 +104,7 @@ struct Model {
     {
         return modelCore == o.modelCore
             && material == o.material
-            && textureFilePath == o.textureFilePath
-            && texIndex == o.texIndex;
+            && textureFilePath == o.textureFilePath;
     }
 };
 
