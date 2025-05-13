@@ -147,6 +147,16 @@ else() # Linux and macOS
       message(FATAL_ERROR "GLEW não encontrado!")
     endif()
 
+    find_path(DEVIL_INCLUDE_DIR IL/il.h)
+    find_library(DEVIL_LIBRARY NAMES IL DevIL)
+
+    if(NOT DEVIL_INCLUDE_DIR OR NOT DEVIL_LIBRARY)
+      message(FATAL_ERROR "DevIL not found! Please install it (e.g., sudo apt install libdevil-dev)")
+    endif()
+
+    include_directories(${DEVIL_INCLUDE_DIR})
+    target_link_libraries(${PROJECT_NAME} ${DEVIL_LIBRARY})
+
     target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES}
                           ${FREEGLUT_LIBRARY} GLEW)
   endif()

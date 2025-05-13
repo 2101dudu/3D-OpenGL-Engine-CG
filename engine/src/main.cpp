@@ -228,7 +228,7 @@ void renderScene(void)
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
 
     glBindTexture(GL_TEXTURE_2D, texIDSphere);
-  
+
     drawWithVBOs(vboBuffers, vboBuffersNormals, vboBuffersTexCoords, iboBuffers, config.group, false);
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -515,41 +515,41 @@ void keyboardFunc(unsigned char key, int x, int y)
     }
 }
 
-int loadTexture(std::string s) {
+int loadTexture(std::string s)
+{
 
-	unsigned int t,tw,th;
-	unsigned char *texData;
-	unsigned int texID;
-
+    unsigned int t, tw, th;
+    unsigned char* texData;
+    unsigned int texID;
 
     ilInit();
-	ilEnable(IL_ORIGIN_SET);
-	ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
-	ilGenImages(1,&t);
-	ilBindImage(t);
-	ilLoadImage((ILstring)s.c_str());
-	tw = ilGetInteger(IL_IMAGE_WIDTH);
-	th = ilGetInteger(IL_IMAGE_HEIGHT);
-	ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
-	texData = ilGetData();
+    ilEnable(IL_ORIGIN_SET);
+    ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
+    ilGenImages(1, &t);
+    ilBindImage(t);
+    ilLoadImage((ILstring)s.c_str());
+    tw = ilGetInteger(IL_IMAGE_WIDTH);
+    th = ilGetInteger(IL_IMAGE_HEIGHT);
+    ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+    texData = ilGetData();
 
-	glGenTextures(1,&texID);
-	
-	glBindTexture(GL_TEXTURE_2D,texID);
-	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_WRAP_S,		GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_WRAP_T,		GL_REPEAT);
+    glGenTextures(1, &texID);
 
-	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_MAG_FILTER,   	GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData);
-	glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-    printf("[DEBUG] %x", ilGetError());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
-	return texID;
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    printf("[DEBUG] 0x%X\n", ilGetError());
+
+    return texID;
 }
 
 void initializeGLUTPreWindow(int argc, char** argv)
@@ -624,8 +624,7 @@ int main(int argc, char** argv)
     // setup callbacks
     setupCallbacks();
 
-    texIDSphere = loadTexture("earth.jpg");
-    printf("texIDSphere = %d\n\n\n", texIDSphere);
+    texIDSphere = loadTexture("../../textures/earth.jpg");
 
     // enter the GLUT main loop
     lastRealTime = glutGet(GLUT_ELAPSED_TIME);

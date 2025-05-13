@@ -28,8 +28,6 @@ void Sphere::createSphere(int radius, int slices, int stacks, const std::string&
             float nz = z /= radius;
 
             // Texture Coordinates
-            printf("[DEBUG] i = %d : slices = %d", i, (slices - 1));
-
             float u = static_cast<float>(i) / (slices - 1);
             float v = static_cast<float>(j) / stacks;
 
