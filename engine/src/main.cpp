@@ -60,13 +60,48 @@ bool hotReload = false;
 const float dark[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 const float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-GLuint texIDSphere;
-
 WorldConfig loadConfiguration(const char* configFile)
 {
     WorldConfig cfg = XMLParser::parseXML(configFile);
     XMLParser::configureFromXML(cfg);
     return cfg;
+}
+
+int loadTexture(std::string s)
+{
+
+    unsigned int t, tw, th;
+    unsigned char* texData;
+    unsigned int texID;
+
+    ilInit();
+    ilEnable(IL_ORIGIN_SET);
+    ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
+    ilGenImages(1, &t);
+    ilBindImage(t);
+    ilLoadImage((ILstring)s.c_str());
+    tw = ilGetInteger(IL_IMAGE_WIDTH);
+    th = ilGetInteger(IL_IMAGE_HEIGHT);
+    ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+    texData = ilGetData();
+
+    glGenTextures(1, &texID);
+
+    glBindTexture(GL_TEXTURE_2D, texID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    printf("[DEBUG] 0x%X\n", ilGetError());
+
+    return texID;
 }
 
 void bindPointsToBuffers()
@@ -75,8 +110,6 @@ void bindPointsToBuffers()
     for (auto it = config.filesModels.begin(); it != config.filesModels.end(); ++it, ++count) {
         const std::string& fname = it->first;
         Model* model = it->second;
-
-        printf("Texture %s\n", model->textureFilePath.c_str());
 
         ModelInfo mi = parseFile(model->file);
 
@@ -106,8 +139,11 @@ void bindPointsToBuffers()
             mi.indices.data(),
             GL_STATIC_DRAW);
 
+        int texIndex = loadTexture(model->textureFilePath);
+
         // Stores in Model
         model->vboIndex = count;
+        model->texIndex = texIndex;
         model->iboIndex = count;
         model->vertexCount = mi.points.size() / 3;
         model->indexCount = mi.indices.size();
@@ -229,11 +265,7 @@ void renderScene(void)
 
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
 
-    glBindTexture(GL_TEXTURE_2D, texIDSphere);
-
     drawWithVBOs(vboBuffers, vboBuffersNormals, vboBuffersTexCoords, iboBuffers, config.group, false);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
 
     drawMenu(&config);
 
@@ -517,43 +549,6 @@ void keyboardFunc(unsigned char key, int x, int y)
     }
 }
 
-int loadTexture(std::string s)
-{
-
-    unsigned int t, tw, th;
-    unsigned char* texData;
-    unsigned int texID;
-
-    ilInit();
-    ilEnable(IL_ORIGIN_SET);
-    ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
-    ilGenImages(1, &t);
-    ilBindImage(t);
-    ilLoadImage((ILstring)s.c_str());
-    tw = ilGetInteger(IL_IMAGE_WIDTH);
-    th = ilGetInteger(IL_IMAGE_HEIGHT);
-    ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
-    texData = ilGetData();
-
-    glGenTextures(1, &texID);
-
-    glBindTexture(GL_TEXTURE_2D, texID);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    printf("[DEBUG] 0x%X\n", ilGetError());
-
-    return texID;
-}
-
 void initializeGLUTPreWindow(int argc, char** argv)
 {
     glutInit(&argc, argv);
@@ -625,8 +620,6 @@ int main(int argc, char** argv)
 
     // setup callbacks
     setupCallbacks();
-
-    texIDSphere = loadTexture("../../textures/earth.jpg");
 
     // enter the GLUT main loop
     lastRealTime = glutGet(GLUT_ELAPSED_TIME);

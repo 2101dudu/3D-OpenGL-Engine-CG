@@ -193,10 +193,14 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
             glMaterialf(GL_FRONT, GL_SHININESS, model->material.shininess);
         }
 
+        glBindTexture(GL_TEXTURE_2D, model->texIndex);
+
         glDrawElements(GL_TRIANGLES,
             model->indexCount,
             GL_UNSIGNED_INT,
             0);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         // Optional: turns off ELEMENT_ARRAY
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
