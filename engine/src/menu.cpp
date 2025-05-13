@@ -72,12 +72,13 @@ void drawMenu(WorldConfig* config)
         ImGui::Checkbox("Draw axis", &config->scene.drawAxis);
         ImGui::Checkbox("Draw Catmull-Rom curves", &config->scene.drawCatmullRomCurves);
         ImGui::Checkbox("Lighting", &config->scene.lighting);
+        ImGui::Checkbox("Textures", &config->scene.textures);
         ImGui::ColorEdit3("Background color", (float*)&config->scene.bgColor);
 
         if (ImGui::SliderFloat("Time scale", &timeFactor, 0.0, 10)) { }
 
         hotReload = false;
-        if (ImGui::Button("Reload config file")) { 
+        if (ImGui::Button("Reload config file")) {
             hotReload = true;
         }
 
