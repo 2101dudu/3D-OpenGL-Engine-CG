@@ -76,6 +76,8 @@ void bindPointsToBuffers()
         const std::string& fname = it->first;
         Model* model = it->second;
 
+        printf("Texture %s\n", model->textureFilePath.c_str());
+
         ModelInfo mi = parseFile(model->file);
 
         // VBO

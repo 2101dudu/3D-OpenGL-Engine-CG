@@ -120,6 +120,13 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
                 std::string fileName = modelElement->Attribute("file");
                 Model* modelConfig = new Model();
                 modelConfig->file = fileName;
+
+                XMLElement* textureElement = modelElement->FirstChildElement("texture");
+                if (textureElement) {
+                    std::string textureFilePath = textureElement->Attribute("file");
+                    modelConfig->textureFilePath = textureFilePath;
+                }
+
                 XMLElement* colorElement = modelElement->FirstChildElement("color");
                 if (colorElement) {
                     XMLElement* diffuse = colorElement->FirstChildElement("diffuse");
@@ -161,8 +168,8 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
 
                     // converts from 0–255 to 0.0–1.0
                     for (int i = 0; i < 3; i++) {
-                        modelConfig->material.diffuse[i]  /= 255.0f;
-                        modelConfig->material.ambient[i]  /= 255.0f;
+                        modelConfig->material.diffuse[i] /= 255.0f;
+                        modelConfig->material.ambient[i] /= 255.0f;
                         modelConfig->material.specular[i] /= 255.0f;
                         modelConfig->material.emissive[i] /= 255.0f;
                     }
@@ -254,15 +261,13 @@ WorldConfig XMLParser::parseXML(const std::string& filename)
                 lightEl->QueryFloatAttribute("posY", &light.position[1]);
                 lightEl->QueryFloatAttribute("posZ", &light.position[2]);
                 light.position[3] = 1.0f;
-            }
-            else if (strcmp(type, "directional") == 0) {
+            } else if (strcmp(type, "directional") == 0) {
                 light.type = LightType::DIRECTIONAL;
                 lightEl->QueryFloatAttribute("dirX", &light.position[0]);
                 lightEl->QueryFloatAttribute("dirY", &light.position[1]);
                 lightEl->QueryFloatAttribute("dirZ", &light.position[2]);
                 light.position[3] = 0.0f;
-            }
-            else if (strcmp(type, "spotlight") == 0) {
+            } else if (strcmp(type, "spotlight") == 0) {
                 light.type = LightType::SPOTLIGHT;
                 lightEl->QueryFloatAttribute("posX", &light.position[0]);
                 lightEl->QueryFloatAttribute("posY", &light.position[1]);

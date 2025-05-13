@@ -77,6 +77,7 @@ struct Model {
     size_t indexCount = 0; // IBO number count (3 × #triangles)
     size_t triangleCount = 0; // purely for stats
     Material material;
+    std::string textureFilePath;
 };
 
 struct GroupConfig {
@@ -106,7 +107,9 @@ struct Stats {
     int64_t numTriangles = 0;
 };
 
-enum class LightType { POINT, DIRECTIONAL, SPOTLIGHT };
+enum class LightType { POINT,
+    DIRECTIONAL,
+    SPOTLIGHT };
 
 struct LightConfig {
     LightType type;
