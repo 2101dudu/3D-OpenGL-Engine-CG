@@ -69,7 +69,6 @@ WorldConfig loadConfiguration(const char* configFile)
 
 int loadTexture(std::string s)
 {
-
     unsigned int t, tw, th;
     unsigned char* texData;
     unsigned int texID;
@@ -111,7 +110,7 @@ void bindPointsToBuffers()
         const std::string& fname = it->first;
         Model* model = it->second;
 
-        ModelInfo mi = parseFile(model->file);
+        ModelInfo mi = parseFile(model->modelCore->file);
 
         // VBO
         glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[count]);
@@ -142,21 +141,23 @@ void bindPointsToBuffers()
         int texIndex = loadTexture(model->textureFilePath);
 
         // Stores in Model
-        model->vboIndex = count;
         model->texIndex = texIndex;
-        model->iboIndex = count;
-        model->vertexCount = mi.points.size() / 3;
-        model->indexCount = mi.indices.size();
-        model->triangleCount = mi.numTriangles;
+
+        // Stores in ModelCore
+        model->modelCore->vboIndex = count;
+        model->modelCore->iboIndex = count;
+        model->modelCore->vertexCount = mi.points.size() / 3;
+        model->modelCore->indexCount = mi.indices.size();
+        model->modelCore->triangleCount = mi.numTriangles;
     }
 }
 
 void pointModelsVBOIndex(GroupConfig* group)
 {
     for (auto& model : group->models) {
-        Model* m = config.filesModels[model->file];
+        Model* m = config.filesModels[model->filesModelsKey];
         model = m;
-        config.stats.numTriangles += model->triangleCount;
+        config.stats.numTriangles += model->modelCore->triangleCount;
     }
 
     for (auto& subGroup : group->children) {
@@ -259,7 +260,7 @@ void renderScene(void)
             glLightf(lightID, GL_SPOT_CUTOFF, light.cutoff);
         } else {
             // For point or directional, use default OpenGL cutoff
-            glLightf(lightID, GL_SPOT_CUTOFF, 180.0f);
+            glLightf(lightID, GL_SPOT_CUTOFF, 128.0f);
         }
     }
 

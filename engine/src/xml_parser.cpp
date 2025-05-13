@@ -118,8 +118,12 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
         while (modelElement) {
             if (modelElement->Attribute("file")) {
                 std::string fileName = modelElement->Attribute("file");
+
+                ModelCore* modelCore = new ModelCore();
+                modelCore->file = fileName;
+
                 Model* modelConfig = new Model();
-                modelConfig->file = fileName;
+                modelConfig->modelCore = modelCore;
 
                 XMLElement* textureElement = modelElement->FirstChildElement("texture");
                 if (textureElement) {
@@ -174,12 +178,27 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
                         modelConfig->material.emissive[i] /= 255.0f;
                     }
                 }
-                group.models.push_back(modelConfig);
 
-                // if there's no entry on the models' map
+                bool inserted = false;
                 if (!filesModels.count(fileName)) {
                     filesModels[fileName] = modelConfig;
+                    inserted = true;
                 }
+
+                if (!inserted) {
+                    Model* otherModel = filesModels[fileName];
+                    if (!(modelConfig->modelCore == otherModel->modelCore && modelConfig->material == otherModel->material && modelConfig->textureFilePath == otherModel->textureFilePath)) {
+                        fileName += "_alt";
+                        int counter = 1;
+                        while (filesModels.count(fileName)) {
+                            fileName += std::to_string(counter++);
+                        }
+                        filesModels[fileName] = modelConfig;
+                    }
+                }
+
+                modelConfig->filesModelsKey = fileName;
+                group.models.push_back(modelConfig);
             }
 
             modelElement = modelElement->NextSiblingElement("model");
