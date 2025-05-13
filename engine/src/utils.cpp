@@ -21,6 +21,28 @@ bool startsWith(const std::string& str, const std::string& prefix)
     return str.rfind(prefix, 0) == 0;
 }
 
+struct Vec2 {
+    float x, y;
+
+    bool operator==(const Vec2& other) const
+    {
+        return std::fabs(x - other.x) < 1e-6f && std::fabs(y - other.y) < 1e-6f;
+    }
+};
+
+struct Vec2Hash {
+    size_t operator()(const Vec2& v) const noexcept
+    {
+        // Quantize each component by EPSILON before hashing
+        int ix = static_cast<int>(std::round(v.x / 1e-6f));
+        int iy = static_cast<int>(std::round(v.y / 1e-6f));
+        size_t hx = std::hash<int>()(ix);
+        size_t hy = std::hash<int>()(iy);
+        // Combine hashes
+        return hx ^ (hy << 1);
+    }
+};
+
 // Helper struct for deduplicating vertices with tolerance
 struct Vec3 {
     float x, y, z;
@@ -52,10 +74,11 @@ struct Vec3Hash {
 struct Vertex {
     Vec3 position;
     Vec3 normal;
+    Vec2 texCoord;
 
     bool operator==(const Vertex& other) const
     {
-        return position == other.position && normal == other.normal;
+        return position == other.position && normal == other.normal && texCoord == other.texCoord;
     }
 };
 
@@ -64,7 +87,9 @@ struct VertexHash {
     {
         size_t h1 = Vec3Hash()(v.position);
         size_t h2 = Vec3Hash()(v.normal);
-        return h1 ^ (h2 << 1); // Combine hashes
+        size_t h3 = Vec2Hash()(v.texCoord);
+        // Combine hashes
+        return h1 ^ (h2 << 1) ^ (h3 << 2);
     }
 };
 
@@ -79,6 +104,7 @@ ModelInfo parseFile(const std::string& filename)
 
     std::vector<float> rawPoints;
     std::vector<float> rawNormals;
+    std::vector<float> rawTexCoords;
     std::vector<unsigned int> rawIndices;
     size_t numTriangles = 0;
 
@@ -87,9 +113,11 @@ ModelInfo parseFile(const std::string& filename)
         file >> numPoints;
         rawPoints.resize(3 * numPoints);
         rawNormals.resize(3 * numPoints);
+        rawTexCoords.resize(2 * numPoints);
         for (size_t i = 0; i < numPoints; ++i) {
             file >> rawPoints[3 * i] >> rawPoints[3 * i + 1] >> rawPoints[3 * i + 2];
             file >> rawNormals[3 * i] >> rawNormals[3 * i + 1] >> rawNormals[3 * i + 2];
+            file >> rawTexCoords[2 * i] >> rawTexCoords[2 * i + 1];
         }
 
         file >> numTriangles;
@@ -137,7 +165,8 @@ ModelInfo parseFile(const std::string& filename)
     for (unsigned int idx : rawIndices) {
         Vec3 pos { rawPoints[3 * idx], rawPoints[3 * idx + 1], rawPoints[3 * idx + 2] };
         Vec3 norm { rawNormals[3 * idx], rawNormals[3 * idx + 1], rawNormals[3 * idx + 2] };
-        Vertex v { pos, norm };
+        Vec2 texCoord { rawTexCoords[2 * idx], rawTexCoords[2 * idx + 1] };
+        Vertex v { pos, norm, texCoord };
 
         auto it = indexMap.find(v);
         if (it == indexMap.end()) {
@@ -148,6 +177,8 @@ ModelInfo parseFile(const std::string& filename)
             modelInfo.normals.push_back(norm.x);
             modelInfo.normals.push_back(norm.y);
             modelInfo.normals.push_back(norm.z);
+            modelInfo.texCoords.push_back(texCoord.x);
+            modelInfo.texCoords.push_back(texCoord.y);
             indexMap[v] = newIdx;
             newIndices.push_back(newIdx);
         } else {

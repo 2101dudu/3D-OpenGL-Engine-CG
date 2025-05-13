@@ -80,6 +80,19 @@ if(WIN32)
          DESTINATION ${CMAKE_BINARY_DIR})
   endif(EXISTS "${TOOLKITS_FOLDER}/glew/glew32.dll")
 
+  # DevIL
+  if(NOT EXISTS "${TOOLKITS_FOLDER}/devil/IL/il.h"
+     OR NOT EXISTS "${TOOLKITS_FOLDER}/devil/DevIL.lib")
+    message(FATAL_ERROR "DevIL not found!")
+  endif()
+
+  include_directories(${TOOLKITS_FOLDER}/devil)
+  target_link_libraries(${PROJECT_NAME} ${TOOLKITS_FOLDER}/devil/DevIL.lib)
+
+  if(EXISTS "${TOOLKITS_FOLDER}/devil/DevIL.dll")
+    file(COPY ${TOOLKITS_FOLDER}/devil/DevIL.dll DESTINATION ${CMAKE_BINARY_DIR})
+  endif()
+
   set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT
                                                               ${PROJECT_NAME})
 else() # Linux and macOS

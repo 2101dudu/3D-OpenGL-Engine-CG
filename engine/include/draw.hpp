@@ -22,6 +22,7 @@ void drawAxis();
 
 void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
                   const std::vector<GLuint>& vboBuffersNormals,
+                    const std::vector<GLuint>& vboBuffersTexCoords,
                   const std::vector<GLuint>& iboBuffers,
                   GroupConfig& group,
                   bool depthOnly);

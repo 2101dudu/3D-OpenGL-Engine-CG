@@ -29,6 +29,8 @@ __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 #include <GL/glut.h>
 #endif
 
+#include <IL/il.h>
+
 int lastRealTime;
 float globalTimer = 0.0f;
 
@@ -49,13 +51,16 @@ bool drawCatmullRomCurves = false;
 // VBOs
 std::vector<GLuint> vboBuffers;
 std::vector<GLuint> vboBuffersNormals;
-std::vector<GLuint> iboBuffers; // armazena IBOs de índices
+std::vector<GLuint> vboBuffersTexCoords;
+std::vector<GLuint> iboBuffers;
 
 const char* configFilePath;
 bool hotReload = false;
 
 const float dark[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 const float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+GLuint texIDSphere;
 
 WorldConfig loadConfiguration(const char* configFile)
 {
@@ -84,6 +89,12 @@ void bindPointsToBuffers()
         glBufferData(GL_ARRAY_BUFFER,
             mi.normals.size() * sizeof(float),
             mi.normals.data(),
+            GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffersTexCoords[count]);
+        glBufferData(GL_ARRAY_BUFFER,
+            mi.texCoords.size() * sizeof(float),
+            mi.texCoords.data(),
             GL_STATIC_DRAW);
 
         // IBO
@@ -118,13 +129,17 @@ void pointModelsVBOIndex(GroupConfig* group)
 void initializeVBOs()
 {
     glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
     int totalNumModels = config.filesModels.size();
     vboBuffers.resize(totalNumModels);
     vboBuffersNormals.resize(totalNumModels);
+    vboBuffersTexCoords.resize(totalNumModels);
     iboBuffers.resize(totalNumModels);
     glGenBuffers(totalNumModels, vboBuffers.data());
     glGenBuffers(totalNumModels, vboBuffersNormals.data());
+    glGenBuffers(totalNumModels, vboBuffersTexCoords.data());
     glGenBuffers(totalNumModels, iboBuffers.data());
 
     bindPointsToBuffers();
@@ -212,8 +227,11 @@ void renderScene(void)
 
     glClearColor(config.scene.bgColor.x, config.scene.bgColor.y, config.scene.bgColor.z, config.scene.bgColor.w);
 
-    // glutSolidSphere(1, 10, 10);
-    drawWithVBOs(vboBuffers, vboBuffersNormals, iboBuffers, config.group, false);
+    glBindTexture(GL_TEXTURE_2D, texIDSphere);
+  
+    drawWithVBOs(vboBuffers, vboBuffersNormals, vboBuffersTexCoords, iboBuffers, config.group, false);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     drawMenu(&config);
 
@@ -242,7 +260,9 @@ unsigned char picking(int x, int y)
 {
     if (config.scene.lighting)
         glDisable(GL_LIGHTING);
-    // glDisable(GL_TEXTURE_2D);
+
+    // TODO: Switch with menu
+    glDisable(GL_TEXTURE_2D);
 
     // set background color to black to differenciate values > 0
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -257,7 +277,7 @@ unsigned char picking(int x, int y)
 
     // re-render scene
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    drawWithVBOs(vboBuffers, vboBuffersNormals, iboBuffers, config.group, true);
+    drawWithVBOs(vboBuffers, vboBuffersNormals, vboBuffersTexCoords, iboBuffers, config.group, true);
 
     unsigned char res[4];
     GLint viewport[4];
@@ -270,7 +290,10 @@ unsigned char picking(int x, int y)
 
     if (config.scene.lighting)
         glEnable(GL_LIGHTING);
-    // glEnable(GL_TEXTURE_2D);
+
+    // TODO: Switch with menu
+    glEnable(GL_TEXTURE_2D);
+
     glDepthFunc(GL_LESS);
 
     return res[0];
@@ -492,6 +515,43 @@ void keyboardFunc(unsigned char key, int x, int y)
     }
 }
 
+int loadTexture(std::string s) {
+
+	unsigned int t,tw,th;
+	unsigned char *texData;
+	unsigned int texID;
+
+
+    ilInit();
+	ilEnable(IL_ORIGIN_SET);
+	ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
+	ilGenImages(1,&t);
+	ilBindImage(t);
+	ilLoadImage((ILstring)s.c_str());
+	tw = ilGetInteger(IL_IMAGE_WIDTH);
+	th = ilGetInteger(IL_IMAGE_HEIGHT);
+	ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+	texData = ilGetData();
+
+	glGenTextures(1,&texID);
+	
+	glBindTexture(GL_TEXTURE_2D,texID);
+	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_WRAP_S,		GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_WRAP_T,		GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_MAG_FILTER,   	GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,	GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+    printf("[DEBUG] %x", ilGetError());
+
+	return texID;
+}
+
 void initializeGLUTPreWindow(int argc, char** argv)
 {
     glutInit(&argc, argv);
@@ -531,6 +591,10 @@ void initializeOpenGLContext()
     float black[4] = { 0.1f, 0.1f, 0.1f, 0.0f };
     // controls global ambient light
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, black);
+
+    glEnable(GL_TEXTURE_2D);
+
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 int main(int argc, char** argv)
@@ -559,6 +623,9 @@ int main(int argc, char** argv)
 
     // setup callbacks
     setupCallbacks();
+
+    texIDSphere = loadTexture("earth.jpg");
+    printf("texIDSphere = %d\n\n\n", texIDSphere);
 
     // enter the GLUT main loop
     lastRealTime = glutGet(GLUT_ELAPSED_TIME);

@@ -31,23 +31,5 @@
                 </model>
             </models>
         </group>
-        <group name="Jupiter" clickableInfo="../../group_info/jupiter.txt">
-            <transform>
-                <rotate time="5.404521826503311" x="0" y="1" z="0"/>
-                <translate x="45" y="0" z="0"/>
-                <scale x="1.3" y="1.3" z="1.3"/>
-            </transform>
-            <models>
-                <model file="../../objects/plane.3d">
-                    <color>
-                        <diffuse R="200" G="50" B="50" />
-                        <ambient R="50" G="50" B="50" />
-                        <specular R="200" G="200" B="200" />
-                        <emissive R="0" G="0" B="0" />
-                        <shininess value="128" />
-                    </color>
-                </model>
-            </models>
-        </group>
     </group>
 </world>

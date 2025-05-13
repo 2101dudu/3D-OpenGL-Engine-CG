@@ -13,7 +13,8 @@ void FileWriter::writeToFile(const std::string& fileName, const PointsGenerator&
     file << generator.getPoints().size() << "\n";
     for (const auto& p : generator.getPoints()) {
         file << p.x << " " << p.y << " " << p.z
-             << " " << p.nx << " " << p.ny << " " << p.nz << "\n";
+             << " " << p.nx << " " << p.ny << " " << p.nz
+                << " " << p.tx << " " << p.ty << "\n";
     }
 
     // Write associations (triangles)

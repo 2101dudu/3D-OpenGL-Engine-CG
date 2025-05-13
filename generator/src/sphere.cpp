@@ -27,7 +27,13 @@ void Sphere::createSphere(int radius, int slices, int stacks, const std::string&
             float ny = y /= radius;
             float nz = z /= radius;
 
-            pointGen.addPoint(x, y, z, nx, ny, nz);
+            // Texture Coordinates
+            printf("[DEBUG] i = %d : slices = %d", i, (slices - 1));
+
+            float u = static_cast<float>(i) / (slices - 1);
+            float v = static_cast<float>(j) / stacks;
+
+            pointGen.addPoint(x, y, z, nx, ny, nz, u, v);
 
             int currPointIndex = (stacks + 1) * i + j + 1;
 
