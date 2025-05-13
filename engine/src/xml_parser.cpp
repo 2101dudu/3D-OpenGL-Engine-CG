@@ -187,7 +187,7 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
 
                 if (!inserted) {
                     Model* otherModel = filesModels[fileName];
-                    if (!(modelConfig->modelCore == otherModel->modelCore && modelConfig->material == otherModel->material && modelConfig->textureFilePath == otherModel->textureFilePath)) {
+                    if (!(*(modelConfig->modelCore) == *(otherModel->modelCore) && modelConfig->material == otherModel->material && ((modelConfig->textureFilePath.empty() || otherModel->textureFilePath.empty()) || modelConfig->textureFilePath == otherModel->textureFilePath))) {
                         fileName += "_alt";
                         int counter = 1;
                         while (filesModels.count(fileName)) {
