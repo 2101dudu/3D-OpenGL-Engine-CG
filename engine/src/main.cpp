@@ -295,9 +295,8 @@ unsigned char picking(int x, int y)
 {
     if (config.scene.lighting)
         glDisable(GL_LIGHTING);
-
-    // TODO: Switch with menu
-    glDisable(GL_TEXTURE_2D);
+    if (config.scene.textures)
+        glDisable(GL_TEXTURE_2D);
 
     // set background color to black to differenciate values > 0
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -325,9 +324,8 @@ unsigned char picking(int x, int y)
 
     if (config.scene.lighting)
         glEnable(GL_LIGHTING);
-
-    // TODO: Switch with menu
-    glEnable(GL_TEXTURE_2D);
+    if (config.scene.textures)
+        glEnable(GL_TEXTURE_2D);
 
     glDepthFunc(GL_LESS);
 

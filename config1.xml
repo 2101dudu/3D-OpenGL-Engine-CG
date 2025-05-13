@@ -41,7 +41,7 @@
                         <ambient R="50" G="50" B="80" />
                         <specular R="200" G="200" B="200" />
                         <emissive R="0" G="0" B="0" />
-                        <shininess value="128" />
+                        <shininess value="20" />
                     </color>
                 </model>
             </models>
