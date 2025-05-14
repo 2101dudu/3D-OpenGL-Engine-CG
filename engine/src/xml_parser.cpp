@@ -179,25 +179,48 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
                     }
                 }
 
-                bool inserted = false;
-                if (!filesModels.count(fileName)) {
-                    filesModels[fileName] = modelConfig;
-                    inserted = true;
-                }
+                const std::string baseKey = fileName;
+                std::string chosenKey;
 
-                if (!inserted) {
-                    Model* otherModel = filesModels[fileName];
-                    if (!(*(modelConfig->modelCore) == *(otherModel->modelCore) && modelConfig->material == otherModel->material && ((modelConfig->textureFilePath.empty() || otherModel->textureFilePath.empty()) || modelConfig->textureFilePath == otherModel->textureFilePath))) {
-                        fileName += "_alt";
-                        int counter = 1;
-                        while (filesModels.count(fileName)) {
-                            fileName += std::to_string(counter++);
+                // if there's no previous entry (e.g., "sphere.3d"), just insert it immediately
+                auto it0 = filesModels.find(baseKey);
+                if (it0 == filesModels.end()) {
+                    chosenKey = baseKey;
+                    filesModels[chosenKey] = modelConfig;
+                } else {
+                    // there's at least one entry whose key starts with "sphere.3d" (either exactly "sphere.3d" or "sphere.3d_alt",
+                    // "sphere.3d_alt1", ...). scan them all to see if one matches the new modelConfig exactly
+                    bool foundEqual = false;
+                    for (auto const& [key, otherModel] : filesModels) {
+                        // key.starts_with(baseKey+"_alt")
+                        if (key == baseKey || (key.rfind(baseKey + "_alt", 0) == 0)) {
+                            bool sameCore = *(modelConfig->modelCore) == *otherModel->modelCore;
+                            bool sameMat = modelConfig->material == otherModel->material;
+                            bool sameTexture = modelConfig->textureFilePath == otherModel->textureFilePath;
+
+                            if (sameCore && sameMat && sameTexture) {
+                                // reuse this key
+                                chosenKey = key;
+                                foundEqual = true;
+                                break;
+                            }
                         }
-                        filesModels[fileName] = modelConfig;
+                    }
+
+                    if (!foundEqual) {
+                        // no match found among the existing entries: invent a fresh "_altN"
+                        int counter = 1;
+                        do {
+                            chosenKey = baseKey + "_alt" + std::to_string(counter++);
+                        } while (filesModels.count(chosenKey));
+
+                        filesModels[chosenKey] = modelConfig;
                     }
                 }
 
-                modelConfig->filesModelsKey = fileName;
+                // record which key was used, and push into the group
+
+                modelConfig->filesModelsKey = chosenKey;
                 group.models.push_back(modelConfig);
             }
 
