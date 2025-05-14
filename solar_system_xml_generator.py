@@ -29,6 +29,12 @@ def parse_args():
         default=1000,
         help="Number of asteroids per belt (10–10000)."
     )
+    parser.add_argument(
+        "-f", "--flat-earth",
+        action="store_true",
+        help="Use a flat Earth model instead of a spherical one (because why not)."
+    )
+
     return parser.parse_args()
 
 def human_readable_size(size_bytes):
@@ -358,8 +364,10 @@ def main():
             "translate": {"x": distance, "y": 0, "z": 0},
             "scale": {"x": scale, "y": scale, "z": scale}
         }
+
+        earth_model_file = "../../objects/plane.3d" if planet == "Earth" and args.flat_earth else "../../objects/sphere.3d"
         planet_group = create_group(
-            planet, clickableInfo, transform, "../../objects/sphere.3d", texture=texture)
+            planet, clickableInfo, transform, earth_model_file, texture=texture)
         # Adds moons randomly
         for i in range(moons_per_planet[planet]):
             if planet == "Earth":
