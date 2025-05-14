@@ -479,6 +479,13 @@ void keyboardFunc(unsigned char key, int x, int y)
     ImGui_ImplGLUT_KeyboardFunc(key, x, y);
 
     if (!io.WantCaptureKeyboard) {
+        if (key >= 49 && key <= 57) { // 1 trough 9
+            uint8_t picked = key - 48; // normalize
+            GroupConfig* g = config.clickableGroups[picked];
+            config.camera.tracking = g == NULL ? 0 : picked;
+            config.camera.showInfoWindow = g == NULL ? false : true;
+        }
+
         if (key == 82 || key == 114) { // R or r
             resetCamera(&config);
         }
