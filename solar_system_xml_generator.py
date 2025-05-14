@@ -141,6 +141,21 @@ def create_moon(moon_name, model_file, isEarth):
 
     return create_group(moon_name, "", transform, model_file)
 
+def create_skybox_group():
+    skybox_group = ET.Element("group")
+    skybox_group.set("name", "Skybox")
+
+    transform = ET.SubElement(skybox_group, "transform")
+    scale = ET.SubElement(transform, "scale")
+    scale.set("x", "-500.0")
+    scale.set("y", "500.0")
+    scale.set("z", "500.0")
+
+    models = ET.SubElement(skybox_group, "models")
+    models.append(create_model("../../objects/sphere.3d", textures=f"{TEXTURE_XML_PREFIX}/skybox.jpg", color_config=((100, 100, 150), (100, 100, 150), (0, 0, 0), (0, 0, 0), (0))))
+
+    return skybox_group
+
 def create_comet_group():
     comet_group = ET.Element("group")
     comet_group.set("name", "Comet")
@@ -300,6 +315,10 @@ def main():
 
     solar_system = ET.SubElement(world, "group")
     solar_system.set("name", "SolarSystem")
+
+    # skybox
+    skybox = create_skybox_group()
+    solar_system.append(skybox)
 
     # Comet group
     comet = create_comet_group()
