@@ -85,7 +85,7 @@ void drawMenu(WorldConfig* config)
         }
 
         screenshot = false;
-        if (ImGui::Button("Take (S)creenshot")) {
+        if (ImGui::Button("(P)rint screen")) {
             screenshot = true;
         }
 

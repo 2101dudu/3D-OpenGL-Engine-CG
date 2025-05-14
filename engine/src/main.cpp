@@ -556,7 +556,7 @@ void keyboardFunc(unsigned char key, int x, int y)
         if (key == 82 || key == 114) { // R or r
             resetCamera(&config);
         }
-        if (key == 83 || key == 115) { // S or s
+        if (key == 80 || key == 112) { // P or p
             takeScreenshot();
         }
         if (key == 27) { // ESC
