@@ -204,7 +204,7 @@ def add_asteroid_belt(parent, num_asteroids, min_dist, max_dist):
     for i in range(num_asteroids):
         asteroid = ET.Element("group")
         asteroid.set("name", f"Asteroid_{i}")
-        time = random.uniform(0, 50)
+        time = random.uniform(5, 50)
         distance = random.uniform(min_dist, max_dist)
         y_variation = random.uniform(-2, 2)
         transform = ET.Element("transform")
@@ -218,7 +218,7 @@ def add_asteroid_belt(parent, num_asteroids, min_dist, max_dist):
         t.set("y", str(y_variation))
         t.set("z", "0")
         s = ET.SubElement(transform, "scale")
-        scale_val = random.uniform(0.005, 0.02)
+        scale_val = random.uniform(0.001 * time, 0.01 * time)
         s.set("x", str(scale_val))
         s.set("y", str(scale_val))
         s.set("z", str(scale_val))
