@@ -59,6 +59,7 @@ const char* configFilePath;
 bool hotReload = false;
 bool screenshot = false;
 bool drawCatmullRomCurves = false;
+bool spaceToggle = true;
 
 const float dark[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 const float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -529,6 +530,16 @@ void keyboardFunc(unsigned char key, int x, int y)
     ImGui_ImplGLUT_KeyboardFunc(key, x, y);
 
     if (!io.WantCaptureKeyboard) {
+        if (key == 32) { // space
+            spaceToggle = !spaceToggle;
+            config.scene.faceCulling = spaceToggle;
+            config.scene.wireframe = !spaceToggle;
+            config.scene.drawAxis = !spaceToggle;
+            config.scene.drawCatmullRomCurves = !spaceToggle;
+            config.scene.lighting = spaceToggle;
+            config.scene.textures = spaceToggle;
+        }
+
         if (key >= 49 && key <= 57) { // 1 trough 9
             uint8_t picked = key - 48; // normalize
             GroupConfig* g = config.clickableGroups[picked];
