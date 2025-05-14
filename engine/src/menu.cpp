@@ -80,12 +80,12 @@ void drawMenu(WorldConfig* config)
         if (ImGui::SliderFloat("Time scale", &timeFactor, 0.0, 10)) { }
 
         hotReload = false;
-        if (ImGui::Button("Reload config file")) {
+        if (ImGui::Button("Reload (C)onfig file")) {
             hotReload = true;
         }
 
         screenshot = false;
-        if (ImGui::Button("Take screenshot")) {
+        if (ImGui::Button("Take (S)creenshot")) {
             screenshot = true;
         }
 

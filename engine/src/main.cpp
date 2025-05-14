@@ -62,6 +62,7 @@ bool hotReload = false;
 bool screenshot = false;
 bool drawCatmullRomCurves = false;
 bool spaceToggle = true;
+bool showMainMenu = true;
 
 const float dark[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 const float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -321,7 +322,9 @@ void renderScene(void)
 
     drawWithVBOs(vboBuffers, vboBuffersNormals, vboBuffersTexCoords, iboBuffers, config.group, false);
 
-    drawMenu(&config);
+    if (showMainMenu) {
+        drawMenu(&config);
+    }
 
     // update scene options based on the menu
     updateSceneOptions();
@@ -542,9 +545,19 @@ void keyboardFunc(unsigned char key, int x, int y)
             config.camera.tracking = g == NULL ? 0 : picked;
             config.camera.showInfoWindow = g == NULL ? false : true;
         }
-
+        if (key == 67 || key == 99) { // C or c
+            config = loadConfiguration(configFilePath);
+            initializeVBOs();
+        }
+        if (key == 77 || key == 109) { // M or m
+            showMainMenu = !showMainMenu;
+            glutPostRedisplay();
+        }
         if (key == 82 || key == 114) { // R or r
             resetCamera(&config);
+        }
+        if (key == 83 || key == 115) { // S or s
+            takeScreenshot();
         }
         if (key == 27) { // ESC
             switchCameraMode(&config);
