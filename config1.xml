@@ -13,17 +13,17 @@
     <group name="LightningTest">
         <group name="Sun" clickableInfo="../../group_info/sun.txt">
             <transform>
-                <scale x="3" y="3" z="3"/>
+                <scale x="-300" y="300" z="300"/>
             </transform>
             <models>
                 <model file="../../objects/sphere.3d">
-                    <texture file="../../textures/sun.jpg" />
+                    <texture file="../../textures/skybox.jpg" />
                     <color>
                         <diffuse R="200" G="200" B="200" />
                         <ambient R="200" G="200" B="200" />
                         <specular R="200" G="200" B="200" />
                         <emissive R="200" G="200" B="200" />
-                        <shininess value="128" />
+                        <shininess value="0" />
                     </color>
                 </model>
             </models>
@@ -35,7 +35,7 @@
             </transform>
             <models>
                 <model file="../../objects/sphere.3d">
-                    <texture file="../../textures/earth.jpg" />
+                    <texture file="../../textures/skybox.jpg" />
                     <color>
                         <diffuse R="200" G="200" B="200" />
                         <ambient R="50" G="50" B="80" />
