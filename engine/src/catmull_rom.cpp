@@ -126,7 +126,6 @@ float* getRotMatrix(float* forward)
 {
     normalize(forward);
 
-    // TODO: review the right-hand notation on these vectors
     float right[3];
     cross(forward, up, right);
     normalize(right);
