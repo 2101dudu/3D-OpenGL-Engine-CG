@@ -191,7 +191,9 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
                     // there's at least one entry whose key starts with "sphere.3d" (either exactly "sphere.3d" or "sphere.3d_alt",
                     // "sphere.3d_alt1", ...). scan them all to see if one matches the new modelConfig exactly
                     bool foundEqual = false;
-                    for (auto const& [key, otherModel] : filesModels) {
+                    for (auto const& entry : filesModels) {
+                        const std::string& key = entry.first;
+                        Model* otherModel = entry.second;
                         // key.starts_with(baseKey+"_alt")
                         if (key == baseKey || (key.rfind(baseKey + "_alt", 0) == 0)) {
                             bool sameCore = *(modelConfig->modelCore) == *otherModel->modelCore;
