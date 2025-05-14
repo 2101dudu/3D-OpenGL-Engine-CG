@@ -607,7 +607,10 @@ int main(int argc, char** argv)
     }
 
     // pre-window initialization: Setup GLUT and load configuration
+    printf("[+] Creating window\n");
     initializeGLUTPreWindow(argc, argv);
+
+    printf("[+] Parsing config file\n");
     configFilePath = argv[1];
     config = loadConfiguration(configFilePath);
 
@@ -618,6 +621,7 @@ int main(int argc, char** argv)
     initializeOpenGLContext();
 
     // initialize VBOs
+    printf("[+] Initializing internal data structures\n");
     initializeVBOs();
 
     // initialize menu
