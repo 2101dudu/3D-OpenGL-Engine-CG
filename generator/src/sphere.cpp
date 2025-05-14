@@ -12,7 +12,7 @@ void Sphere::createSphere(int radius, int slices, int stacks, const std::string&
     // angle per stack
     float beta = M_PI / stacks;
 
-    for (int i = 0; i < slices; i++) {
+    for (int i = 0; i <= slices; i++) {
         float currAlpha = alpha * i;
 
         for (int j = 0; j <= stacks; j++) {
@@ -27,11 +27,15 @@ void Sphere::createSphere(int radius, int slices, int stacks, const std::string&
             float ny = y /= radius;
             float nz = z /= radius;
 
-            pointGen.addPoint(x, y, z, nx, ny, nz);
+            // Texture Coordinates
+            float u = 1 - static_cast<float>(i) / slices;
+            float v = static_cast<float>(j) / stacks;
+
+            pointGen.addPoint(x, y, z, nx, ny, nz, u, v);
 
             int currPointIndex = (stacks + 1) * i + j + 1;
 
-            int neighbourIndex = (currPointIndex + stacks + 1) % ((slices) * (stacks + 1));
+            int neighbourIndex = (currPointIndex + stacks + 1) % ((slices + 1) * (stacks + 1));
 
             // association with polar points
             if (j == 1) {

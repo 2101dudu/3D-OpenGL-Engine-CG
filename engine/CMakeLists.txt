@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(engine)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(
@@ -80,6 +80,19 @@ if(WIN32)
          DESTINATION ${CMAKE_BINARY_DIR})
   endif(EXISTS "${TOOLKITS_FOLDER}/glew/glew32.dll")
 
+  # DevIL
+  if(NOT EXISTS "${TOOLKITS_FOLDER}/devil/IL/il.h"
+     OR NOT EXISTS "${TOOLKITS_FOLDER}/devil/DevIL.lib")
+    message(FATAL_ERROR "DevIL not found!")
+  endif()
+
+  include_directories(${TOOLKITS_FOLDER}/devil)
+  target_link_libraries(${PROJECT_NAME} ${TOOLKITS_FOLDER}/devil/DevIL.lib)
+
+  if(EXISTS "${TOOLKITS_FOLDER}/devil/DevIL.dll")
+    file(COPY ${TOOLKITS_FOLDER}/devil/DevIL.dll DESTINATION ${CMAKE_BINARY_DIR})
+  endif()
+
   set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT
                                                               ${PROJECT_NAME})
 else() # Linux and macOS
@@ -133,6 +146,16 @@ else() # Linux and macOS
     if(NOT GLEW_FOUND)
       message(FATAL_ERROR "GLEW não encontrado!")
     endif()
+
+    find_path(DEVIL_INCLUDE_DIR IL/il.h)
+    find_library(DEVIL_LIBRARY NAMES IL DevIL)
+
+    if(NOT DEVIL_INCLUDE_DIR OR NOT DEVIL_LIBRARY)
+      message(FATAL_ERROR "DevIL not found! Please install it (e.g., sudo apt install libdevil-dev)")
+    endif()
+
+    include_directories(${DEVIL_INCLUDE_DIR})
+    target_link_libraries(${PROJECT_NAME} ${DEVIL_LIBRARY})
 
     target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES}
                           ${FREEGLUT_LIBRARY} GLEW)

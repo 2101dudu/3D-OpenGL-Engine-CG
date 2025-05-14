@@ -118,8 +118,19 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
         while (modelElement) {
             if (modelElement->Attribute("file")) {
                 std::string fileName = modelElement->Attribute("file");
+
+                ModelCore* modelCore = new ModelCore();
+                modelCore->file = fileName;
+
                 Model* modelConfig = new Model();
-                modelConfig->file = fileName;
+                modelConfig->modelCore = modelCore;
+
+                XMLElement* textureElement = modelElement->FirstChildElement("texture");
+                if (textureElement) {
+                    std::string textureFilePath = textureElement->Attribute("file");
+                    modelConfig->textureFilePath = textureFilePath;
+                }
+
                 XMLElement* colorElement = modelElement->FirstChildElement("color");
                 if (colorElement) {
                     XMLElement* diffuse = colorElement->FirstChildElement("diffuse");
@@ -161,18 +172,58 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
 
                     // converts from 0–255 to 0.0–1.0
                     for (int i = 0; i < 3; i++) {
-                        modelConfig->material.diffuse[i]  /= 255.0f;
-                        modelConfig->material.ambient[i]  /= 255.0f;
+                        modelConfig->material.diffuse[i] /= 255.0f;
+                        modelConfig->material.ambient[i] /= 255.0f;
                         modelConfig->material.specular[i] /= 255.0f;
                         modelConfig->material.emissive[i] /= 255.0f;
                     }
                 }
-                group.models.push_back(modelConfig);
 
-                // if there's no entry on the models' map
-                if (!filesModels.count(fileName)) {
-                    filesModels[fileName] = modelConfig;
+                const std::string baseKey = fileName;
+                std::string chosenKey;
+
+                // if there's no previous entry (e.g., "sphere.3d"), just insert it immediately
+                auto it0 = filesModels.find(baseKey);
+                if (it0 == filesModels.end()) {
+                    chosenKey = baseKey;
+                    filesModels[chosenKey] = modelConfig;
+                } else {
+                    // there's at least one entry whose key starts with "sphere.3d" (either exactly "sphere.3d" or "sphere.3d_alt",
+                    // "sphere.3d_alt1", ...). scan them all to see if one matches the new modelConfig exactly
+                    bool foundEqual = false;
+                    for (auto const& entry : filesModels) {
+                        const std::string& key = entry.first;
+                        Model* otherModel = entry.second;
+                        // key.starts_with(baseKey+"_alt")
+                        if (key == baseKey || (key.rfind(baseKey + "_alt", 0) == 0)) {
+                            bool sameCore = *(modelConfig->modelCore) == *otherModel->modelCore;
+                            bool sameMat = modelConfig->material == otherModel->material;
+                            bool sameTexture = modelConfig->textureFilePath == otherModel->textureFilePath;
+
+                            if (sameCore && sameMat && sameTexture) {
+                                // reuse this key
+                                chosenKey = key;
+                                foundEqual = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!foundEqual) {
+                        // no match found among the existing entries: invent a fresh "_altN"
+                        int counter = 1;
+                        do {
+                            chosenKey = baseKey + "_alt" + std::to_string(counter++);
+                        } while (filesModels.count(chosenKey));
+
+                        filesModels[chosenKey] = modelConfig;
+                    }
                 }
+
+                // record which key was used, and push into the group
+
+                modelConfig->filesModelsKey = chosenKey;
+                group.models.push_back(modelConfig);
             }
 
             modelElement = modelElement->NextSiblingElement("model");
@@ -254,15 +305,13 @@ WorldConfig XMLParser::parseXML(const std::string& filename)
                 lightEl->QueryFloatAttribute("posY", &light.position[1]);
                 lightEl->QueryFloatAttribute("posZ", &light.position[2]);
                 light.position[3] = 1.0f;
-            }
-            else if (strcmp(type, "directional") == 0) {
+            } else if (strcmp(type, "directional") == 0) {
                 light.type = LightType::DIRECTIONAL;
                 lightEl->QueryFloatAttribute("dirX", &light.position[0]);
                 lightEl->QueryFloatAttribute("dirY", &light.position[1]);
                 lightEl->QueryFloatAttribute("dirZ", &light.position[2]);
                 light.position[3] = 0.0f;
-            }
-            else if (strcmp(type, "spotlight") == 0) {
+            } else if (strcmp(type, "spotlight") == 0) {
                 light.type = LightType::SPOTLIGHT;
                 lightEl->QueryFloatAttribute("posX", &light.position[0]);
                 lightEl->QueryFloatAttribute("posY", &light.position[1]);

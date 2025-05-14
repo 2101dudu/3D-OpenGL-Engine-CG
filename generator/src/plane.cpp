@@ -17,7 +17,7 @@ void Plane::createPlane(int dimension, int divPerEdge, const std::string& filena
             const float x = maxWidth - static_cast<float>(dimension) * static_cast<float>(i) / static_cast<float>(divPerEdge);
             const float y = 0.0f;
             const float z = maxWidth - static_cast<float>(dimension) * static_cast<float>(j) / static_cast<float>(divPerEdge);
-            pointGen.addPoint(x, y, z, 0.0f, 1.0f, 0.0f);
+            pointGen.addPoint(x, y, z, 0.0f, 1.0f, 0.0f, static_cast<float>(i) / (pointsPerEdge - 1), static_cast<float>(j) / (pointsPerEdge - 1));
 
             int currPointIndex = pointsPerEdge * i + (j + 1);
 

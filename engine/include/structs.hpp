@@ -2,6 +2,7 @@
 #define STRUCTS_HPP
 
 #include "imgui.h"
+#include <cstring>
 #include <map>
 #include <string>
 #include <vector>
@@ -67,16 +68,44 @@ struct Material {
     float specular[4];
     float emissive[4];
     float shininess;
+
+    bool operator==(Material const& o) const
+    {
+        return std::memcmp(diffuse, o.diffuse, sizeof(diffuse)) == 0
+            && std::memcmp(ambient, o.ambient, sizeof(ambient)) == 0
+            && std::memcmp(specular, o.specular, sizeof(specular)) == 0
+            && std::memcmp(emissive, o.emissive, sizeof(emissive)) == 0
+            && shininess == o.shininess;
+    }
 };
 
-struct Model {
+struct ModelCore {
     std::string file;
     int vboIndex = 0; // VBO id
     int iboIndex = 0; // IBO id
     size_t vertexCount = 0; // VBO vertice count
     size_t indexCount = 0; // IBO number count (3 × #triangles)
     size_t triangleCount = 0; // purely for stats
+
+    bool operator==(const ModelCore& o) const
+    {
+        return file == o.file;
+    }
+};
+
+struct Model {
+    ModelCore* modelCore;
     Material material;
+    std::string textureFilePath;
+    int texIndex = 0; // texture id
+    std::string filesModelsKey;
+
+    bool operator==(const Model& o) const
+    {
+        return modelCore == o.modelCore
+            && material == o.material
+            && textureFilePath == o.textureFilePath;
+    }
 };
 
 struct GroupConfig {
@@ -96,17 +125,20 @@ struct GroupConfig {
 struct SceneConfig {
     bool faceCulling = true;
     bool wireframe = false;
-    bool drawAxis = true;
+    bool drawAxis = false;
     bool drawCatmullRomCurves = false;
     bool lighting = true;
-    ImVec4 bgColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f); // off-black color
+    bool textures = true;
+    ImVec4 bgColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 };
 
 struct Stats {
     int64_t numTriangles = 0;
 };
 
-enum class LightType { POINT, DIRECTIONAL, SPOTLIGHT };
+enum class LightType { POINT,
+    DIRECTIONAL,
+    SPOTLIGHT };
 
 struct LightConfig {
     LightType type;

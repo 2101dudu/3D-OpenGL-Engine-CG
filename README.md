@@ -156,8 +156,17 @@ The generator accepts command-line parameters for the primitive type, its parame
   ```
   ./generator torus 3 1 10 10 torus.3d
   ```
+- Bezier:
+  ```
+  ./generator patch ../../patch/comet.patch 20 patch.3d
+  ```
 
 ### Running the Engine
+
+To use the pre-build solar system, run the following command:
+```
+python3 solar_system_xml_generator.py [-h] [-c [1–100]] [-a [10–10000]]
+```
 
 After generating or obtaining the necessary model files, run the engine by specifying the XML configuration file:
 `./engine <path_to_config.xml>`

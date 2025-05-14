@@ -5,7 +5,7 @@
 void resetCamera(WorldConfig* config)
 {
     // cartesian
-    config->camera.tracking = 1;
+    config->camera.tracking = 0;
     config->camera.lookAt = { 0, 0, 0 };
     config->camera.up = { 0, 1, 0 };
     float zoomInCartesian = 50;

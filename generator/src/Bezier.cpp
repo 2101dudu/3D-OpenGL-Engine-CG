@@ -179,7 +179,7 @@ void Bezier::createBezierModel(const std::string& patchFile,
                 Vec3 du = evalDu(patchCP, fu, fv);
                 Vec3 dv = evalDv(patchCP, fu, fv);
                 Vec3 n = normalize(cross(du, dv));
-                generator.addPoint(pt.x, pt.y, pt.z, n.x, n.y, n.z);
+                generator.addPoint(pt.x, pt.y, pt.z, n.x, n.y, n.z, 0, 0);
 
                 int pointIndex = generator.getPoints().size();
                 idx[i][j] = pointIndex;

@@ -147,6 +147,7 @@ void applyTransformations(const std::vector<Transform>& transforms)
 
 void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
     const std::vector<GLuint>& vboBuffersNormals,
+    const std::vector<GLuint>& vboBuffersTexCoords,
     const std::vector<GLuint>& iboBuffers,
     GroupConfig& group,
     bool depthOnly)
@@ -169,15 +170,19 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
 
     for (const auto& model : group.models) {
         // VBO
-        glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[model->vboIndex]);
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[model->modelCore->vboIndex]);
         glVertexPointer(3, GL_FLOAT, 0, 0);
 
         glEnableClientState(GL_NORMAL_ARRAY);
-        glBindBuffer(GL_ARRAY_BUFFER, vboBuffersNormals[model->vboIndex]);
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffersNormals[model->modelCore->vboIndex]);
         glNormalPointer(GL_FLOAT, 0, 0);
 
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffersTexCoords[model->modelCore->vboIndex]);
+        glTexCoordPointer(2, GL_FLOAT, 0, 0);
+
         // IBO
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[model->iboIndex]);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboBuffers[model->modelCore->iboIndex]);
 
         // Set material properties
         if (!depthOnly && config.scene.lighting) {
@@ -188,10 +193,18 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
             glMaterialf(GL_FRONT, GL_SHININESS, model->material.shininess);
         }
 
+        if (config.scene.textures) {
+            glBindTexture(GL_TEXTURE_2D, model->texIndex);
+        }
+
         glDrawElements(GL_TRIANGLES,
-            model->indexCount,
+            model->modelCore->indexCount,
             GL_UNSIGNED_INT,
             0);
+
+        if (config.scene.textures) {
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
 
         // Optional: turns off ELEMENT_ARRAY
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -200,7 +213,7 @@ void drawWithVBOs(const std::vector<GLuint>& vboBuffers,
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     for (auto& child : group.children) {
-        drawWithVBOs(vboBuffers, vboBuffersNormals, iboBuffers, *child, depthOnly);
+        drawWithVBOs(vboBuffers, vboBuffersNormals, vboBuffersTexCoords, iboBuffers, *child, depthOnly);
     }
 
     glPopMatrix();

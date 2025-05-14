@@ -11,6 +11,7 @@ struct Association {
 struct ModelInfo {
     std::vector<float> points;
     std::vector<float> normals;
+    std::vector<float> texCoords;
     std::vector<unsigned int> indices;
     int64_t numTriangles;
 };

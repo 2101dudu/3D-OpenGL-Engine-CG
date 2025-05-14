@@ -6,6 +6,7 @@
 struct Point {
     float x, y, z;
     float nx, ny, nz;
+    float tx, ty;
 };
 
 struct Association {
@@ -14,7 +15,7 @@ struct Association {
 
 class PointsGenerator {
 public:
-    void addPoint(float x, float y, float z, float nx, float ny, float nz);
+    void addPoint(float x, float y, float z, float nx, float ny, float nz, float tx, float ty);
     void addAssociation(int p1, int p2, int p3);
 
     const std::vector<Point>& getPoints() const { return points; }

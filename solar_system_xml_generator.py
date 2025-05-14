@@ -1,6 +1,74 @@
+import os
+import sys
+import argparse
+import random
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom
-import random
+
+
+try:
+    from PIL import Image
+except ImportError:
+    print("[-] Error: Pillow is required for compression. Install with `pip install pillow`.", file=sys.stderr)
+    sys.exit(1)
+
+TEXTURE_XML_PREFIX = "../../textures"  # base path in the XML files
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Generate solar-system XML, optionally compressing textures first."
+    )
+    parser.add_argument(
+        "-c", "--compress",
+        type=int, choices=range(1, 101), metavar="[1–100]",
+        help="JPEG quality level for textures (1=worst,100=best)."
+    )
+    parser.add_argument(
+        "-a", "--asteroids",
+        type=int, choices=range(10, 10001), metavar="[10–10000]",
+        default=1000,
+        help="Number of asteroids per belt (10–10000)."
+    )
+    parser.add_argument(
+        "-f", "--flat-earth",
+        action="store_true",
+        help="Use a flat Earth model instead of a spherical one (because why not)."
+    )
+
+    return parser.parse_args()
+
+def human_readable_size(size_bytes):
+    for unit in ('B','KB','MB','GB','TB'):
+        if size_bytes < 1024:
+            return f"{size_bytes:.2f} {unit}"
+        size_bytes /= 1024
+    return f"{size_bytes:.2f} PB"
+
+def compress_textures(textures_dir, quality):
+    subdir_name = f"compressed_{quality}"
+    out_dir = os.path.join(textures_dir, subdir_name)
+    os.makedirs(out_dir, exist_ok=True)
+
+    total_before = 0
+    total_after = 0
+
+    for filename in os.listdir(textures_dir):
+        if not filename.lower().endswith(".jpg"):
+            continue
+        src = os.path.join(textures_dir, filename)
+        dst = os.path.join(out_dir, filename)
+        total_before += os.path.getsize(src)
+        try:
+            with Image.open(src) as img:
+                img.save(dst, format="JPEG", quality=quality, optimize=True)
+        except Exception as e:
+            print(f"[-] Failed to compress {src}: {e}", file=sys.stderr)
+            sys.exit(1)
+        total_after += os.path.getsize(dst)
+
+    saved = total_before - total_after
+    print(f"[+] Compressed textures to '{out_dir}'. Saved {human_readable_size(saved)} (from {human_readable_size(total_before)} to {human_readable_size(total_after)}).")
+    return subdir_name
 
 
 def create_transform(rotate, translate, scale):
@@ -24,17 +92,29 @@ def create_transform(rotate, translate, scale):
     return transform
 
 
-def create_model(file, add_color=True):
+def create_model(file, textures=None, add_color=True, color_config=None):
     model = ET.Element("model")
     model.set("file", file)
 
+    create_texture_element(model, texture_file_path=textures)
+
     if add_color:
-        create_color_element(model)
+        create_color_element(model, colors=color_config)
     
     return model
 
 
-def create_group(name, clickableInfo, transform_data, model_file):
+def create_texture_element(model_elem, texture_file_path=None):
+    texture_elem = ET.SubElement(model_elem, "texture")
+
+    if texture_file_path:
+        fname = os.path.basename(texture_file_path)
+    else:
+        fname = "moon_low_res.jpg" 
+
+    texture_elem.set("file", f"{TEXTURE_XML_PREFIX}/{fname}")
+
+def create_group(name, clickableInfo, transform_data, model_file, color=None, texture=None):
     group = ET.Element("group")
     group.set("name", name)
 
@@ -46,7 +126,7 @@ def create_group(name, clickableInfo, transform_data, model_file):
                                  transform_data.get("scale"))
     group.append(transform)
     models = ET.SubElement(group, "models")
-    models.append(create_model(model_file))
+    models.append(create_model(model_file, textures=texture, color_config=color))
     return group
 
 
@@ -63,9 +143,24 @@ def create_moon(moon_name, model_file, isEarth):
     }
 
     if isEarth:
-        return create_group(moon_name, "../../group_info/earth_moon.txt", transform, model_file)
+        return create_group(moon_name,  "../../group_info/earth_moon.txt", transform, model_file, texture=f"{TEXTURE_XML_PREFIX}/moon.jpg")
 
     return create_group(moon_name, "", transform, model_file)
+
+def create_skybox_group():
+    skybox_group = ET.Element("group")
+    skybox_group.set("name", "Skybox")
+
+    transform = ET.SubElement(skybox_group, "transform")
+    scale = ET.SubElement(transform, "scale")
+    scale.set("x", "-500.0")
+    scale.set("y", "500.0")
+    scale.set("z", "500.0")
+
+    models = ET.SubElement(skybox_group, "models")
+    models.append(create_model("../../objects/sphere.3d", textures=f"{TEXTURE_XML_PREFIX}/skybox.jpg", color_config=((100, 100, 150), (100, 100, 150), (0, 0, 0), (0, 0, 0), (0))))
+
+    return skybox_group
 
 def create_comet_group():
     comet_group = ET.Element("group")
@@ -115,7 +210,7 @@ def add_asteroid_belt(parent, num_asteroids, min_dist, max_dist):
     for i in range(num_asteroids):
         asteroid = ET.Element("group")
         asteroid.set("name", f"Asteroid_{i}")
-        time = random.uniform(0, 50)
+        time = random.uniform(5, 50)
         distance = random.uniform(min_dist, max_dist)
         y_variation = random.uniform(-2, 2)
         transform = ET.Element("transform")
@@ -129,7 +224,7 @@ def add_asteroid_belt(parent, num_asteroids, min_dist, max_dist):
         t.set("y", str(y_variation))
         t.set("z", "0")
         s = ET.SubElement(transform, "scale")
-        scale_val = random.uniform(0.005, 0.02)
+        scale_val = random.uniform(0.001 * time, 0.01 * time)
         s.set("x", str(scale_val))
         s.set("y", str(scale_val))
         s.set("z", str(scale_val))
@@ -145,8 +240,13 @@ def prettify_xml(elem):
     reparsed = minidom.parseString(rough_string)
     return reparsed.toprettyxml(indent="    ")
 
-def create_color_element(model_elem, diffuse=(127,127,127), ambient=(204,204,204), specular=(255,255,255), emissive=(0,0,0), shininess=100):
+
+
+def create_color_element(model_elem, colors=None, diffuse=(200,200,200), ambient=(50,50,70), specular=(255,255,255), emissive=(0,0,0), shininess=20):
     color = ET.SubElement(model_elem, "color")
+
+    if colors is not None:
+        (diffuse, ambient, specular, emissive, shininess) = colors
 
     d = ET.SubElement(color, "diffuse")
     d.set("R", str(diffuse[0]))
@@ -171,7 +271,18 @@ def create_color_element(model_elem, diffuse=(127,127,127), ambient=(204,204,204
     sh = ET.SubElement(color, "shininess")
     sh.set("value", str(shininess))
 
+
 def main():
+    global TEXTURE_XML_PREFIX
+
+    args = parse_args()
+
+    # handle compression, if requested
+    if args.compress:
+        base_textures = os.path.join(os.getcwd(), "textures")
+        subdir = compress_textures(base_textures, args.compress)
+        TEXTURE_XML_PREFIX = f"../../textures/{subdir}"
+
     world = ET.Element("world")
 
     # Window definition
@@ -195,7 +306,7 @@ def main():
     up.set("z", "0")
     projection = ET.SubElement(camera, "projection")
     projection.set("fov", "60")
-    projection.set("near", "0.01")
+    projection.set("near", "0.001")
     projection.set("far", "1000")
 
     # Lights definition
@@ -211,6 +322,10 @@ def main():
     solar_system = ET.SubElement(world, "group")
     solar_system.set("name", "SolarSystem")
 
+    # skybox
+    skybox = create_skybox_group()
+    solar_system.append(skybox)
+
     # Comet group
     comet = create_comet_group()
     solar_system.append(comet)
@@ -218,19 +333,19 @@ def main():
     # Sun (static at the center)
     sun_transform = {"rotate": {"time": 100,
                                 "x": 0, "y": 1, "z": 0}, "translate": None, "scale": {"x": 3, "y": 3, "z": 3}}
-    sun = create_group("Sun", "../../group_info/sun.txt", sun_transform, "../../objects/sphere.3d")
+    sun = create_group("Sun", "../../group_info/sun.txt", sun_transform, "../../objects/sphere.3d", color=((200,200,200), (200,200,200), (200,200,200), (200,200,200), (0)), texture=f"{TEXTURE_XML_PREFIX}/sun.jpg")
     solar_system.append(sun)
 
-    # Planet data: (name, distance, scale)
+    # Planet data: (name, texture, info, distance, scale)
     planet_data = [
-        ("Mercury", "../../group_info/mercury.txt", 10, 0.04),
-        ("Venus", "../../group_info/venus.txt", 15, 0.1),
-        ("Earth", "../../group_info/earth.txt", 20, 0.11),
-        ("Mars", "../../group_info/mars.txt", 27, 0.06),
-        ("Jupiter", "../../group_info/jupiter.txt", 45, 1.3),
-        ("Saturn", "../../group_info/saturn.txt", 60, 0.7),
-        ("Uranus", "../../group_info/uranus.txt", 75, 0.42),
-        ("Neptune", "../../group_info/neptune.txt", 90, 0.41)
+        ("Mercury", f"{TEXTURE_XML_PREFIX}/mercury.jpg", "../../group_info/mercury.txt", 10, 0.04),
+        ("Venus", f"{TEXTURE_XML_PREFIX}/venus.jpg", "../../group_info/venus.txt", 15, 0.1),
+        ("Earth", f"{TEXTURE_XML_PREFIX}/earth.jpg", "../../group_info/earth.txt", 20, 0.11),
+        ("Mars", f"{TEXTURE_XML_PREFIX}/mars.jpg", "../../group_info/mars.txt", 27, 0.06),
+        ("Jupiter",f"{TEXTURE_XML_PREFIX}/jupiter.jpg", "../../group_info/jupiter.txt", 45, 1.3),
+        ("Saturn", f"{TEXTURE_XML_PREFIX}/saturn.jpg", "../../group_info/saturn.txt", 60, 0.7),
+        ("Uranus",f"{TEXTURE_XML_PREFIX}/uranus.jpg", "../../group_info/uranus.txt", 75, 0.42),
+        ("Neptune", f"{TEXTURE_XML_PREFIX}/neptune.jpg", "../../group_info/neptune.txt", 90, 0.41)
     ]
 
     # Number of moons for each planet
@@ -241,7 +356,7 @@ def main():
         "Uranus": 3, "Neptune": 2
     }
 
-    for planet, clickableInfo, distance, scale in planet_data:
+    for planet, texture, clickableInfo, distance, scale in planet_data:
         # Orbital distribution: uses a random time per full rotation
         time = random.uniform(10, 50)
         transform = {
@@ -249,8 +364,10 @@ def main():
             "translate": {"x": distance, "y": 0, "z": 0},
             "scale": {"x": scale, "y": scale, "z": scale}
         }
+
+        earth_model_file = "../../objects/plane.3d" if planet == "Earth" and args.flat_earth else "../../objects/sphere.3d"
         planet_group = create_group(
-            planet, clickableInfo, transform, "../../objects/sphere.3d")
+            planet, clickableInfo, transform, earth_model_file, texture=texture)
         # Adds moons randomly
         for i in range(moons_per_planet[planet]):
             if planet == "Earth":
@@ -263,10 +380,10 @@ def main():
         solar_system.append(planet_group)
 
     # Inner asteroid belt (farther from Mars to avoid overlap)
-    add_asteroid_belt(solar_system, num_asteroids=1000,
+    add_asteroid_belt(solar_system, num_asteroids=args.asteroids,
                       min_dist=32, max_dist=38)
     # Outer asteroid belt (closer to the Sun)
-    add_asteroid_belt(solar_system, num_asteroids=1000,
+    add_asteroid_belt(solar_system, num_asteroids=args.asteroids,
                       min_dist=120, max_dist=140)
 
     # Finds the Saturn group and inserts the ring as a subgroup right after its creation
@@ -286,7 +403,7 @@ def main():
             s.set("z", "0.7")
             ring_group.append(ring_transform)
             ring_models = ET.SubElement(ring_group, "models")
-            ring_models.append(create_model("../../objects/torus.3d"))
+            ring_models.append(create_model("../../objects/torus.3d", textures=f"{TEXTURE_XML_PREFIX}/ring.jpg"))
             group.append(ring_group)
             break
 
@@ -294,7 +411,7 @@ def main():
     with open("config.xml", "w", encoding="utf-8") as f:
         f.write(pretty_xml)
 
-    print("Solar system XML successfully generated in 'config.xml'!")
+    print("[+] Solar system XML successfully generated in 'config.xml'!")
 
 
 if __name__ == "__main__":

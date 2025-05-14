@@ -21,7 +21,7 @@ void Cone::createCone(float radius, float height, int slices, int stacks, const 
             float z = currentRadius * sin(angle);
 
             if (i == -1) {
-                generator.addPoint(x, 0, z, 0, -1, 0);
+                generator.addPoint(x, 0, z, 0, -1, 0, 0, 0);
                 offset++;
                 continue;
             }
@@ -31,7 +31,7 @@ void Cone::createCone(float radius, float height, int slices, int stacks, const 
             float n2 = radius / slantLength;
             float n3 = sin(angle) * height / slantLength;
 
-            generator.addPoint(x, y, z, n1, n2, n3);
+            generator.addPoint(x, y, z, n1, n2, n3, 0, 0);
 
             int currPointIndex = i * slices + (j + 1) + offset;
             int neighbourPointIndex = (currPointIndex + 1) % (slices * (i + 1) + 1 + offset);
@@ -51,7 +51,7 @@ void Cone::createCone(float radius, float height, int slices, int stacks, const 
         }
     }
 
-    generator.addPoint(0, 0, 0, 0, -1, 0);
+    generator.addPoint(0, 0, 0, 0, -1, 0, 0, 0);
     int baseCenterIndex = generator.getPoints().size();
 
     // if we have 9 slices, i.e., 9 points, we need to
