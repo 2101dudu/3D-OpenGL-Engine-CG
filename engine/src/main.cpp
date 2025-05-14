@@ -100,7 +100,7 @@ int loadTexture(std::string s)
 
     ILenum err = ilGetError();
     if (err != IL_NO_ERROR) {
-        printf("[DEBUG] 0x%X\n", err);
+        printf("[ERROR] 0x%X while ", err);
     }
 
     return texID;
@@ -141,10 +141,13 @@ void bindPointsToBuffers()
             mi.indices.data(),
             GL_STATIC_DRAW);
 
-        int texIndex = loadTexture(model->textureFilePath);
+        if (!model->textureFilePath.empty()) {
+            int texIndex = loadTexture(model->textureFilePath);
+            printf("loading: %s\n", model->textureFilePath.c_str());
 
-        // Stores in Model
-        model->texIndex = texIndex;
+            // Stores in Model
+            model->texIndex = texIndex;
+        }
 
         // Stores in ModelCore
         model->modelCore->vboIndex = count;
