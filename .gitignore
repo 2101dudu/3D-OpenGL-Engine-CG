@@ -17,3 +17,4 @@ cmake-build-debug/
 objects/*
 .DS_STORE
 .vscode/
+textures/compressed*
