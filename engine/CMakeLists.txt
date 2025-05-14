@@ -21,7 +21,7 @@ add_executable(
   src/imgui/imgui_widgets.cpp
   src/imgui/imgui_draw.cpp)
 
-target_include_directories(${PROJECT_NAME} PRIVATE include include/imgui)
+target_include_directories(${PROJECT_NAME} PRIVATE include include/imgui include/stb)
 
 find_package(OpenGL REQUIRED)
 include_directories(${OpenGL_INCLUDE_DIRS})

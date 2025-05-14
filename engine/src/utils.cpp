@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <sstream>
 
 bool endsWith(const std::string& str, const std::string& suffix)
 {
@@ -130,68 +131,114 @@ ModelInfo parseFile(const std::string& filename)
             rawIndices[i] = associations[i] - 1;
         }
 
-    } else if (endsWith(filename, ".obj")) {
-        std::string line;
-        std::vector<unsigned int> associations;
-        while (std::getline(file, line)) {
-            if (startsWith(line, "v ")) {
-                float x, y, z;
-                sscanf(line.c_str(), "v %f %f %f", &x, &y, &z);
-                rawPoints.push_back(x);
-                rawPoints.push_back(y);
-                rawPoints.push_back(z);
-            } else if (startsWith(line, "f ")) {
-                int a, b, c;
-                sscanf(line.c_str(), "f %d/%*d/%*d %d/%*d/%*d %d/%*d/%*d", &a, &b, &c);
-                associations.push_back(a - 1);
-                associations.push_back(b - 1);
-                associations.push_back(c - 1);
+        std::vector<float> uniquePoints;
+        std::vector<unsigned int> newIndices;
+        std::unordered_map<Vertex, int, VertexHash> indexMap;
+
+        for (unsigned int idx : rawIndices) {
+            Vec3 pos { rawPoints[3 * idx], rawPoints[3 * idx + 1], rawPoints[3 * idx + 2] };
+            Vec3 norm { rawNormals[3 * idx], rawNormals[3 * idx + 1], rawNormals[3 * idx + 2] };
+            Vec2 texCoord { rawTexCoords[2 * idx], rawTexCoords[2 * idx + 1] };
+            Vertex v { pos, norm, texCoord };
+
+            auto it = indexMap.find(v);
+            if (it == indexMap.end()) {
+                int newIdx = static_cast<int>(uniquePoints.size() / 3);
+                uniquePoints.push_back(pos.x);
+                uniquePoints.push_back(pos.y);
+                uniquePoints.push_back(pos.z);
+                modelInfo.normals.push_back(norm.x);
+                modelInfo.normals.push_back(norm.y);
+                modelInfo.normals.push_back(norm.z);
+                modelInfo.texCoords.push_back(texCoord.x);
+                modelInfo.texCoords.push_back(texCoord.y);
+                indexMap[v] = newIdx;
+                newIndices.push_back(newIdx);
+            } else {
+                newIndices.push_back(it->second);
             }
         }
-        numTriangles = associations.size() / 3;
-        rawIndices = std::move(associations);
+
+        if (rawPoints.size() > uniquePoints.size()) {
+            printf("Condensed %s from %zu raw floats to %zu unique floats\n", filename.c_str(), rawPoints.size(), uniquePoints.size());
+        }
+
+        modelInfo.points = std::move(uniquePoints);
+        modelInfo.indices = std::move(newIndices);
     }
 
-    file.close();
+    else if (endsWith(filename, ".obj")) {
+        std::string line;
+        std::vector<Vec3> tempPositions;
+        std::vector<Vec3> tempNormals;
+        std::vector<Vec2> tempTexCoords;
 
-    // Deduplicate vertices within tolerance and rebuild indices
-    std::vector<float> uniquePoints;
-    std::vector<unsigned int> newIndices;
-    uniquePoints.reserve(rawPoints.size());
-    newIndices.reserve(rawIndices.size());
+        struct ObjIndex {
+            int posIdx = 0;
+            int texIdx = 0;
+            int normIdx = 0;
+        };
 
-    std::unordered_map<Vertex, int, VertexHash> indexMap;
+        std::vector<ObjIndex> objIndices;
 
-    for (unsigned int idx : rawIndices) {
-        Vec3 pos { rawPoints[3 * idx], rawPoints[3 * idx + 1], rawPoints[3 * idx + 2] };
-        Vec3 norm { rawNormals[3 * idx], rawNormals[3 * idx + 1], rawNormals[3 * idx + 2] };
-        Vec2 texCoord { rawTexCoords[2 * idx], rawTexCoords[2 * idx + 1] };
-        Vertex v { pos, norm, texCoord };
+        while (std::getline(file, line)) {
+            std::istringstream iss(line);
+            std::string prefix;
+            iss >> prefix;
 
-        auto it = indexMap.find(v);
-        if (it == indexMap.end()) {
-            int newIdx = static_cast<int>(uniquePoints.size() / 3);
-            uniquePoints.push_back(pos.x);
-            uniquePoints.push_back(pos.y);
-            uniquePoints.push_back(pos.z);
+            if (prefix == "v") {
+                float x, y, z;
+                iss >> x >> y >> z;
+                tempPositions.push_back({x, y, z});
+            } else if (prefix == "vt") {
+                float u, v;
+                iss >> u >> v;
+                tempTexCoords.push_back({u, v});
+            } else if (prefix == "vn") {
+                float nx, ny, nz;
+                iss >> nx >> ny >> nz;
+                tempNormals.push_back({nx, ny, nz});
+            } else if (prefix == "f") {
+                std::string vStr;
+                for (int i = 0; i < 3; ++i) {
+                    ObjIndex idx;
+                    iss >> vStr;
+                    size_t p1 = vStr.find('/');
+                    size_t p2 = vStr.find('/', p1 + 1);
+
+                    idx.posIdx = std::stoi(vStr.substr(0, p1)) - 1;
+                    if (p1 != std::string::npos && p2 != std::string::npos && p2 > p1 + 1)
+                        idx.texIdx = std::stoi(vStr.substr(p1 + 1, p2 - p1 - 1)) - 1;
+                    if (p2 != std::string::npos)
+                        idx.normIdx = std::stoi(vStr.substr(p2 + 1)) - 1;
+
+                    objIndices.push_back(idx);
+                }
+            }
+        }
+
+        for (const ObjIndex& idx : objIndices) {
+            Vec3 pos = tempPositions[idx.posIdx];
+            Vec2 tex = (idx.texIdx >= 0 && idx.texIdx < (int)tempTexCoords.size()) ? tempTexCoords[idx.texIdx] : Vec2{0.0f, 0.0f};
+            Vec3 norm = (idx.normIdx >= 0 && idx.normIdx < (int)tempNormals.size()) ? tempNormals[idx.normIdx] : Vec3{0.0f, 0.0f, 0.0f};
+
+            modelInfo.points.push_back(pos.x);
+            modelInfo.points.push_back(pos.y);
+            modelInfo.points.push_back(pos.z);
+
+            modelInfo.texCoords.push_back(tex.x);
+            modelInfo.texCoords.push_back(tex.y);
+
             modelInfo.normals.push_back(norm.x);
             modelInfo.normals.push_back(norm.y);
             modelInfo.normals.push_back(norm.z);
-            modelInfo.texCoords.push_back(texCoord.x);
-            modelInfo.texCoords.push_back(texCoord.y);
-            indexMap[v] = newIdx;
-            newIndices.push_back(newIdx);
-        } else {
-            newIndices.push_back(it->second);
+
+            modelInfo.indices.push_back(static_cast<unsigned int>(modelInfo.indices.size()));
         }
+
+        modelInfo.numTriangles = modelInfo.indices.size() / 3;
     }
 
-    if (rawPoints.size() > uniquePoints.size()) {
-        printf("Condensed %s from %zu raw floats to %zu unique floats\n", filename.c_str(), rawPoints.size(), uniquePoints.size());
-    }
-
-    modelInfo.points = std::move(uniquePoints);
-    modelInfo.indices = std::move(newIndices);
-    modelInfo.numTriangles = modelInfo.indices.size() / 3;
+    file.close();
     return modelInfo;
 }

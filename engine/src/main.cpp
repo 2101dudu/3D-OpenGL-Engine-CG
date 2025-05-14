@@ -1,3 +1,4 @@
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "structs.hpp"
 #define _USE_MATH_DEFINES
 #include "draw.hpp"
@@ -5,6 +6,7 @@
 #include "imgui_impl_glut.h"
 #include "imgui_impl_opengl2.h"
 #include "menu.hpp"
+#include "stb_image_write.h"
 #include "utils.hpp"
 #include "xml_parser.hpp"
 #include <ctime>
@@ -59,6 +61,8 @@ const char* configFilePath;
 bool hotReload = false;
 bool screenshot = false;
 bool drawCatmullRomCurves = false;
+bool spaceToggle = true;
+bool showMainMenu = true;
 
 const float dark[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 const float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -211,35 +215,29 @@ void takeScreenshot()
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
 
-    // create screenshots directory if it doesn't exist
-    std::filesystem::path screenshotDir = "../../screenshots";
-    if (!std::filesystem::exists(screenshotDir)) {
-        std::filesystem::create_directories(screenshotDir);
+    for (int y = 0; y < height / 2; ++y) {
+        int opposite = height - 1 - y;
+        for (int x = 0; x < width * 3; ++x) {
+            std::swap(pixels[y * width * 3 + x],
+                pixels[opposite * width * 3 + x]);
+        }
     }
 
-    // get current datetime
+    // generate filename with .png
     std::time_t now = std::time(nullptr);
     std::tm* localTime = std::localtime(&now);
     char filename[256];
-    std::strftime(filename, sizeof(filename), "../../screenshots/screenshot_%Y-%m-%d_%H-%M-%S.ppm", localTime);
+    std::strftime(filename, sizeof(filename),
+        "../../screenshots/screenshot_%Y-%m-%d_%H-%M-%S.png",
+        localTime);
 
-    std::ofstream out(filename, std::ios::binary);
-    if (!out) {
-        std::cerr << "[ERROR] Unable to open screenshot file for writing\n";
-        return;
+    // write PNG: last parameter is stride (bytes per row)
+    if (!stbi_write_png(filename, width, height, 3,
+            pixels.data(), width * 3)) {
+        std::cerr << "[ERROR] Failed to write PNG\n";
+    } else {
+        std::cout << "[+] Screenshot saved: " << filename << "\n";
     }
-
-    // write PPM header
-    out << "P6\n"
-        << width << " " << height << "\n255\n";
-
-    // fliip y axis and write pixel data
-    for (int y = height - 1; y >= 0; --y) {
-        out.write(reinterpret_cast<char*>(pixels.data() + y * width * 3), width * 3);
-    }
-
-    out.close();
-    std::cout << "[+] Screenshot saved: " << filename << "\n";
 }
 
 void updateSceneOptions(void)
@@ -324,7 +322,9 @@ void renderScene(void)
 
     drawWithVBOs(vboBuffers, vboBuffersNormals, vboBuffersTexCoords, iboBuffers, config.group, false);
 
-    drawMenu(&config);
+    if (showMainMenu) {
+        drawMenu(&config);
+    }
 
     // update scene options based on the menu
     updateSceneOptions();
@@ -529,15 +529,35 @@ void keyboardFunc(unsigned char key, int x, int y)
     ImGui_ImplGLUT_KeyboardFunc(key, x, y);
 
     if (!io.WantCaptureKeyboard) {
+        if (key == 32) { // space
+            spaceToggle = !spaceToggle;
+            config.scene.faceCulling = spaceToggle;
+            config.scene.wireframe = !spaceToggle;
+            config.scene.drawAxis = !spaceToggle;
+            config.scene.drawCatmullRomCurves = !spaceToggle;
+            config.scene.lighting = spaceToggle;
+            config.scene.textures = spaceToggle;
+        }
+
         if (key >= 49 && key <= 57) { // 1 trough 9
             uint8_t picked = key - 48; // normalize
             GroupConfig* g = config.clickableGroups[picked];
             config.camera.tracking = g == NULL ? 0 : picked;
             config.camera.showInfoWindow = g == NULL ? false : true;
         }
-
+        if (key == 67 || key == 99) { // C or c
+            config = loadConfiguration(configFilePath);
+            initializeVBOs();
+        }
+        if (key == 77 || key == 109) { // M or m
+            showMainMenu = !showMainMenu;
+            glutPostRedisplay();
+        }
         if (key == 82 || key == 114) { // R or r
             resetCamera(&config);
+        }
+        if (key == 80 || key == 112) { // P or p
+            takeScreenshot();
         }
         if (key == 27) { // ESC
             switchCameraMode(&config);

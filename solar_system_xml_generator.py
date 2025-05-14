@@ -224,7 +224,7 @@ def add_asteroid_belt(parent, num_asteroids, min_dist, max_dist):
         t.set("y", str(y_variation))
         t.set("z", "0")
         s = ET.SubElement(transform, "scale")
-        scale_val = random.uniform(0.001 * time, 0.01 * time)
+        scale_val = random.uniform(0.0005 * time, 0.005 * time)
         s.set("x", str(scale_val))
         s.set("y", str(scale_val))
         s.set("z", str(scale_val))
@@ -338,14 +338,14 @@ def main():
 
     # Planet data: (name, texture, info, distance, scale)
     planet_data = [
-        ("Mercury", f"{TEXTURE_XML_PREFIX}/mercury.jpg", "../../group_info/mercury.txt", 10, 0.04),
-        ("Venus", f"{TEXTURE_XML_PREFIX}/venus.jpg", "../../group_info/venus.txt", 15, 0.1),
-        ("Earth", f"{TEXTURE_XML_PREFIX}/earth.jpg", "../../group_info/earth.txt", 20, 0.11),
-        ("Mars", f"{TEXTURE_XML_PREFIX}/mars.jpg", "../../group_info/mars.txt", 27, 0.06),
-        ("Jupiter",f"{TEXTURE_XML_PREFIX}/jupiter.jpg", "../../group_info/jupiter.txt", 45, 1.3),
-        ("Saturn", f"{TEXTURE_XML_PREFIX}/saturn.jpg", "../../group_info/saturn.txt", 60, 0.7),
-        ("Uranus",f"{TEXTURE_XML_PREFIX}/uranus.jpg", "../../group_info/uranus.txt", 75, 0.42),
-        ("Neptune", f"{TEXTURE_XML_PREFIX}/neptune.jpg", "../../group_info/neptune.txt", 90, 0.41)
+        ("Mercury", f"{TEXTURE_XML_PREFIX}/mercury.jpg", "../../group_info/mercury.txt", 10, 0.4),
+        ("Venus", f"{TEXTURE_XML_PREFIX}/venus.jpg", "../../group_info/venus.txt", 15, 1),
+        ("Earth", f"{TEXTURE_XML_PREFIX}/earth.jpg", "../../group_info/earth.txt", 20, 1.1),
+        ("Mars", f"{TEXTURE_XML_PREFIX}/mars.jpg", "../../group_info/mars.txt", 27, 0.6),
+        ("Jupiter",f"{TEXTURE_XML_PREFIX}/jupiter.jpg", "../../group_info/jupiter.txt", 70, 10),
+        ("Saturn", f"{TEXTURE_XML_PREFIX}/saturn.jpg", "../../group_info/saturn.txt", 100, 4),
+        ("Uranus",f"{TEXTURE_XML_PREFIX}/uranus.jpg", "../../group_info/uranus.txt", 200, 4.2),
+        ("Neptune", f"{TEXTURE_XML_PREFIX}/neptune.jpg", "../../group_info/neptune.txt", 250, 4.1)
     ]
 
     # Number of moons for each planet
@@ -384,7 +384,7 @@ def main():
                       min_dist=32, max_dist=38)
     # Outer asteroid belt (closer to the Sun)
     add_asteroid_belt(solar_system, num_asteroids=args.asteroids,
-                      min_dist=120, max_dist=140)
+                      min_dist=150, max_dist=170)
 
     # Finds the Saturn group and inserts the ring as a subgroup right after its creation
     for group in solar_system.findall("group"):
