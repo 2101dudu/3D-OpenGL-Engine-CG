@@ -24,17 +24,27 @@ def create_transform(rotate, translate, scale):
     return transform
 
 
-def create_model(file, add_color=True):
+def create_model(file, textures=None, add_color=True, color_config=None):
     model = ET.Element("model")
     model.set("file", file)
 
+    create_texture_element(model, texture_file_path=textures)
+
     if add_color:
-        create_color_element(model)
+        create_color_element(model, colors=color_config)
     
     return model
 
 
-def create_group(name, clickableInfo, transform_data, model_file):
+def create_texture_element(model_elem, texture_file_path=None):
+    texture_elem = ET.SubElement(model_elem, "texture")
+    if texture_file_path is None:
+        # default
+        texture_file_path = "../../textures/moon_low_res.jpg"
+    
+    texture_elem.set("file", texture_file_path)
+
+def create_group(name, clickableInfo, transform_data, model_file, color=None, texture=None):
     group = ET.Element("group")
     group.set("name", name)
 
@@ -46,7 +56,7 @@ def create_group(name, clickableInfo, transform_data, model_file):
                                  transform_data.get("scale"))
     group.append(transform)
     models = ET.SubElement(group, "models")
-    models.append(create_model(model_file))
+    models.append(create_model(model_file, textures=texture, color_config=color))
     return group
 
 
@@ -63,7 +73,7 @@ def create_moon(moon_name, model_file, isEarth):
     }
 
     if isEarth:
-        return create_group(moon_name, "../../group_info/earth_moon.txt", transform, model_file)
+        return create_group(moon_name,  "../../group_info/earth_moon.txt", transform, model_file, texture="../../textures/moon.jpg")
 
     return create_group(moon_name, "", transform, model_file)
 
@@ -145,8 +155,13 @@ def prettify_xml(elem):
     reparsed = minidom.parseString(rough_string)
     return reparsed.toprettyxml(indent="    ")
 
-def create_color_element(model_elem, diffuse=(127,127,127), ambient=(204,204,204), specular=(255,255,255), emissive=(0,0,0), shininess=100):
+
+
+def create_color_element(model_elem, colors=None, diffuse=(200,200,200), ambient=(50,50,70), specular=(255,255,255), emissive=(0,0,0), shininess=20):
     color = ET.SubElement(model_elem, "color")
+
+    if colors is not None:
+        (diffuse, ambient, specular, emissive, shininess) = colors
 
     d = ET.SubElement(color, "diffuse")
     d.set("R", str(diffuse[0]))
@@ -218,19 +233,19 @@ def main():
     # Sun (static at the center)
     sun_transform = {"rotate": {"time": 100,
                                 "x": 0, "y": 1, "z": 0}, "translate": None, "scale": {"x": 3, "y": 3, "z": 3}}
-    sun = create_group("Sun", "../../group_info/sun.txt", sun_transform, "../../objects/sphere.3d")
+    sun = create_group("Sun", "../../group_info/sun.txt", sun_transform, "../../objects/sphere.3d", color=((200,200,200), (200,200,200), (200,200,200), (200,200,200), (0)), texture="../../textures/sun.jpg")
     solar_system.append(sun)
 
-    # Planet data: (name, distance, scale)
+    # Planet data: (name, texture, info, distance, scale)
     planet_data = [
-        ("Mercury", "../../group_info/mercury.txt", 10, 0.04),
-        ("Venus", "../../group_info/venus.txt", 15, 0.1),
-        ("Earth", "../../group_info/earth.txt", 20, 0.11),
-        ("Mars", "../../group_info/mars.txt", 27, 0.06),
-        ("Jupiter", "../../group_info/jupiter.txt", 45, 1.3),
-        ("Saturn", "../../group_info/saturn.txt", 60, 0.7),
-        ("Uranus", "../../group_info/uranus.txt", 75, 0.42),
-        ("Neptune", "../../group_info/neptune.txt", 90, 0.41)
+        ("Mercury", "../../textures/mercury.jpg", "../../group_info/mercury.txt", 10, 0.04),
+        ("Venus", "../../textures/venus.jpg", "../../group_info/venus.txt", 15, 0.1),
+        ("Earth", "../../textures/earth.jpg", "../../group_info/earth.txt", 20, 0.11),
+        ("Mars", "../../textures/mars.jpg", "../../group_info/mars.txt", 27, 0.06),
+        ("Jupiter","../../textures/jupiter.jpg", "../../group_info/jupiter.txt", 45, 1.3),
+        ("Saturn", "../../textures/saturn.jpg", "../../group_info/saturn.txt", 60, 0.7),
+        ("Uranus","../../textures/uranus.jpg", "../../group_info/uranus.txt", 75, 0.42),
+        ("Neptune", "../../textures/neptune.jpg", "../../group_info/neptune.txt", 90, 0.41)
     ]
 
     # Number of moons for each planet
@@ -241,7 +256,7 @@ def main():
         "Uranus": 3, "Neptune": 2
     }
 
-    for planet, clickableInfo, distance, scale in planet_data:
+    for planet, texture, clickableInfo, distance, scale in planet_data:
         # Orbital distribution: uses a random time per full rotation
         time = random.uniform(10, 50)
         transform = {
@@ -250,7 +265,7 @@ def main():
             "scale": {"x": scale, "y": scale, "z": scale}
         }
         planet_group = create_group(
-            planet, clickableInfo, transform, "../../objects/sphere.3d")
+            planet, clickableInfo, transform, "../../objects/sphere.3d", texture=texture)
         # Adds moons randomly
         for i in range(moons_per_planet[planet]):
             if planet == "Earth":
@@ -286,7 +301,7 @@ def main():
             s.set("z", "0.7")
             ring_group.append(ring_transform)
             ring_models = ET.SubElement(ring_group, "models")
-            ring_models.append(create_model("../../objects/torus.3d"))
+            ring_models.append(create_model("../../objects/torus.3d", textures="../../textures/ring.jpg"))
             group.append(ring_group)
             break
 
