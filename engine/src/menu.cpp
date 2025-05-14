@@ -7,6 +7,7 @@
 #include <math.h>
 #endif
 
+#include "draw.hpp"
 #include "imgui.h"
 #include "imgui_impl_glut.h"
 #include "imgui_impl_opengl2.h"
@@ -15,6 +16,7 @@
 
 extern float timeFactor;
 extern bool hotReload;
+extern bool screenshot;
 
 void initializeImGUI(void)
 {
@@ -80,6 +82,11 @@ void drawMenu(WorldConfig* config)
         hotReload = false;
         if (ImGui::Button("Reload config file")) {
             hotReload = true;
+        }
+
+        screenshot = false;
+        if (ImGui::Button("Take screenshot")) {
+            screenshot = true;
         }
 
         ImGui::TreePop();

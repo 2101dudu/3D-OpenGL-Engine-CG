@@ -7,6 +7,9 @@
 #include "menu.hpp"
 #include "utils.hpp"
 #include "xml_parser.hpp"
+#include <ctime>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <math.h>
 
@@ -46,8 +49,6 @@ static float smoothedAngleY = 0.0f;
 
 WorldConfig config;
 
-bool drawCatmullRomCurves = false;
-
 // VBOs
 std::vector<GLuint> vboBuffers;
 std::vector<GLuint> vboBuffersNormals;
@@ -56,6 +57,8 @@ std::vector<GLuint> iboBuffers;
 
 const char* configFilePath;
 bool hotReload = false;
+bool screenshot = false;
+bool drawCatmullRomCurves = false;
 
 const float dark[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 const float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -196,6 +199,49 @@ void initializeVBOs()
     pointModelsVBOIndex(&config.group);
 }
 
+void takeScreenshot()
+{
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    int width = viewport[2];
+    int height = viewport[3];
+
+    std::vector<unsigned char> pixels(width * height * 3); // RGB
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+
+    // create screenshots directory if it doesn't exist
+    std::filesystem::path screenshotDir = "../../screenshots";
+    if (!std::filesystem::exists(screenshotDir)) {
+        std::filesystem::create_directories(screenshotDir);
+    }
+
+    // get current datetime
+    std::time_t now = std::time(nullptr);
+    std::tm* localTime = std::localtime(&now);
+    char filename[256];
+    std::strftime(filename, sizeof(filename), "../../screenshots/screenshot_%Y-%m-%d_%H-%M-%S.ppm", localTime);
+
+    std::ofstream out(filename, std::ios::binary);
+    if (!out) {
+        std::cerr << "[ERROR] Unable to open screenshot file for writing\n";
+        return;
+    }
+
+    // write PPM header
+    out << "P6\n"
+        << width << " " << height << "\n255\n";
+
+    // fliip y axis and write pixel data
+    for (int y = height - 1; y >= 0; --y) {
+        out.write(reinterpret_cast<char*>(pixels.data() + y * width * 3), width * 3);
+    }
+
+    out.close();
+    std::cout << "[+] Screenshot saved: " << filename << "\n";
+}
+
 void updateSceneOptions(void)
 {
     uint32_t mode = config.scene.wireframe ? GL_LINE : GL_FILL;
@@ -217,6 +263,10 @@ void updateSceneOptions(void)
     if (hotReload) {
         config = loadConfiguration(configFilePath);
         initializeVBOs();
+    }
+
+    if (screenshot) {
+        takeScreenshot();
     }
 
     drawCatmullRomCurves = config.scene.drawCatmullRomCurves;
