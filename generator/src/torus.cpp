@@ -12,7 +12,7 @@ void Torus::createTorus(float radius, float minorRadius, int slices, int stacks,
     // angle per stack
     float beta = 2 * M_PI / stacks;
 
-    for (int i = 0; i < slices; i++) {
+    for (int i = 0; i <= slices; i++) {
         float currAlpha = alpha * i;
 
         for (int j = 0; j < stacks; j++) {
@@ -26,18 +26,20 @@ void Torus::createTorus(float radius, float minorRadius, int slices, int stacks,
             float n2 = sinf(currBeta);
             float n3 = cosf(currBeta) * sinf(currAlpha);
 
-            float u = static_cast<float>(i) / (slices - 1);
+            float u = static_cast<float>(i) / slices;
             float v = static_cast<float>(j) / (stacks - 1);
 
             pointGen.addPoint(x, y, z, n1, n2, n3, u, v);
 
-            int currPointIndex = i * stacks + j + 1;
-            int nextCurrPointIndex = i * stacks + ((j + 1) % stacks) + 1;
-            int neighbourIndex = ((i + 1) % slices) * stacks + j + 1;
-            int nextNeighbourIndex = ((i + 1) % slices) * stacks + ((j + 1) % stacks) + 1;
+            if (i < slices) {
+                int currPointIndex = i * stacks + j + 1;
+                int nextCurrPointIndex = i * stacks + ((j + 1) % stacks) + 1;
+                int neighbourIndex = ((i + 1) % (slices + 1)) * stacks + j + 1;
+                int nextNeighbourIndex = ((i + 1) % (slices + 1)) * stacks + ((j + 1) % stacks) + 1;
 
-            pointGen.addAssociation(currPointIndex, nextCurrPointIndex, neighbourIndex);
-            pointGen.addAssociation(neighbourIndex, nextCurrPointIndex, nextNeighbourIndex);
+                pointGen.addAssociation(currPointIndex, nextCurrPointIndex, neighbourIndex);
+                pointGen.addAssociation(neighbourIndex, nextCurrPointIndex, nextNeighbourIndex);
+            }
         }
     }
 
