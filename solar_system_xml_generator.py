@@ -104,8 +104,7 @@ def create_texture_element(model_elem, texture_file_path=None):
     if texture_file_path:
         fname = os.path.basename(texture_file_path)
     else:
-        # TODO: add low_res as default
-        fname = "moon.jpg" 
+        fname = "moon_low_res.jpg" 
 
     texture_elem.set("file", f"{TEXTURE_XML_PREFIX}/{fname}")
 
