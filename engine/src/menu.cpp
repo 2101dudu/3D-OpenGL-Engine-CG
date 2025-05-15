@@ -7,6 +7,11 @@
 #include <math.h>
 #endif
 
+#include <algorithm>
+#include <filesystem>
+#include <string>
+#include <vector>
+
 #include "draw.hpp"
 #include "imgui.h"
 #include "imgui_impl_glut.h"
@@ -17,6 +22,59 @@
 extern float timeFactor;
 extern bool hotReload;
 extern bool screenshot;
+extern std::string fileToLoad;
+
+std::vector<std::string> listXmlFiles(const std::string& path)
+{
+    namespace fs = std::filesystem;
+    fs::path currentPath(path);
+    fs::path parentDir = currentPath.parent_path();
+    std::vector<std::string> xmlFiles;
+    if (fs::exists(parentDir) && fs::is_directory(parentDir)) {
+        for (auto& entry : fs::directory_iterator(parentDir)) {
+            if (entry.is_regular_file() && entry.path().extension() == ".xml") {
+                xmlFiles.push_back(entry.path().filename().string());
+            }
+        }
+    }
+    std::sort(xmlFiles.begin(), xmlFiles.end());
+    return xmlFiles;
+}
+
+void drawConfigDropdown()
+{
+    namespace fs = std::filesystem;
+
+    std::vector<std::string> xmlFiles = listXmlFiles(fileToLoad);
+    fs::path currentPath(fileToLoad);
+    std::string currentName = currentPath.filename().string();
+
+    static int currentIdx = -1;
+    auto it = std::find(xmlFiles.begin(), xmlFiles.end(), currentName);
+    if (it != xmlFiles.end()) {
+        currentIdx = static_cast<int>(std::distance(xmlFiles.begin(), it));
+    } else {
+        currentIdx = -1;
+    }
+
+    ImGui::Text("Config:");
+    ImGui::SameLine();
+    const char* preview = (currentIdx >= 0 && currentIdx < (int)xmlFiles.size()) ? xmlFiles[currentIdx].c_str() : "None";
+    if (ImGui::BeginCombo("##configCombo", preview, ImGuiComboFlags_HeightLargest)) {
+        for (int i = 0; i < (int)xmlFiles.size(); ++i) {
+            bool isSelected = (i == currentIdx);
+            if (ImGui::Selectable(xmlFiles[i].c_str(), isSelected)) {
+                currentIdx = i;
+                fs::path parentDir = currentPath.parent_path();
+                fileToLoad = (parentDir / xmlFiles[i]).string();
+            }
+            if (isSelected) {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+}
 
 void initializeImGUI(void)
 {
@@ -84,6 +142,9 @@ void drawMenu(WorldConfig* config)
             hotReload = true;
         }
 
+        drawConfigDropdown();
+
+        ImGui::NewLine();
         screenshot = false;
         if (ImGui::Button("(P)rint screen")) {
             screenshot = true;
