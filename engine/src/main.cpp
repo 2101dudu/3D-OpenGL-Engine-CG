@@ -684,13 +684,18 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    std::filesystem::path fullPath(argv[1]);
+    if (!std::filesystem::exists(fullPath)) {
+        std::cerr << "Error: File '" << fullPath << "' does not exist." << std::endl;
+        return 1;
+    }
+
     // pre-window initialization: Setup GLUT and load configuration
     printf("[+] Creating window\n");
     initializeGLUTPreWindow(argc, argv);
 
     printf("[+] Parsing config file\n");
 
-    std::filesystem::path fullPath(argv[1]);
     fileToLoad = fullPath;
     config = loadConfiguration(fileToLoad);
 
