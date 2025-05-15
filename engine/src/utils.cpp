@@ -3,10 +3,10 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <sstream>
 
 bool endsWith(const std::string& str, const std::string& suffix)
 {
@@ -165,6 +165,7 @@ ModelInfo parseFile(const std::string& filename)
 
         modelInfo.points = std::move(uniquePoints);
         modelInfo.indices = std::move(newIndices);
+        modelInfo.numTriangles = modelInfo.indices.size() / 3;
     }
 
     else if (endsWith(filename, ".obj")) {
@@ -189,15 +190,15 @@ ModelInfo parseFile(const std::string& filename)
             if (prefix == "v") {
                 float x, y, z;
                 iss >> x >> y >> z;
-                tempPositions.push_back({x, y, z});
+                tempPositions.push_back({ x, y, z });
             } else if (prefix == "vt") {
                 float u, v;
                 iss >> u >> v;
-                tempTexCoords.push_back({u, v});
+                tempTexCoords.push_back({ u, v });
             } else if (prefix == "vn") {
                 float nx, ny, nz;
                 iss >> nx >> ny >> nz;
-                tempNormals.push_back({nx, ny, nz});
+                tempNormals.push_back({ nx, ny, nz });
             } else if (prefix == "f") {
                 std::string vStr;
                 for (int i = 0; i < 3; ++i) {
@@ -219,8 +220,8 @@ ModelInfo parseFile(const std::string& filename)
 
         for (const ObjIndex& idx : objIndices) {
             Vec3 pos = tempPositions[idx.posIdx];
-            Vec2 tex = (idx.texIdx >= 0 && idx.texIdx < (int)tempTexCoords.size()) ? tempTexCoords[idx.texIdx] : Vec2{0.0f, 0.0f};
-            Vec3 norm = (idx.normIdx >= 0 && idx.normIdx < (int)tempNormals.size()) ? tempNormals[idx.normIdx] : Vec3{0.0f, 0.0f, 0.0f};
+            Vec2 tex = (idx.texIdx >= 0 && idx.texIdx < (int)tempTexCoords.size()) ? tempTexCoords[idx.texIdx] : Vec2 { 0.0f, 0.0f };
+            Vec3 norm = (idx.normIdx >= 0 && idx.normIdx < (int)tempNormals.size()) ? tempNormals[idx.normIdx] : Vec3 { 0.0f, 0.0f, 0.0f };
 
             modelInfo.points.push_back(pos.x);
             modelInfo.points.push_back(pos.y);

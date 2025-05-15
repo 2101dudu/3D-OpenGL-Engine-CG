@@ -57,7 +57,8 @@ std::vector<GLuint> vboBuffersNormals;
 std::vector<GLuint> vboBuffersTexCoords;
 std::vector<GLuint> iboBuffers;
 
-const char* configFilePath;
+std::string fileToLoad;
+
 bool hotReload = false;
 bool screenshot = false;
 bool drawCatmullRomCurves = false;
@@ -67,7 +68,7 @@ bool showMainMenu = true;
 const float dark[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 const float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-WorldConfig loadConfiguration(const char* configFile)
+WorldConfig loadConfiguration(std::string configFile)
 {
     WorldConfig cfg = XMLParser::parseXML(configFile);
     XMLParser::configureFromXML(cfg);
@@ -259,7 +260,7 @@ void updateSceneOptions(void)
     }
 
     if (hotReload) {
-        config = loadConfiguration(configFilePath);
+        config = loadConfiguration(fileToLoad);
         initializeVBOs();
     }
 
@@ -546,7 +547,7 @@ void keyboardFunc(unsigned char key, int x, int y)
             config.camera.showInfoWindow = g == NULL ? false : true;
         }
         if (key == 67 || key == 99) { // C or c
-            config = loadConfiguration(configFilePath);
+            config = loadConfiguration(fileToLoad);
             initializeVBOs();
         }
         if (key == 77 || key == 109) { // M or m
@@ -683,13 +684,20 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    std::filesystem::path fullPath(argv[1]);
+    if (!std::filesystem::exists(fullPath)) {
+        std::cerr << "Error: File '" << fullPath << "' does not exist." << std::endl;
+        return 1;
+    }
+
     // pre-window initialization: Setup GLUT and load configuration
     printf("[+] Creating window\n");
     initializeGLUTPreWindow(argc, argv);
 
     printf("[+] Parsing config file\n");
-    configFilePath = argv[1];
-    config = loadConfiguration(configFilePath);
+
+    fileToLoad = fullPath;
+    config = loadConfiguration(fileToLoad);
 
     // create the window using configuration parameters
     createWindowWithConfig();
