@@ -244,6 +244,8 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
 
 WorldConfig XMLParser::parseXML(const std::string& filename)
 {
+    clickableGroups.clear();
+    lastGroupID = 1;
     WorldConfig config;
     XMLDocument doc;
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
