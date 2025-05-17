@@ -93,5 +93,23 @@
                 </model>
             </models>
         </group>
+        <group name="Teapot" clickableInfo="../../group_info/sun.txt">
+            <transform>
+                <translate x="-100" y="0" z="0"/>
+                <scale x="0.5" y="0.5" z="0.5"/>
+            </transform>
+            <models>
+                <model file="../../objects/comet.3d">
+                    <texture file="../../textures/sun.jpg" />
+                    <color>
+                        <diffuse R="200" G="200" B="200" />
+                        <ambient R="200" G="200" B="200" />
+                        <specular R="200" G="200" B="200" />
+                        <emissive R="20" G="20" B="20" />
+                        <shininess value="128" />
+                    </color>
+                </model>
+            </models>
+        </group>
     </group>
 </world>
