@@ -92,9 +92,9 @@ void drawAxis()
     glEnd();
 }
 
-void applyTransformations(const std::vector<Transform>& transforms)
+void applyTransformations(std::vector<Transform>& transforms)
 {
-    for (const auto& t : transforms) {
+    for (auto& t : transforms) {
         switch (t.type) {
         case TransformType::Translate:
             if (t.curveTime > 0.0f) {
@@ -120,7 +120,7 @@ void applyTransformations(const std::vector<Transform>& transforms)
 
                 if (t.align) {
                     float forward[3] = { deriv[0], deriv[1], deriv[2] };
-                    float* rotMatrix = getRotMatrix(forward);
+                    float* rotMatrix = getRotMatrix(forward, t.up);
                     glMultMatrixf(rotMatrix);
                     free(rotMatrix);
                 }

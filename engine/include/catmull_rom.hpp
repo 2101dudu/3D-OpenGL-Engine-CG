@@ -19,6 +19,6 @@
 
 void getGlobalCatmullRomPoint(float time, float* pos, float* deriv, const Transform t);
 
-float* getRotMatrix(float* forward);
+float* getRotMatrix(float* forward, float* up);
 
 #endif

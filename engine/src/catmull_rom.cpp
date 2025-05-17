@@ -18,8 +18,6 @@
 extern float globalTimer;
 extern float timeFactor;
 
-float up[3] = { 0.0f, 1.0f, 0.0f };
-
 void buildRotMatrix(float* x, float* y, float* z, float* m)
 {
 
@@ -122,7 +120,7 @@ void getGlobalCatmullRomPoint(float time, float* pos, float* deriv, const Transf
     getCatmullRomPoint(t, p[indices[0]], p[indices[1]], p[indices[2]], p[indices[3]], pos, deriv);
 }
 
-float* getRotMatrix(float* forward)
+float* getRotMatrix(float* forward, float* up)
 {
     normalize(forward);
 

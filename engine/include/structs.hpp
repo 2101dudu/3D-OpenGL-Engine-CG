@@ -60,6 +60,7 @@ struct Transform {
 
     float curveTime = 0.0f;
     bool align = false;
+    float up[3] = { 0.0f, 1.0f, 0.0f }; // initial up vector, refined by each alignment
 };
 
 struct Material {
