@@ -14,8 +14,6 @@ build/
 cmake-build-debug/
 .idea/
 .cache/
-objects/*
 .DS_STORE
 .vscode/
 textures/compressed*
-screenshots/*
