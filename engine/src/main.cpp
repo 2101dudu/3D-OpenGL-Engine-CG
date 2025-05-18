@@ -669,6 +669,7 @@ void initializeOpenGLContext()
     glEnable(GL_RESCALE_NORMAL);
 
     float black[4] = { 0.1f, 0.1f, 0.1f, 0.0f };
+    // float amb[4] = { 1.0f, 1.0f, 1.0f, 1.0f }; // for testing
     // controls global ambient light
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, black);
 
