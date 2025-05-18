@@ -48,65 +48,56 @@ void parseGroup(XMLElement* groupElement, GroupConfig& group, std::map<std::stri
     // parse transformations if avilable
     XMLElement* transformElement = groupElement->FirstChildElement("transform");
     if (transformElement) {
-        // Parse the rotate:
-        XMLElement* rotateElement = transformElement->FirstChildElement("rotate");
-        if (rotateElement) {
+        for (XMLElement* child = transformElement->FirstChildElement(); child != nullptr; child = child->NextSiblingElement()) {
+            const std::string tag = child->Name();
+
             Transform t;
-            t.type = TransformType::Rotate;
-            rotateElement->QueryFloatAttribute("angle", &t.angle); // "angle" may be ommited, meaning t.angle == 0
-            rotateElement->QueryFloatAttribute("time", &t.time); // "time" may be ommited, meaning t.angle == 0
-            rotateElement->QueryFloatAttribute("x", &t.x);
-            rotateElement->QueryFloatAttribute("y", &t.y);
-            rotateElement->QueryFloatAttribute("z", &t.z);
-            group.transforms.push_back(t);
-        }
 
-        // Parse the translate:
-        XMLElement* translateElement = transformElement->FirstChildElement("translate");
-        if (translateElement) {
-            Transform t;
-            t.type = TransformType::Translate;
+            if (tag == "translate") {
+                t.type = TransformType::Translate;
 
-            XMLElement* pointElement = translateElement->FirstChildElement("point");
+                XMLElement* pointElement = child->FirstChildElement("point");
 
-            if (pointElement) {
-                translateElement->QueryFloatAttribute("time", &t.curveTime); // "time" may be ommited, meaning t.curveTime == 0
-                translateElement->QueryBoolAttribute("align", &t.align); // "align" may be ommited, meaning t.align == false
+                if (pointElement) {
+                    child->QueryFloatAttribute("time", &t.curveTime);
+                    child->QueryBoolAttribute("align", &t.align);
 
-                size_t count = 0;
-                for (XMLElement* tmp = pointElement; tmp != nullptr; tmp = tmp->NextSiblingElement("point")) {
-                    count++;
+                    size_t count = 0;
+                    for (XMLElement* tmp = pointElement; tmp != nullptr; tmp = tmp->NextSiblingElement("point"))
+                        count++;
+
+                    t.numberCurvePoints = count;
+                    t.curvePoints = new float*[count];
+
+                    size_t i = 0;
+                    for (XMLElement* tmp = pointElement; tmp != nullptr; tmp = tmp->NextSiblingElement("point")) {
+                        t.curvePoints[i] = new float[3];
+                        tmp->QueryFloatAttribute("x", &t.curvePoints[i][0]);
+                        tmp->QueryFloatAttribute("y", &t.curvePoints[i][1]);
+                        tmp->QueryFloatAttribute("z", &t.curvePoints[i][2]);
+                        i++;
+                    }
+                } else {
+                    child->QueryFloatAttribute("x", &t.x);
+                    child->QueryFloatAttribute("y", &t.y);
+                    child->QueryFloatAttribute("z", &t.z);
                 }
-                t.numberCurvePoints = count;
 
-                // Dynamically allocate the curvePoints array.
-                // Each point will be stored as an array of 3 floats [x, y, z].
-                t.curvePoints = new float*[count];
-                size_t i = 0;
-                for (XMLElement* tmp = pointElement; tmp != nullptr; tmp = tmp->NextSiblingElement("point")) {
-                    t.curvePoints[i] = new float[3];
-                    tmp->QueryFloatAttribute("x", &t.curvePoints[i][0]);
-                    tmp->QueryFloatAttribute("y", &t.curvePoints[i][1]);
-                    tmp->QueryFloatAttribute("z", &t.curvePoints[i][2]);
-                    i++;
-                }
-            } else {
-                translateElement->QueryFloatAttribute("x", &t.x);
-                translateElement->QueryFloatAttribute("y", &t.y);
-                translateElement->QueryFloatAttribute("z", &t.z);
+            } else if (tag == "rotate") {
+                t.type = TransformType::Rotate;
+                child->QueryFloatAttribute("angle", &t.angle);
+                child->QueryFloatAttribute("time", &t.time);
+                child->QueryFloatAttribute("x", &t.x);
+                child->QueryFloatAttribute("y", &t.y);
+                child->QueryFloatAttribute("z", &t.z);
+
+            } else if (tag == "scale") {
+                t.type = TransformType::Scale;
+                child->QueryFloatAttribute("x", &t.x);
+                child->QueryFloatAttribute("y", &t.y);
+                child->QueryFloatAttribute("z", &t.z);
             }
 
-            group.transforms.push_back(t);
-        }
-
-        // Parse the scale:
-        XMLElement* scaleElement = transformElement->FirstChildElement("scale");
-        if (scaleElement) {
-            Transform t;
-            t.type = TransformType::Scale;
-            scaleElement->QueryFloatAttribute("x", &t.x);
-            scaleElement->QueryFloatAttribute("y", &t.y);
-            scaleElement->QueryFloatAttribute("z", &t.z);
             group.transforms.push_back(t);
         }
     }
