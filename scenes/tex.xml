@@ -100,7 +100,7 @@
             </transform>
             <models>
                 <model file="../../objects/comet.3d">
-                    <texture file="../../textures/sun.jpg" />
+                    <texture file="../../textures/comet.jpg" />
                     <color>
                         <diffuse R="200" G="200" B="200" />
                         <ambient R="200" G="200" B="200" />

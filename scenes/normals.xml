@@ -137,22 +137,5 @@
                 </model>
             </models>
         </group>
-        <group name="comet" clickableInfo="../../group_info/sun.txt">
-            <transform>
-                <translate x="80" y="0" z="0"/>
-            </transform>
-            <models>
-                <model file="../../objects/audi.obj">
-                    <color>
-                        <diffuse R="200" G="50" B="50" />
-                        <ambient R="200" G="50" B="50" />
-                        <specular R="200" G="200" B="200" />
-                        <emissive R="20" G="20" B="20" />
-                        <shininess value="128" />
-                    </color>
-                </model>
-            </models>
-        </group>
-
     </group>
 </world>
