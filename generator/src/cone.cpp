@@ -14,14 +14,16 @@ void Cone::createCone(float radius, float height, int slices, int stacks, const 
         int index = std::max(i, 0);
         float currentHeight = index * stackHeight;
         float currentRadius = radius * (1 - (float)index / stacks);
-        for (int j = 0; j < slices; ++j) {
+        for (int j = 0; j <= slices; ++j) {
             float angle = j * angleStep;
             float x = currentRadius * cos(angle);
             float y = currentHeight;
             float z = currentRadius * sin(angle);
 
             if (i == -1) {
-                generator.addPoint(x, 0, z, 0, -1, 0, 0, 0);
+                float u = (float)j / slices;
+                float v = 0.0f;
+                generator.addPoint(x, 0, z, 0, -1, 0, u, v);
                 offset++;
                 continue;
             }
@@ -31,16 +33,19 @@ void Cone::createCone(float radius, float height, int slices, int stacks, const 
             float n2 = radius / slantLength;
             float n3 = sin(angle) * height / slantLength;
 
-            generator.addPoint(x, y, z, n1, n2, n3, 0, 0);
+            float u = (float)j / (slices + 1);
+            float v = (float)index / stacks;
 
-            int currPointIndex = i * slices + (j + 1) + offset;
-            int neighbourPointIndex = (currPointIndex + 1) % (slices * (i + 1) + 1 + offset);
-            neighbourPointIndex += neighbourPointIndex == 0 ? 1 + slices * i + offset : 0;
+            generator.addPoint(x, y, z, n1, n2, n3, u, v);
+
+            int currPointIndex = i * (slices + 1) + (j + 1) + offset;
+            int neighbourPointIndex = (currPointIndex + 1) % ((slices + 1) * (i + 1) + 1 + offset);
+            neighbourPointIndex += neighbourPointIndex == 0 ? 1 + (slices + 1) * i + offset : 0;
 
             int p1 = currPointIndex;
             int p2 = neighbourPointIndex;
-            int p3 = neighbourPointIndex + slices;
-            int p4 = currPointIndex + slices;
+            int p3 = neighbourPointIndex + slices + 1;
+            int p4 = currPointIndex + slices + 1;
 
             if (i < stacks - 1) {
                 generator.addAssociation(p1, p3, p2);
@@ -51,7 +56,7 @@ void Cone::createCone(float radius, float height, int slices, int stacks, const 
         }
     }
 
-    generator.addPoint(0, 0, 0, 0, -1, 0, 0, 0);
+    generator.addPoint(0, 0, 0, 0, -1, 0, 0.5f, 0.0f);
     int baseCenterIndex = generator.getPoints().size();
 
     // if we have 9 slices, i.e., 9 points, we need to
