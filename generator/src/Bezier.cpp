@@ -158,7 +158,7 @@ void Bezier::createBezierModel(const std::string& patchFile,
     for (size_t p = 0; p < patches.size(); ++p) {
         const auto& patchIdx = patches[p];
 
-        // Build 4×4 control grid (transpose if needed by swapping indices)
+        // Build 4×4 control grid
         std::vector<Vec3> patchCP(16);
         for (int u = 0; u < 4; ++u) {
             for (int v = 0; v < 4; ++v) {
@@ -179,7 +179,7 @@ void Bezier::createBezierModel(const std::string& patchFile,
                 Vec3 du = evalDu(patchCP, fu, fv);
                 Vec3 dv = evalDv(patchCP, fu, fv);
                 Vec3 n = normalize(cross(du, dv));
-                generator.addPoint(pt.x, pt.y, pt.z, n.x, n.y, n.z, 0, 0);
+                generator.addPoint(pt.x, pt.y, pt.z, n.x, n.y, n.z, fu, fv);
 
                 int pointIndex = generator.getPoints().size();
                 idx[i][j] = pointIndex;

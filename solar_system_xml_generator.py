@@ -199,6 +199,9 @@ def create_comet_group():
     model = ET.SubElement(models, "model")
     model.set("file", "../../objects/comet.3d")
 
+    texture = ET.SubElement(model, "texture")
+    texture.set("file", "../../textures/comet.jpg")
+
     create_color_element(model)
 
     return comet_group
@@ -408,10 +411,10 @@ def main():
             break
 
     pretty_xml = prettify_xml(world)
-    with open("config.xml", "w", encoding="utf-8") as f:
+    with open("scenes/solar_system.xml", "w", encoding="utf-8") as f:
         f.write(pretty_xml)
 
-    print("[+] Solar system XML successfully generated in 'config.xml'!")
+    print("[+] Solar system XML successfully generated in 'solar_system.xml'!")
 
 
 if __name__ == "__main__":

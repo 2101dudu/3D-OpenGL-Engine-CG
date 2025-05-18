@@ -1,0 +1,158 @@
+<?xml version="1.0" ?>
+<world>
+    <window width="1080" height="720"/>
+    <camera>
+        <position x="10" y="10" z="10"/>
+        <lookAt x="0" y="0" z="0"/>
+        <up x="0" y="1" z="0"/>
+        <projection fov="60" near="0.01" far="1000"/>
+    </camera>
+    <lights>
+        <light type="directional" dirX="5" dirY="5" dirZ="0" />
+    </lights>
+    <group name="Normals">
+
+        <group name="ground" clickableInfo="../../group_info/sun.txt">
+            <transform>
+                <scale x="20" y="10" z="10"/>
+                <translate x="0" y="-4" z="0"/>
+            </transform>
+            <models>
+                <model file="../../objects/plane.3d">
+                </model>
+            </models>
+        </group>
+
+        <group name="Plane" clickableInfo="../../group_info/sun.txt">
+            <transform>
+                <translate x="20" y="0" z="0"/>
+            </transform>
+            <models>
+                <model file="../../objects/plane.3d">
+                    <color>
+                        <diffuse R="200" G="50" B="50" />
+                        <ambient R="200" G="50" B="50" />
+                        <specular R="200" G="200" B="200" />
+                        <emissive R="20" G="20" B="20" />
+                        <shininess value="128" />
+                    </color>
+                </model>
+            </models>
+        </group>
+
+        <group name="Box" clickableInfo="../../group_info/sun.txt">
+            <transform>
+                <translate x="0" y="0" z="0"/>
+            </transform>
+            <models>
+                <model file="../../objects/box.3d">
+                    <color>
+                        <diffuse R="200" G="50" B="50" />
+                        <ambient R="200" G="50" B="50" />
+                        <specular R="200" G="200" B="200" />
+                        <emissive R="20" G="20" B="20" />
+                        <shininess value="128" />
+                    </color>
+                </model>
+            </models>
+        </group>
+        <group name="Sphere" clickableInfo="../../group_info/sun.txt">
+            <transform>
+                <translate x="-20" y="0" z="0"/>
+            </transform>
+            <models>
+                <model file="../../objects/sphere.3d">
+                    <color>
+                        <diffuse R="200" G="50" B="50" />
+                        <ambient R="200" G="50" B="50" />
+                        <specular R="200" G="200" B="200" />
+                        <emissive R="20" G="20" B="20" />
+                        <shininess value="128" />
+                    </color>
+                </model>
+            </models>
+        </group>
+        <group name="Cylinder" clickableInfo="../../group_info/sun.txt">
+            <transform>
+                <translate x="-40" y="0" z="0"/>
+            </transform>
+            <models>
+                <model file="../../objects/cylinder.3d">
+                    <color>
+                        <diffuse R="200" G="50" B="50" />
+                        <ambient R="200" G="50" B="50" />
+                        <specular R="200" G="200" B="200" />
+                        <emissive R="20" G="20" B="20" />
+                        <shininess value="128" />
+                    </color>
+                </model>
+            </models>
+        </group>
+        <group name="Cone" clickableInfo="../../group_info/sun.txt">
+            <transform>
+                <translate x="40" y="0" z="0"/>
+            </transform>
+            <models>
+                <model file="../../objects/cone.3d">
+                    <color>
+                        <diffuse R="200" G="50" B="50" />
+                        <ambient R="200" G="50" B="50" />
+                        <specular R="200" G="200" B="200" />
+                        <emissive R="20" G="20" B="20" />
+                        <shininess value="128" />
+                    </color>
+                </model>
+            </models>
+        </group>
+        <group name="Torus" clickableInfo="../../group_info/sun.txt">
+            <transform>
+                <translate x="-60" y="0" z="0"/>
+                <scale x="0.5" y="0.5" z="0.5"/>
+            </transform>
+            <models>
+                <model file="../../objects/torus.3d">
+                    <color>
+                        <diffuse R="200" G="50" B="50" />
+                        <ambient R="200" G="50" B="50" />
+                        <specular R="200" G="200" B="200" />
+                        <emissive R="20" G="20" B="20" />
+                        <shininess value="128" />
+                    </color>
+                </model>
+            </models>
+        </group>
+        <group name="comet" clickableInfo="../../group_info/sun.txt">
+            <transform>
+                <translate x="60" y="0" z="0"/>
+            </transform>
+            <models>
+                <model file="../../objects/comet.3d">
+                    <color>
+                        <diffuse R="200" G="50" B="50" />
+                        <ambient R="200" G="50" B="50" />
+                        <specular R="200" G="200" B="200" />
+                        <emissive R="20" G="20" B="20" />
+                        <shininess value="128" />
+                    </color>
+                </model>
+            </models>
+        </group>
+        <group name="comet" clickableInfo="../../group_info/sun.txt">
+            <transform>
+                <translate x="80" y="0" z="0"/>
+            </transform>
+            <models>
+                <model file="../../objects/audi.obj">
+                    <color>
+                        <diffuse R="200" G="50" B="50" />
+                        <ambient R="200" G="50" B="50" />
+                        <specular R="200" G="200" B="200" />
+                        <emissive R="20" G="20" B="20" />
+                        <shininess value="128" />
+                    </color>
+                </model>
+            </models>
+        </group>
+
+    </group>
+</world>

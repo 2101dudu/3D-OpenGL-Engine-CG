@@ -696,7 +696,7 @@ int main(int argc, char** argv)
 
     printf("[+] Parsing config file\n");
 
-    fileToLoad = fullPath;
+    fileToLoad = fullPath.string();
     config = loadConfiguration(fileToLoad);
 
     // create the window using configuration parameters
