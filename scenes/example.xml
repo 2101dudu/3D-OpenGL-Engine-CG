@@ -10,8 +10,8 @@
     <lights>
         <light type="point" posX="0" posY="0" posZ="0" />
     </lights>
-    <group name="LightningTest">
-        <group name="Sun" clickableInfo="../../group_info/sun.txt">
+    <group name="ConfigTest">
+        <group name="Skybox">
             <transform>
                 <scale x="-300" y="300" z="300"/>
             </transform>
@@ -19,29 +19,31 @@
                 <model file="../../objects/sphere.3d">
                     <texture file="../../textures/skybox.jpg" />
                     <color>
-                        <diffuse R="200" G="200" B="200" />
-                        <ambient R="200" G="200" B="200" />
-                        <specular R="200" G="200" B="200" />
-                        <emissive R="200" G="200" B="200" />
-                        <shininess value="0" />
+                        <diffuse R="100" G="100" B="150"/>
+                        <ambient R="100" G="100" B="150"/>
+                        <specular R="0" G="0" B="0"/>
+                        <emissive R="0" G="0" B="0"/>
+                        <shininess value="0"/>
                     </color>
                 </model>
             </models>
         </group>
 
-        <group name="Sun2" clickableInfo="../../group_info/sun.txt">
+        <group name="Earth" clickableInfo="../../group_info/earth.txt">
             <transform>
                 <translate x="3" y="3" z="3"/>
+                <scale x="0.6" y="0.6" z="0.6"/>
+                <rotate time="100" x="0" y="1" z="0"/>
             </transform>
             <models>
                 <model file="../../objects/sphere.3d">
-                    <texture file="../../textures/skybox.jpg" />
+                    <texture file="../../textures/earth.jpg" />
                     <color>
-                        <diffuse R="200" G="200" B="200" />
-                        <ambient R="50" G="50" B="80" />
-                        <specular R="200" G="200" B="200" />
-                        <emissive R="0" G="0" B="0" />
-                        <shininess value="20" />
+                        <diffuse R="200" G="200" B="200"/>
+                        <ambient R="50" G="50" B="70"/>
+                        <specular R="255" G="255" B="255"/>
+                        <emissive R="0" G="0" B="0"/>
+                        <shininess value="20"/>
                     </color>
                 </model>
             </models>
