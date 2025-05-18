@@ -12,13 +12,13 @@ void Cylinder::createCylinder(int radius, int height, int slices, int stacks, co
     int offset = 0;
     for (int i = -1; i <= stacks + 1; ++i) {
         float currentHeight = i * stackHeight;
-        for (int j = 0; j < slices; ++j) {
+        for (int j = 0; j <= slices; ++j) {
             float angle = j * angleStep;
             float x = radius * cos(angle);
             float y = currentHeight;
             float z = radius * sin(angle);
 
-            float u = static_cast<float>(j) / slices;
+            float u = static_cast<float>(j) / (slices + 1);
             float v = static_cast<float>(i) / (stacks + 1);
 
             if (i == -1) {
@@ -35,28 +35,26 @@ void Cylinder::createCylinder(int radius, int height, int slices, int stacks, co
                 float top_u = 0.5f + (x / (2.0f * radius));
                 float top_v = 0.5f + (z / (2.0f * radius));
                 pointGen.addPoint(x, height, z, 0, 1, 0, top_u, top_v);
-            }
-            else {
+            } else {
                 // lateral
                 pointGen.addPoint(x, y, z, x / radius, 0, z / radius, u, v);
             }
 
             int index = i;
-            int currPointIndex = index * slices + (j + 1) + offset;
-            int neighbourPointIndex = (currPointIndex + 1) % (slices * (index + 1) + 1 + offset);
-            neighbourPointIndex += neighbourPointIndex == 0 ? 1 + slices * index + offset : 0;
+            int currPointIndex = index * (slices + 1) + (j + 1) + offset;
+            int neighbourPointIndex = (currPointIndex + 1) % ((slices + 1) * (index + 1) + 1 + offset);
+            neighbourPointIndex += neighbourPointIndex == 0 ? 1 + (slices + 1) * index + offset : 0;
 
             int p1 = currPointIndex;
             int p2 = neighbourPointIndex;
-            int p3 = neighbourPointIndex + slices;
-            int p4 = currPointIndex + slices;
+            int p3 = neighbourPointIndex + slices + 1;
+            int p4 = currPointIndex + slices + 1;
 
             if (i < stacks) {
                 pointGen.addAssociation(p1, p3, p2);
                 pointGen.addAssociation(p1, p4, p3);
-            }
-            else if (i == stacks + 1) {
-                int topCenterIndex = slices * (stacks + 1 + 1) + 1 + offset;
+            } else if (i == stacks + 1) {
+                int topCenterIndex = (slices + 1) * (stacks + 1 + 1) + 1 + offset;
                 pointGen.addAssociation(p1, topCenterIndex, p2);
             }
         }
@@ -78,4 +76,3 @@ void Cylinder::createCylinder(int radius, int height, int slices, int stacks, co
 
     FileWriter::writeToFile(filename, pointGen);
 }
-
