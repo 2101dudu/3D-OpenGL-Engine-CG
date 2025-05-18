@@ -14,7 +14,7 @@ void Cone::createCone(float radius, float height, int slices, int stacks, const 
         int index = std::max(i, 0);
         float currentHeight = index * stackHeight;
         float currentRadius = radius * (1 - (float)index / stacks);
-        for (int j = 0; j < slices; ++j) {
+        for (int j = 0; j <= slices; ++j) {
             float angle = j * angleStep;
             float x = currentRadius * cos(angle);
             float y = currentHeight;
@@ -33,19 +33,19 @@ void Cone::createCone(float radius, float height, int slices, int stacks, const 
             float n2 = radius / slantLength;
             float n3 = sin(angle) * height / slantLength;
 
-            float u = (float)j / slices;
+            float u = (float)j / (slices + 1);
             float v = (float)index / stacks;
 
             generator.addPoint(x, y, z, n1, n2, n3, u, v);
 
-            int currPointIndex = i * slices + (j + 1) + offset;
-            int neighbourPointIndex = (currPointIndex + 1) % (slices * (i + 1) + 1 + offset);
-            neighbourPointIndex += neighbourPointIndex == 0 ? 1 + slices * i + offset : 0;
+            int currPointIndex = i * (slices + 1) + (j + 1) + offset;
+            int neighbourPointIndex = (currPointIndex + 1) % ((slices + 1) * (i + 1) + 1 + offset);
+            neighbourPointIndex += neighbourPointIndex == 0 ? 1 + (slices + 1) * i + offset : 0;
 
             int p1 = currPointIndex;
             int p2 = neighbourPointIndex;
-            int p3 = neighbourPointIndex + slices;
-            int p4 = currPointIndex + slices;
+            int p3 = neighbourPointIndex + slices + 1;
+            int p4 = currPointIndex + slices + 1;
 
             if (i < stacks - 1) {
                 generator.addAssociation(p1, p3, p2);
