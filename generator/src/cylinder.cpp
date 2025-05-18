@@ -18,16 +18,27 @@ void Cylinder::createCylinder(int radius, int height, int slices, int stacks, co
             float y = currentHeight;
             float z = radius * sin(angle);
 
+            float u = static_cast<float>(j) / slices;
+            float v = static_cast<float>(i) / (stacks + 1);
+
             if (i == -1) {
-                pointGen.addPoint(x, 0, z, 0, -1, 0, 0, 0);
+                // base inferior
+                float base_u = 0.5f + (x / (2.0f * radius));
+                float base_v = 0.5f + (z / (2.0f * radius));
+                pointGen.addPoint(x, 0, z, 0, -1, 0, base_u, base_v);
                 offset++;
                 continue;
             }
 
             if (i == stacks + 1) {
-                pointGen.addPoint(x, height, z, 0, 1, 0, 0, 0);
-            } else {
-                pointGen.addPoint(x, y, z, x / radius, 0, z / radius, 0, 0);
+                // base superior
+                float top_u = 0.5f + (x / (2.0f * radius));
+                float top_v = 0.5f + (z / (2.0f * radius));
+                pointGen.addPoint(x, height, z, 0, 1, 0, top_u, top_v);
+            }
+            else {
+                // lateral
+                pointGen.addPoint(x, y, z, x / radius, 0, z / radius, u, v);
             }
 
             int index = i;
@@ -43,25 +54,28 @@ void Cylinder::createCylinder(int radius, int height, int slices, int stacks, co
             if (i < stacks) {
                 pointGen.addAssociation(p1, p3, p2);
                 pointGen.addAssociation(p1, p4, p3);
-            } else if (i == stacks + 1) {
+            }
+            else if (i == stacks + 1) {
                 int topCenterIndex = slices * (stacks + 1 + 1) + 1 + offset;
                 pointGen.addAssociation(p1, topCenterIndex, p2);
             }
         }
     }
 
-    // now we add the top-monst centered point
-    pointGen.addPoint(0, height, 0, 0, 1, 0, 0, 0);
+    // centro do topo
+    pointGen.addPoint(0, height, 0, 0, 1, 0, 0.5f, 0.5f);
 
-    pointGen.addPoint(0, 0, 0, 0, -1, 0, 0, 0);
+    // centro da base inferior
+    pointGen.addPoint(0, 0, 0, 0, -1, 0, 0.5f, 0.5f);
     int bottomCenterIndex = pointGen.getPoints().size();
 
     for (int j = 0; j < slices; ++j) {
         int p1 = j + 1;
-        int p2 = (j + 2) % (slices + 1); // look for the neighbor point, but ensure it doesn't overflow
-        p2 += p2 == 0 ? 1 : 0; // if a points overflows, the result will be the index 0, which, for now, cannot happen
+        int p2 = (j + 2) % (slices + 1);
+        p2 += p2 == 0 ? 1 : 0;
         pointGen.addAssociation(p1, p2, bottomCenterIndex);
     }
 
     FileWriter::writeToFile(filename, pointGen);
 }
+
