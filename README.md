@@ -1,4 +1,4 @@
-<h1 align="center">3D Game Engine<img align="center" src="https://github.com/devicons/devicon/blob/master/icons/cplusplus/cplusplus-original.svg" target="_blank" title="c++" alt="c++" width="50" height="50"/></h1>
+<h1 align="center">3D OpenGL Engine<img align="center" src="https://github.com/devicons/devicon/blob/master/icons/cplusplus/cplusplus-original.svg" target="_blank" title="c++" alt="c++" width="50" height="50"/></h1>
 <h1 align="center">Final Grade: 19/20💎</h1>
 
 ## Overview
