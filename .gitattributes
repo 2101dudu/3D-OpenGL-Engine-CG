@@ -1,0 +1,3 @@
+engine/include/imgui/** linguist-vendored
+engine/include/stb/** linguist-vendored
+engine/src/stb/** linguist-vendored
